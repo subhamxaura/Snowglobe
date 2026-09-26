@@ -1,0 +1,10 @@
+Checks: 'clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,readability-*,bugprone-*,performance-*,portability-*,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers'
+WarningsAsErrors: true
+HeaderFilterRegex: '(core|test)/.*'
+CheckOptions:
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: lowerCamelCase
