@@ -10,7 +10,7 @@
 {"ev": "fs.mkdir", "path": "$TMP", "pid": "P3", "tid": "T2"}
 {"code": 0, "ev": "proc.exit", "pid": "P3", "signal": 0, "tid": "T2"}
 {"ev": "proc.start", "pid": "P4", "ppid": "P1", "tid": "T3"}
-{"argv": ["$REPO/build/debug/test/helpers/sg_threads", "$TMP"], "cwd": "$REPO/test/fixtures/scenarios/threads", "ev": "proc.exec", "path": "$REPO/build/debug/test/helpers/sg_threads", "pid": "P4", "tid": "T3"}
+{"argv": ["$HELPERS/sg_threads", "$TMP"], "cwd": "$REPO/test/fixtures/scenarios/threads", "ev": "proc.exec", "path": "$HELPERS/sg_threads", "pid": "P4", "tid": "T3"}
 {"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
 {"ev": "proc.start", "pid": "P4", "ppid": "P4", "thread": true, "tid": "T4"}
 {"create": true, "ev": "fs.open", "path": "$TMP/t0", "pid": "P4", "tid": "T4", "trunc": true, "write": true}

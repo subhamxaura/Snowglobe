@@ -37,6 +37,15 @@ if(Python3_FOUND)
   add_executable(sg_sockets fixtures/scenarios/unix_sockets/sg_sockets.c)
   set_target_properties(sg_threads sg_sockets
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/helpers)
+  # Helpers are traced workloads, not code under test: build them WITHOUT
+  # sanitizers in every preset. An instrumented tracee loads extra runtime
+  # libraries (libasan/libubsan/libtsan: golden divergence across presets)
+  # and LeakSanitizer fatally fails under ptrace ("does not work under
+  # ptrace (strace, gdb, etc)"). The observer (snowglobe) stays instrumented.
+  foreach(helper IN ITEMS sg_threads sg_sockets)
+    target_compile_options(${helper} PRIVATE -fno-sanitize=address,undefined,thread)
+    target_link_options(${helper} PRIVATE -fno-sanitize=address,undefined,thread)
+  endforeach()
   foreach(scn IN ITEMS fork_storm threads exec_chain deep_dirs unix_sockets failing_exec)
     add_test(
       NAME golden_${scn}

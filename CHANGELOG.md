@@ -56,6 +56,10 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   SIGKILL (exit 137 + finalised manifest), supervisor SIGTERM (exit 143).
 - `probe/openat2.c`; openat2 flags now read from `struct open_how`.
 - `fs.chmod` mode is an octal string (`"0755"`).
+- Scenario C helpers build without sanitizers in every preset: an
+  ASan-instrumented tracee loads libasan (golden divergence) and
+  LeakSanitizer fails fatally under ptrace. `$HELPERS` normalises before
+  `$REPO` so one golden serves all build presets.
 
 ### Added (Phase 1A Block 1)
 - Threads: every event carries `pid` (=tgid) + `tid`; `proc.start` sets

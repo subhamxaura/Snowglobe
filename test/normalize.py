@@ -74,9 +74,13 @@ def main():
             return [fix(x) for x in o]
         if isinstance(o, str):
             o = TMP_RE.sub("$TMP", o)
-            o = o.replace(repo, "$REPO")
+            # Most-specific first: the helpers dir usually lives under the
+            # repo, so it must be replaced before $REPO swallows it. This is
+            # what keeps one golden valid across build presets (debug encodes
+            # build/debug/..., asan-ubsan encodes build/asan-ubsan/...).
             if helpers:
                 o = o.replace(helpers, "$HELPERS")
+            o = o.replace(repo, "$REPO")
             o = PYVER_RE.sub("python3.V", o)
             o = CPYTHON_RE.sub("cpython-3V", o)
             return o
