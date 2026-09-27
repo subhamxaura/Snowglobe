@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-09-27  ·  Phase: 1A — DONE  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-27  ·  Phase: 1B Block 1 — IN PROGRESS (local green, CI pending)  ·  Next launch: v0.1.0, week 9
 
 > Phase 1A gate closed: CI run
 > https://github.com/subhamxaura/Snowglobe/actions/runs/36311530345 — all 6
@@ -32,8 +32,9 @@ Updated: 2026-09-27  ·  Phase: 1A — DONE  ·  Next launch: v0.1.0, week 9
   CHANGELOG.md
 
 ## In progress
-- None — Phase 1A DONE (tag v0.1.0-alpha.1). Next: Phase 1B (LLM proxy),
-  separate session. Do not start Phase 1B here.
+- Block 1: CI poll for the Block 1 push, then close Block 1. Do not start
+  Block 2 (mock/toy-agent/integration tests) here.
+- Note: OpenSSL links dynamically for now (static is a Phase 4 problem).
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
 - `cmake --preset debug && cmake --build --preset debug && ctest --preset debug`:
@@ -83,9 +84,28 @@ Updated: 2026-09-27  ·  Phase: 1A — DONE  ·  Next launch: v0.1.0, week 9
 - CI run 36301575125 all green, incl. 22.04 (C helpers dodge CPython
   startup divergence; helpers build sanitizer-free — LSAN is fatal under
   ptrace — with $HELPERS normalised before $REPO).
-- Env notes: drvfs denies chmod/utime to non-root (cmake configure must run
-  as root; all test execution as uid 1000); /tmp is cleaned across WSL
-  reboots (persistent artifacts live outside /tmp).
+- Env notes: work happens in ~/src/snowglobe (ext4) as uid 1000 — configure,
+  build, test, commit all unprivileged there. (On the old /mnt/c tree,
+  drvfs denied chmod/utime to non-root so cmake configure required root.)
+  /tmp is cleaned across WSL reboots (persistent artifacts live outside
+  /tmp); Write-tool files arrive root-owned (chown pass before building).
+
+## Block 1 verification (all as uid 1000 in ~/src/snowglobe ext4 unless noted)
+- Deps: cpp-httplib v0.20.1 via FetchContent SYSTEM + OpenSSL 3.0.13
+  (dynamic link; static deferred to Phase 4).
+- Unit: redact (header set, userinfo, Bearer/Basic, key shapes, query,
+  env values, UUID/SHA survival) + proxy utils (base64, utf8, model/stream
+  incl. nested-model trap) — 81 assertions green; full suite 26/26 debug,
+  26/26 asan-ubsan, zero findings.
+- Manual proxy vs python mock: POST forwarding intact (Authorization
+  untouched upstream, REDACTED stored), model parsed, SSE 59 B over ~1 s
+  with per-chunk .idx timing, /u/ + --upstream + 429/500/404 passthrough,
+  disconnect → truncated:true + healthy proxy, TLS 200 with SSL_CERT_FILE
+  CA / 502 with wrong CA (verification ON).
+- Wire-proven framing: single Content-Type, zero-chunk terminator present
+  (curl exit 18 root-caused to its absence in an earlier revision).
+- TSan cannot execute on this WSL box at all (hello-world fails identically:
+  unexpected memory mapping) — environmental; CI adjudicates in Block 2.
 
 ## Block 3 verification (all as uid 1000 in ~/src/snowglobe ext4 unless noted)
 - tcp_loopback (23 events): binds + blocking connects initiated:true;

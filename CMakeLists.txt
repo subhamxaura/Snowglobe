@@ -23,6 +23,28 @@ if(SNOWGLOBE_STATIC)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 endif()
 
+# OpenSSL for the LLM proxy's upstream TLS (AGENTS.md §1.2 allowed dep).
+# Static OpenSSL is a Phase 4 problem: link dynamically now (STATUS.md).
+find_package(OpenSSL REQUIRED)
+
+# cpp-httplib for the LLM proxy (AGENTS.md §1.2 allowed dep). SYSTEM include
+# so -Werror never fires inside the third-party header.
+include(FetchContent)
+FetchContent_Declare(
+  httplib
+  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+  GIT_TAG v0.20.1
+  SYSTEM
+)
+set(HTTPLIB_REQUIRE_OPENSSL ON)
+set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF)
+set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF)
+set(HTTPLIB_USE_ZSTD_IF_AVAILABLE OFF)
+set(HTTPLIB_TEST OFF)
+set(HTTPLIB_INSTALL OFF)
+set(HTTPLIB_COMPILE OFF)
+FetchContent_MakeAvailable(httplib)
+
 add_subdirectory(core)
 
 if(BUILD_TESTING)

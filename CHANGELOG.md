@@ -5,6 +5,17 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 1B Block 1)
+- LLM recording proxy (`core/proxy/`): HTTP/1.1 on 127.0.0.1:ephemeral,
+  routes /openai|/anthropic|/gemini + /u/<base64url> + --upstream overrides,
+  zero-buffering response streaming, raw blob + per-chunk .idx store,
+  llm.request/response events (no per-chunk events).
+- Secrets redaction (`core/redact/` + ADR-0003): 7 header names, URL
+  userinfo, key shapes, query params, sensitive env values; applied to
+  stored headers, proc.exec argv and run.meta cmd. Forwarded bytes untouched.
+- Supervisor: proxy lifecycle, 6 base-URL env vars, --no-llm-proxy,
+  ≤10 s drain, epilogue counts LLM turns.
+
 ### Added
 - Phase 0 bootstrap: CMake+Ninja build, presets (debug/release/asan-ubsan/tsan),
   clang-format/tidy configs, Apache-2.0 LICENSE.

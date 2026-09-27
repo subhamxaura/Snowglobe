@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace snowglobe::tracer {
 
@@ -20,6 +22,8 @@ private:
   std::string error_;
   bool allOpens_ = false;
   uint64_t tStartMs_ = 0;
+  // Sensitive env pairs for argv redaction (ADR-0003), from TraceOptions.
+  std::vector<std::pair<std::string, std::string>> secretEnv_;
 
   uint64_t nowTms() const;
   uint64_t nowUs() const;

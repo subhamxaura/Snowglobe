@@ -1,4 +1,4 @@
-// snowglobe CLI — Phase 0: run (tracer) + doctor + version + ls/rm stubs.
+// snowglobe CLI — run (tracer + LLM proxy) + doctor + version + ls/rm stubs.
 // Human output → stderr; machine output (--json) → stdout (AGENTS.md §2).
 #include <algorithm>
 #include <chrono>
@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <mutex>
 #include <random>
 #include <sstream>
 #include <string>
@@ -20,6 +22,8 @@
 #endif
 
 #include "../doctor/doctor.hpp"
+#include "../proxy/proxy.hpp"
+#include "../redact/redact.hpp"
 #include "../trace/jsonl_writer.hpp"
 #include "../tracer/common/itracer.hpp"
 #include "../tracer/ptrace/ptrace_tracer.hpp"
@@ -42,7 +46,8 @@ constexpr int kExSoftware = 70;
 void usage(std::ostream& os) {
   os << "Usage:\n"
      << "  snowglobe run [--project=DIR] [--out=DIR] [--tracer=auto|ptrace] [-a|--all-opens]\n"
-     << "                [--capture-stdio] [--json] -- <command> [args...]\n"
+     << "                [--capture-stdio] [--json] [--no-llm-proxy]\n"
+     << "                [--upstream=PROVIDER=URL]... -- <command> [args...]\n"
      << "  snowglobe doctor\n"
      << "  snowglobe version [--json]\n"
      << "  snowglobe ls [--json]\n"
@@ -148,6 +153,8 @@ struct RunOptions {
   bool allOpens = false;
   bool captureStdio = false;
   bool json = false;
+  bool noLlmProxy = false;
+  std::vector<std::string> upstreams; // raw PROVIDER=URL strings
   std::vector<std::string> cmd;
 };
 
@@ -178,25 +185,45 @@ int cmdRun(const RunOptions& o) {
   const std::string started = runTimestamp();
   const std::string cwd = cwdStr();
   const std::string project = o.project.empty() ? cwd : o.project;
-  std::string cmdJson;
-  for (const auto& a : o.cmd) {
-    if (!cmdJson.empty()) {
-      cmdJson += ",";
+
+  // --upstream PROVIDER=URL overrides (gateway testing). Keys lowercased;
+  // values must be http(s) URLs.
+  std::map<std::string, std::string> upstreamMap;
+  for (const std::string& u : o.upstreams) {
+    const size_t eq = u.find('=');
+    if (eq == std::string::npos || eq == 0) {
+      std::cerr << "snowglobe run: --upstream needs PROVIDER=URL, got '" << u << "'\n";
+      return kExUsage;
     }
-    cmdJson += jsonEscape(a);
+    std::string provider = u.substr(0, eq);
+    for (char& c : provider) {
+      c = static_cast<char>(std::tolower((unsigned char)c));
+    }
+    const std::string url = u.substr(eq + 1);
+    if (url.rfind("http://", 0) != 0 && url.rfind("https://", 0) != 0) {
+      std::cerr << "snowglobe run: --upstream URL must be http(s), got '" << url << "'\n";
+      return kExUsage;
+    }
+    upstreamMap[provider] = url;
   }
+  // run.meta cmd is secret-redacted (ADR-0003); built after proxy env
+  // injection below (superset of secret names, safer). The initial manifest
+  // is written after cmdJson exists (see below).
+  std::string cmdJson; // filled once secrets are collected
 
   const std::string manifestPath = (runDir / "manifest.json").string();
-  {
+  auto writeManifest = [&](const std::string& finished, uint64_t eventCount,
+                           const std::string& lastHash) {
     std::ofstream m(manifestPath, std::ios::trunc);
     m << "{\"schema\":" << SNOWGLOBE_SCHEMA_VERSION
       << ",\"snowglobe_version\":" << jsonEscape(SNOWGLOBE_VERSION)
-      << ",\"started\":" << jsonEscape(started) << ",\"finished\":null,\"cmd\":[" << cmdJson
-      << "],\"cwd\":" << jsonEscape(cwd) << ",\"project\":" << jsonEscape(project)
+      << ",\"started\":" << jsonEscape(started) << ",\"finished\":" << finished << ",\"cmd\":["
+      << cmdJson << "],\"cwd\":" << jsonEscape(cwd) << ",\"project\":" << jsonEscape(project)
       << ",\"kernel\":" << jsonEscape(kernelStr()) << ",\"tracer\":" << jsonEscape(tracerName)
       << ",\"isolate\":{},\"env_fingerprint\":" << jsonEscape(envFingerprint())
-      << ",\"event_count\":0,\"last_hash\":\"0\",\"file_hashes\":{}}";
-  }
+      << ",\"event_count\":" << eventCount << ",\"last_hash\":" << jsonEscape(lastHash)
+      << ",\"file_hashes\":{}}";
+  };
 
   snowglobe::trace::JsonlWriter writer((runDir / "events.jsonl").string());
   if (!writer.ok()) {
@@ -209,9 +236,27 @@ int cmdRun(const RunOptions& o) {
     std::cerr << "snowglobe run: ptrace backend requires Linux (EX_UNAVAILABLE)\n";
     return kExUnavailable;
   }
+
+  // LLM proxy first: it must be listening before the child starts, and the
+  // env injection below is inherited across fork. A proxy that cannot bind
+  // is a hard error — silently running without capture would fake the
+  // recording contract.
+  std::unique_ptr<snowglobe::proxy::LlmProxy> proxy;
+  long proxyPort = -1;
+  if (!o.noLlmProxy) {
+    std::error_code llmEc;
+    fs::create_directories(runDir / "llm", llmEc);
+    if (llmEc) {
+      std::cerr << "snowglobe run: cannot create llm dir: " << llmEc.message() << "\n";
+      return kExSoftware;
+    }
+  }
+
   uint64_t seq = 0;
   bool writeWarned = false;
-  tracer->setSink([&](const std::string& json) {
+  std::mutex sinkMu; // proxy handler threads + tracer thread share this sink
+  snowglobe::tracer::ITracer::EventSink sink = [&](const std::string& json) {
+    std::lock_guard<std::mutex> lk(sinkMu);
     if (writer.writeEvent(seq++, json)) {
       return true;
     }
@@ -222,10 +267,49 @@ int cmdRun(const RunOptions& o) {
       std::cerr << "snowglobe run: trace write failed (" << writer.error() << "); continuing\n";
     }
     return false;
-  });
+  };
+  tracer->setSink(sink);
+
+  if (!o.noLlmProxy) {
+    snowglobe::proxy::ProxyOptions popts;
+    popts.runDir = runDir.string();
+    popts.upstream = upstreamMap;
+    popts.sink = sink;
+    proxy = std::make_unique<snowglobe::proxy::LlmProxy>(std::move(popts));
+    proxyPort = proxy->start();
+    if (proxyPort <= 0) {
+      std::cerr << "snowglobe run: proxy failed: " << proxy->error() << "\n";
+      return kExSoftware;
+    }
+    // Base-URL injection for LLM capture (overwrites any user setting:
+    // capture requires our proxy; --no-llm-proxy opts out entirely).
+    const std::string base = "http://127.0.0.1:" + std::to_string(proxyPort);
+    ::setenv("OPENAI_BASE_URL", (base + "/openai").c_str(), 1);
+    ::setenv("OPENAI_API_BASE", (base + "/openai").c_str(), 1);
+    ::setenv("ANTHROPIC_BASE_URL", (base + "/anthropic").c_str(), 1);
+    ::setenv("ANTHROPIC_API_BASE", (base + "/anthropic").c_str(), 1);
+    ::setenv("GOOGLE_GEMINI_BASE_URL", (base + "/gemini").c_str(), 1);
+    ::setenv("GEMINI_API_BASE", (base + "/gemini").c_str(), 1);
+  }
+
+  // Secret env collected AFTER injection (superset, safer); redacts run.meta
+  // cmd here and proc.exec argv in the tracer.
+  std::vector<std::pair<std::string, std::string>> secrets;
+#ifndef _WIN32
+  secrets = snowglobe::redact::sensitiveEnv(::environ);
+#endif
+  for (const auto& a : o.cmd) {
+    if (!cmdJson.empty()) {
+      cmdJson += ",";
+    }
+    cmdJson += jsonEscape(snowglobe::redact::redactText(a, secrets));
+  }
+  writeManifest("null", 0, "0");
+
   snowglobe::tracer::TraceOptions topts;
   topts.allOpens = o.allOpens;
   topts.tracer = tracerName;
+  topts.secretEnv = secrets;
 
   if (o.captureStdio) {
     // Phase 0: stdio passthrough; schema files created empty (see issue #7).
@@ -235,6 +319,13 @@ int cmdRun(const RunOptions& o) {
   }
 
   const int code = tracer->run(o.cmd, topts);
+  // Drain in-flight LLM streams (<= 10 s) before finalising: their events
+  // belong in this trace's counts.
+  long turns = 0;
+  if (proxy) {
+    proxy->stop(10);
+    turns = proxy->turns();
+  }
   if (code < 0) {
     if (code == -kExUnavailable) {
       std::cerr << "snowglobe run: " << tracer->error() << "\n";
@@ -245,26 +336,15 @@ int cmdRun(const RunOptions& o) {
   }
 
   const std::string finished = runTimestamp();
-  {
-    std::ofstream m(manifestPath, std::ios::trunc);
-    m << "{\"schema\":" << SNOWGLOBE_SCHEMA_VERSION
-      << ",\"snowglobe_version\":" << jsonEscape(SNOWGLOBE_VERSION)
-      << ",\"started\":" << jsonEscape(started) << ",\"finished\":" << jsonEscape(finished)
-      << ",\"cmd\":[" << cmdJson << "],\"cwd\":" << jsonEscape(cwd)
-      << ",\"project\":" << jsonEscape(project) << ",\"kernel\":" << jsonEscape(kernelStr())
-      << ",\"tracer\":" << jsonEscape(tracerName)
-      << ",\"isolate\":{},\"env_fingerprint\":" << jsonEscape(envFingerprint())
-      << ",\"event_count\":" << writer.count() << ",\"last_hash\":" << jsonEscape(writer.lastHash())
-      << ",\"file_hashes\":{}}";
-  }
+  writeManifest(jsonEscape(finished), writer.count(), writer.lastHash());
 
   if (o.json) {
     std::cout << "{\"run\":" << jsonEscape(runDir.string()) << ",\"exit_code\":" << code
-              << ",\"events\":" << writer.count() << "}\n";
+              << ",\"events\":" << writer.count() << ",\"turns\":" << turns << "}\n";
   } else {
     std::cerr << "run: " << runDir.string() << "\n";
-    std::cerr << "exit: " << code << " | events: " << writer.count()
-              << " | turns: 0 (no LLM proxy yet)\n";
+    std::cerr << "exit: " << code << " | events: " << writer.count() << " | " << turns
+              << " LLM turns\n";
     std::cerr << "next: snowglobe diff " << runDir.string() << " | snowglobe view "
               << runDir.string() << " | snowglobe replay " << runDir.string() << "\n";
   }
@@ -355,6 +435,16 @@ int main(int argc, char** argv) {
         o.captureStdio = true;
       } else if (a == "--json") {
         o.json = true;
+      } else if (a == "--no-llm-proxy") {
+        o.noLlmProxy = true;
+      } else if (a.rfind("--upstream=", 0) == 0) {
+        o.upstreams.push_back(a.substr(11));
+      } else if (a == "--upstream") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe run: --upstream needs PROVIDER=URL\n";
+          return kExUsage;
+        }
+        o.upstreams.push_back(args[++i]);
       } else if (a.rfind("--project=", 0) == 0) {
         o.project = a.substr(10);
       } else if (a.rfind("--out=", 0) == 0) {

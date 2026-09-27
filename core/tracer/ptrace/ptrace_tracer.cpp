@@ -20,6 +20,7 @@
 #include "ptrace_tracer.hpp"
 #include "open_flags.hpp"
 
+#include "../../redact/redact.hpp"
 #include "../../util/string_util.hpp"
 
 #include <atomic>
@@ -309,6 +310,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
     return -kExitUsage;
   }
   allOpens_ = opts.allOpens;
+  secretEnv_ = opts.secretEnv;
 
   struct timespec ts0 = {};
   clock_gettime(CLOCK_MONOTONIC, &ts0);
@@ -433,6 +435,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   // the calling image is still mapped — i.e. at ENTRY, or at EXIT on failure).
   // truncatedOut is set when argv was cut (64-entry cap or mid-array read
   // failure): callers report truncated:true rather than dropping silently.
+  // Every argv element is secret-redacted (ADR-0003) before escaping.
   auto readExecStrings = [&](pid_t tpid, long dirfd, uint64_t pathAddr, uint64_t argvAddr,
                              std::string& canonOut, std::string& argvJsonOut,
                              std::string& detailOut, bool& truncatedOut) -> bool {
@@ -440,7 +443,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
     if (!vmReadStr(tpid, pathAddr, path, detailOut)) {
       return false;
     }
-    std::string argvJson;
+    std::vector<std::string> rawArgs;
     bool done = false;
     int got = 0;
     for (int i = 0; i < 64; ++i) {
@@ -456,10 +459,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       if (!vmReadStr(tpid, p, s, d2)) {
         break; // unreadable string: truncated, keep the prefix
       }
-      if (!argvJson.empty()) {
-        argvJson += ",";
-      }
-      argvJson += jsonEscape(s);
+      rawArgs.push_back(std::move(s));
       ++got;
     }
     truncatedOut = !done;
@@ -469,6 +469,13 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       if (vmReadU64(tpid, argvAddr + 64 * 8, p) && p == 0) {
         truncatedOut = false;
       }
+    }
+    std::string argvJson;
+    for (const std::string& raw : rawArgs) {
+      if (!argvJson.empty()) {
+        argvJson += ",";
+      }
+      argvJson += jsonEscape(redact::redactText(raw, secretEnv_));
     }
     canonOut = canonicalPath(tpid, dirfd, path);
     argvJsonOut = argvJson;

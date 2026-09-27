@@ -2,6 +2,7 @@
 // Thread ownership: implementations are driven from the supervisor thread.
 #include <functional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace snowglobe::tracer {
@@ -14,6 +15,9 @@ constexpr int kExitSoftware = 70;
 struct TraceOptions {
   bool allOpens = false; // --all-opens: do not filter read-opens / noisy paths
   std::string tracer = "auto";
+  // Sensitive (name, value) pairs for argv redaction (ADR-0003), collected
+  // by the supervisor from its own environment after proxy env injection.
+  std::vector<std::pair<std::string, std::string>> secretEnv;
 };
 
 class ITracer {
