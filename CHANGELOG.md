@@ -40,3 +40,6 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   self map files EACCES); AppArmor userns knob reported in the userns row.
 - clang-format clean (`AllowShortCaseLabelsOnASingleLine: true` added);
   CI test step simplified to `ctest --preset ${{ matrix.preset }}`.
+- CI: Ubuntu 22.04 no longer uses `pip install --break-system-packages`
+  (22.04 ships pip 22.0.2, which predates the flag); 22.04 gets Python via
+  setup-python and the Kitware cmake wheel through its modern pip.

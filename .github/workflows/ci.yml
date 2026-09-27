@@ -17,11 +17,30 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build cmake g++ python3 python3-pip
-          # AGENTS.md mandates CMake >= 3.25; Ubuntu 22.04 apt ships 3.22,
-          # so ensure a new-enough Kitware cmake is first on PATH.
-          pip install --break-system-packages "cmake>=3.25,<5"
+          sudo apt-get install -y ninja-build cmake g++ python3
+      # AGENTS.md mandates CMake >= 3.25 but Ubuntu 22.04 apt ships 3.22, so
+      # 22.04 gets a Kitware cmake wheel via setup-python's modern pip. Never
+      # use --break-system-packages here: 22.04 ships pip 22.0.2, which
+      # predates the flag (exit code 2). Python itself is required on all
+      # legs: test/integration/tracer_basic.py is stdlib-only (no pip
+      # packages needed anywhere). Scoped to 22.04; 24.04 passes unmodified.
+      - name: Set up Python (22.04 only)
+        if: matrix.os == 'ubuntu-22.04'
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install newer CMake (22.04 only)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "cmake>=3.25,<5"
           cmake --version
+      - name: Tool versions
+        run: |
+          g++ --version | head -1
+          cmake --version | head -1
+          ninja --version
+          python3 --version
       - name: Configure (${{ matrix.preset }})
         run: cmake --preset ${{ matrix.preset }}
       - name: Build (${{ matrix.preset }})

@@ -20,7 +20,9 @@ Updated: 2026-09-26  ·  Phase: 0 — Bootstrap: VERIFIED IN WSL2, PENDING PUSH/
   CHANGELOG.md
 
 ## In progress
-- Push to GitHub + CI green (BLOCKED: needs human — repo URL + auth)
+- CI green (22.04 red: `pip install --break-system-packages` unsupported by
+  pip 22.0.2; fixed via setup-python + modern pip, scoped to 22.04) — awaiting
+  pushed run result
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
 - `cmake --preset debug && cmake --build --preset debug && ctest --preset debug`:
