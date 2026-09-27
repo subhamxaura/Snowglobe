@@ -1,5 +1,13 @@
 # STATUS — Snowglobe
-Updated: 2026-09-27  ·  Phase: 1A Block 3 — IN PROGRESS (local green, CI pending)  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-27  ·  Phase: 1A — DONE  ·  Next launch: v0.1.0, week 9
+
+> Phase 1A gate closed: CI run
+> https://github.com/subhamxaura/Snowglobe/actions/runs/36311530345 — all 6
+> jobs green (22.04 + 24.04 × debug + asan-ubsan incl. tcp_loopback,
+> cross-aarch64, lint), plus bench workflow run
+> https://github.com/subhamxaura/Snowglobe/actions/runs/36311530354
+> (success, committed bench/results/ptrace-baseline-ci-24.04.md separately).
+> Tag: v0.1.0-alpha.1. Phase 1B is a separate session.
 
 > Block 2 gate closed: CI run
 > https://github.com/subhamxaura/Snowglobe/actions/runs/36301575125 — all 6
@@ -24,8 +32,8 @@ Updated: 2026-09-27  ·  Phase: 1A Block 3 — IN PROGRESS (local green, CI pend
   CHANGELOG.md
 
 ## In progress
-- Block 3: CI poll for Block 3 push (incl. new tcp_loopback + bench jobs),
-  then Phase 1A DONE + tag v0.1.0-alpha.1. Do not start Phase 1B here.
+- None — Phase 1A DONE (tag v0.1.0-alpha.1). Next: Phase 1B (LLM proxy),
+  separate session. Do not start Phase 1B here.
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
 - `cmake --preset debug && cmake --build --preset debug && ctest --preset debug`:
