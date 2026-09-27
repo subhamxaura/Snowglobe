@@ -11,4 +11,4 @@ std::string jsonEscape(const std::string& s);
 // Returns e.g. "127.0.0.1:8080", "[::1]:80", "unix:/tmp/s.sock".
 std::string formatSockaddr(const void* addr, unsigned long addrLen);
 
-}  // namespace snowglobe::util
+} // namespace snowglobe::util

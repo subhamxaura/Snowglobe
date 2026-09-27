@@ -38,6 +38,12 @@ Updated: 2026-09-26  ·  Phase: 0 — Bootstrap: VERIFIED IN WSL2, PENDING PUSH/
   (PTRACE_O_EXITKILL verified) — KILL TEST PASSED
 - 4 Linux-only bugs fixed (see CHANGELOG Fixed): syscall-info enum off-by-one,
   exec ENTRY caching, JSONL `}}`, environ linkage
+- Doctor probes made real (no more guessing): Landlock ABI via ruleset VERSION
+  query → **abi 3** (earlier /proc guess said absent — wrong); seccomp-notif via
+  GET_ACTION_AVAIL → yes; overlayfs via unshare+uid_map+mount dance → yes;
+  apparmor userns knob reported (absent on WSL kernel). Datasets: WSL2 6.6.
+- Format clean (`clang-format --dry-run --Werror`), aarch64 cross-build clean,
+  CI test step simplified to `ctest --preset ${{ matrix.preset }}`.
 
 ## Next up (ordered)
 1. Phase 1A — tracer hardening (6 golden trees, kill-9 no-orphans, bench publish)
@@ -50,12 +56,13 @@ Updated: 2026-09-26  ·  Phase: 0 — Bootstrap: VERIFIED IN WSL2, PENDING PUSH/
 - CLI11/nlohmann/json not yet vendored (hand-rolled JSON; proxy phase adds them) — Phase 1B
 - No `poc/tracer.c` found in workspace; tracer written fresh from spec — recorded here
 
-## Capability matrix on the dev box (from `snowglobe doctor`)
+## Capability matrix on the dev box (from `snowglobe doctor`, WSL2 Ubuntu 24.04)
 | userns | overlayfs-in-userns | landlock | seccomp-notif | cgroup v2 delegated | pasta |
-| — (Windows dev box; run in CI/WSL2) | — | — | — | — | — |
+| ✅ (apparmor knob absent) | ✅ (mounted+verified) | ✅ abi 3 | ✅ | ✅ | ❌ |
 
 ## Decisions pending the human
-- None
+- Create the GitHub repo + push (no remote/auth on this box) — push guide sent;
+  paste the Actions run URL; CI green is the last gate before DONE
 
 ## Metrics (weekly)
 stars · installs · WAU CLIs · runs · shares · interviews done · MRR — all zero (pre-alpha)

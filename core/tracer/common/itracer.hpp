@@ -12,12 +12,12 @@ constexpr int kExitUnavailable = 69;
 constexpr int kExitSoftware = 70;
 
 struct TraceOptions {
-  bool allOpens = false;  // --all-opens: do not filter read-opens / noisy paths
+  bool allOpens = false; // --all-opens: do not filter read-opens / noisy paths
   std::string tracer = "auto";
 };
 
 class ITracer {
- public:
+public:
   virtual ~ITracer() = default;
   // Trace `argv` (argv[0] = program), emitting events via the sink as
   // JSON payloads *without* chain fields. Returns the child's exit code, or
@@ -30,7 +30,7 @@ class ITracer {
     sink_ = std::move(sink);
   }
 
- protected:
+protected:
   EventSink sink_;
   bool emit(const std::string& json) {
     if (sink_) {
@@ -40,4 +40,4 @@ class ITracer {
   }
 };
 
-}  // namespace snowglobe::tracer
+} // namespace snowglobe::tracer

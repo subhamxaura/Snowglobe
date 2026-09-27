@@ -42,7 +42,7 @@ uint64_t PtraceTracer::nowUs() const {
 bool PtraceTracer::emitEv(const std::string&) {
   return true;
 }
-}  // namespace snowglobe::tracer
+} // namespace snowglobe::tracer
 #else
 
 #include <fcntl.h>
@@ -110,7 +110,8 @@ void onSignal(int) {
 uint64_t clockUs(clockid_t clk) {
   struct timespec ts = {};
   clock_gettime(clk, &ts);
-  return static_cast<uint64_t>(ts.tv_sec) * 1000000ULL + static_cast<uint64_t>(ts.tv_nsec) / 1000ULL;
+  return static_cast<uint64_t>(ts.tv_sec) * 1000000ULL +
+         static_cast<uint64_t>(ts.tv_nsec) / 1000ULL;
 }
 
 std::string errnoText(int e) {
@@ -154,7 +155,7 @@ bool vmReadStr(pid_t pid, uint64_t remote, std::string& out, std::string& errDet
     cur += static_cast<uint64_t>(n);
     total += static_cast<std::size_t>(n);
     if (n < static_cast<long>(sizeof(buf))) {
-      break;  // short read without NUL: string is truncated/unmapped
+      break; // short read without NUL: string is truncated/unmapped
     }
   }
   errDetail = "string too long or unterminated";
@@ -217,8 +218,14 @@ std::string normaliseAbs(const std::string& p) {
 
 bool isNoisyPath(const std::string& p) {
   // Mirrors docs/trace-format.md §filtering: proc/sys/dev + loader/locale noise.
-  static const char* kPrefixes[] = {"/proc/", "/sys/",  "/dev/", "/etc/ld.so", "/etc/passwd",
-                                    "/etc/nsswitch", "/usr/share/locale", "/usr/lib/locale"};
+  static const char* kPrefixes[] = {"/proc/",
+                                    "/sys/",
+                                    "/dev/",
+                                    "/etc/ld.so",
+                                    "/etc/passwd",
+                                    "/etc/nsswitch",
+                                    "/usr/share/locale",
+                                    "/usr/lib/locale"};
   for (const char* pre : kPrefixes) {
     if (p.compare(0, std::strlen(pre), pre) == 0) {
       return true;
@@ -239,7 +246,7 @@ struct ProcInfo {
   std::string pendingExecArgvJson;
 };
 
-}  // namespace
+} // namespace
 
 PtraceTracer* PtraceTracer::create() {
   return new PtraceTracer();
@@ -271,7 +278,8 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
 
   struct timespec ts0 = {};
   clock_gettime(CLOCK_MONOTONIC, &ts0);
-  tStartMs_ = static_cast<uint64_t>(ts0.tv_sec) * 1000ULL + static_cast<uint64_t>(ts0.tv_nsec) / 1000000ULL;
+  tStartMs_ =
+      static_cast<uint64_t>(ts0.tv_sec) * 1000ULL + static_cast<uint64_t>(ts0.tv_nsec) / 1000000ULL;
 
   // Install SIGINT/SIGTERM handlers (restore on exit).
   struct sigaction sa = {}, oldInt = {}, oldTerm = {};
@@ -303,7 +311,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
     }
     ::raise(SIGSTOP);
     ::execvp(cargv[0], cargv.data());
-    _exit(127);  // exec failed; parent reports proc.exec_failed via exit code 127 path
+    _exit(127); // exec failed; parent reports proc.exec_failed via exit code 127 path
   }
 
   // --- supervisor ---
@@ -329,24 +337,25 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       cwdStr = cwd;
     }
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
-           ",\"ev\":\"run.meta\",\"pid\":" + std::to_string(child) + ",\"tid\":" +
-           std::to_string(child) + ",\"cmd\":[" + cmdJson + "],\"cwd\":" + jsonEscape(cwdStr) + "}");
+           ",\"ev\":\"run.meta\",\"pid\":" + std::to_string(child) +
+           ",\"tid\":" + std::to_string(child) + ",\"cmd\":[" + cmdJson +
+           "],\"cwd\":" + jsonEscape(cwdStr) + "}");
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
            ",\"ev\":\"proc.start\",\"pid\":" + std::to_string(child) + ",\"tid\":" +
            std::to_string(child) + ",\"ppid\":" + std::to_string(::getpid()) + ",\"root\":true}");
   }
 
-  const long kTraceOpts =
-      PTRACE_O_TRACEFORK | PTRACE_O_TRACEVFORK | PTRACE_O_TRACECLONE | PTRACE_O_TRACEEXEC |
-      PTRACE_O_TRACEEXIT | PTRACE_O_EXITKILL | PTRACE_O_TRACESYSGOOD;
+  const long kTraceOpts = PTRACE_O_TRACEFORK | PTRACE_O_TRACEVFORK | PTRACE_O_TRACECLONE |
+                          PTRACE_O_TRACEEXEC | PTRACE_O_TRACEEXIT | PTRACE_O_EXITKILL |
+                          PTRACE_O_TRACESYSGOOD;
   bool firstStop = true;
   bool dead = false;
 
   auto emitDecodeError = [&](pid_t pid, uint64_t nr, const std::string& reason) {
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
-           ",\"ev\":\"trace.decode_error\",\"pid\":" + std::to_string(pid) + ",\"tid\":" +
-           std::to_string(pid) + ",\"syscall\":" + std::to_string(nr) + ",\"errno\":" +
-           std::to_string(errno) + ",\"reason\":" + jsonEscape(reason) + "}");
+           ",\"ev\":\"trace.decode_error\",\"pid\":" + std::to_string(pid) +
+           ",\"tid\":" + std::to_string(pid) + ",\"syscall\":" + std::to_string(nr) +
+           ",\"errno\":" + std::to_string(errno) + ",\"reason\":" + jsonEscape(reason) + "}");
   };
 
   auto canonicalPath = [&](pid_t pid, long dirfd, const std::string& raw) -> std::string {
@@ -433,8 +442,9 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       const int code = WIFEXITED(status) ? WEXITSTATUS(status) : 128 + WTERMSIG(status);
       const int sig = WIFSIGNALED(status) ? WTERMSIG(status) : 0;
       emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
-             ",\"ev\":\"proc.exit\",\"pid\":" + std::to_string(pid) + ",\"tid\":" + std::to_string(pid) +
-             ",\"code\":" + std::to_string(code) + ",\"signal\":" + std::to_string(sig) + "}");
+             ",\"ev\":\"proc.exit\",\"pid\":" + std::to_string(pid) +
+             ",\"tid\":" + std::to_string(pid) + ",\"code\":" + std::to_string(code) +
+             ",\"signal\":" + std::to_string(sig) + "}");
       // exec-failed detection: first process exiting 127 without a prior exec event
       // is reported as proc.exec_failed for visibility.
       procs.erase(pid);
@@ -464,12 +474,12 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       unsigned long msg = 0;
       ptrace(PTRACE_GETEVENTMSG, pid, nullptr, &msg);
       const auto cpid = static_cast<pid_t>(msg);
-      auto& ci = procs[cpid];  // reconciles fork-race pending entries
+      auto& ci = procs[cpid]; // reconciles fork-race pending entries
       ci.ppid = pid;
       ci.inSyscall = false;
       emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
-             ",\"ev\":\"proc.start\",\"pid\":" + std::to_string(cpid) + ",\"tid\":" +
-             std::to_string(cpid) + ",\"ppid\":" + std::to_string(pid) + "}");
+             ",\"ev\":\"proc.start\",\"pid\":" + std::to_string(cpid) +
+             ",\"tid\":" + std::to_string(cpid) + ",\"ppid\":" + std::to_string(pid) + "}");
       ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
       continue;
     }
@@ -534,17 +544,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
         const bool isErr = info.exit.is_error != 0;
 
         // Classify with portability guards (numbers differ per arch).
-        enum class Kind {
-          None,
-          Exec,
-          Open,
-          Unlink,
-          Rename,
-          Mkdir,
-          Connect,
-          Sendto,
-          Bind
-        };
+        enum class Kind { None, Exec, Open, Unlink, Rename, Mkdir, Connect, Sendto, Bind };
         Kind kind = Kind::None;
 #ifdef SYS_execve
         if (nr == static_cast<uint64_t>(SYS_execve)) {
@@ -628,204 +628,204 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
 #endif
 
         if (kind != Kind::None) {
-          const std::string ts = "\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" +
-                                 std::to_string(nowTms()) + ",\"pid\":" + std::to_string(pid) +
-                                 ",\"tid\":" + std::to_string(pid);
+          const std::string ts =
+              "\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
+              ",\"pid\":" + std::to_string(pid) + ",\"tid\":" + std::to_string(pid);
           switch (kind) {
-            case Kind::Exec: {
-              // execve(path, argv, envp) / execveat(dirfd, path, argv, envp, flags).
-              // Success: use the ENTRY-time cache (old image is gone now).
-              // Failure: re-read live (old image still mapped — most accurate).
-              const std::string cwd = readLink("/proc/" + std::to_string(pid) + "/cwd");
-              if (!isErr && pi.hasPendingExec) {
-                emitEv("{" + ts + ",\"ev\":\"proc.exec\",\"path\":" + jsonEscape(pi.pendingExecCanon) +
-                       ",\"argv\":[" + pi.pendingExecArgvJson + "],\"cwd\":" + jsonEscape(cwd) + "}");
-                pi.hasPendingExec = false;
-                break;
-              }
-              const bool isAt =
-#ifdef SYS_execveat
-                  (nr == static_cast<uint64_t>(SYS_execveat));
-#else
-                  false;
-#endif
-              const uint64_t pathAddr = isAt ? pi.entryArgs[1] : pi.entryArgs[0];
-              const uint64_t argvAddr = isAt ? pi.entryArgs[2] : pi.entryArgs[1];
-              const long dirfd = isAt ? static_cast<long>(pi.entryArgs[0]) : AT_FDCWD;
-              if (!isErr) {
-                // No entry cache (e.g. tracer attached mid-syscall): best effort.
-                std::string detail, canon, argvJson;
-                if (!readExecStrings(pid, dirfd, pathAddr, argvAddr, canon, argvJson, detail)) {
-                  emitDecodeError(pid, nr, "exec path: " + detail);
-                  break;
-                }
-                emitEv("{" + ts + ",\"ev\":\"proc.exec\",\"path\":" + jsonEscape(canon) +
-                       ",\"argv\":[" + argvJson + "],\"cwd\":" + jsonEscape(cwd) + "}");
-                break;
-              }
-              std::string path, detail;
-              if (!vmReadStr(pid, pathAddr, path, detail)) {
-                emitDecodeError(pid, nr, "exec path: " + detail);
-                break;
-              }
-              emitEv("{" + ts + ",\"ev\":\"proc.exec_failed\",\"path\":" + jsonEscape(path) +
-                     ",\"errno\":" + std::to_string(-rval) + "}");
+          case Kind::Exec: {
+            // execve(path, argv, envp) / execveat(dirfd, path, argv, envp, flags).
+            // Success: use the ENTRY-time cache (old image is gone now).
+            // Failure: re-read live (old image still mapped — most accurate).
+            const std::string cwd = readLink("/proc/" + std::to_string(pid) + "/cwd");
+            if (!isErr && pi.hasPendingExec) {
+              emitEv("{" + ts +
+                     ",\"ev\":\"proc.exec\",\"path\":" + jsonEscape(pi.pendingExecCanon) +
+                     ",\"argv\":[" + pi.pendingExecArgvJson + "],\"cwd\":" + jsonEscape(cwd) + "}");
               pi.hasPendingExec = false;
               break;
             }
-            case Kind::Open: {
-              // open(path, flags) / openat(dirfd, path, flags) / creat(path, mode)
-              bool isCreat = false;
-#ifdef SYS_creat
-              isCreat = (nr == static_cast<uint64_t>(SYS_creat));
+            const bool isAt =
+#ifdef SYS_execveat
+                (nr == static_cast<uint64_t>(SYS_execveat));
+#else
+                false;
 #endif
-              long dirfd = AT_FDCWD;
-              uint64_t pathAddr = pi.entryArgs[0];
-              uint64_t flagArg = 0;
-#ifdef SYS_openat
-              if (nr == static_cast<uint64_t>(SYS_openat)) {
-                dirfd = static_cast<long>(pi.entryArgs[0]);
-                pathAddr = pi.entryArgs[1];
-                flagArg = pi.entryArgs[2];
+            const uint64_t pathAddr = isAt ? pi.entryArgs[1] : pi.entryArgs[0];
+            const uint64_t argvAddr = isAt ? pi.entryArgs[2] : pi.entryArgs[1];
+            const long dirfd = isAt ? static_cast<long>(pi.entryArgs[0]) : AT_FDCWD;
+            if (!isErr) {
+              // No entry cache (e.g. tracer attached mid-syscall): best effort.
+              std::string detail, canon, argvJson;
+              if (!readExecStrings(pid, dirfd, pathAddr, argvAddr, canon, argvJson, detail)) {
+                emitDecodeError(pid, nr, "exec path: " + detail);
+                break;
               }
+              emitEv("{" + ts + ",\"ev\":\"proc.exec\",\"path\":" + jsonEscape(canon) +
+                     ",\"argv\":[" + argvJson + "],\"cwd\":" + jsonEscape(cwd) + "}");
+              break;
+            }
+            std::string path, detail;
+            if (!vmReadStr(pid, pathAddr, path, detail)) {
+              emitDecodeError(pid, nr, "exec path: " + detail);
+              break;
+            }
+            emitEv("{" + ts + ",\"ev\":\"proc.exec_failed\",\"path\":" + jsonEscape(path) +
+                   ",\"errno\":" + std::to_string(-rval) + "}");
+            pi.hasPendingExec = false;
+            break;
+          }
+          case Kind::Open: {
+            // open(path, flags) / openat(dirfd, path, flags) / creat(path, mode)
+            bool isCreat = false;
+#ifdef SYS_creat
+            isCreat = (nr == static_cast<uint64_t>(SYS_creat));
+#endif
+            long dirfd = AT_FDCWD;
+            uint64_t pathAddr = pi.entryArgs[0];
+            uint64_t flagArg = 0;
+#ifdef SYS_openat
+            if (nr == static_cast<uint64_t>(SYS_openat)) {
+              dirfd = static_cast<long>(pi.entryArgs[0]);
+              pathAddr = pi.entryArgs[1];
+              flagArg = pi.entryArgs[2];
+            }
 #endif
 #ifdef SYS_open
-              if (nr == static_cast<uint64_t>(SYS_open)) {
-                flagArg = pi.entryArgs[1];
-              }
+            if (nr == static_cast<uint64_t>(SYS_open)) {
+              flagArg = pi.entryArgs[1];
+            }
 #endif
-              if (isCreat) {
-                flagArg = O_WRONLY | O_CREAT | O_TRUNC;
-              }
-              std::string path, detail;
-              if (!vmReadStr(pid, pathAddr, path, detail)) {
-                emitDecodeError(pid, nr, "open path: " + detail);
-                break;
-              }
-              const std::string canon = canonicalPath(pid, dirfd, path);
-              const bool write =
-                  ((flagArg & O_WRONLY) != 0) || ((flagArg & O_RDWR) != 0) || isCreat;
-              const bool create = ((flagArg & O_CREAT) != 0) || isCreat;
-              const bool trunc = ((flagArg & O_TRUNC) != 0) || isCreat;
-              const bool okCall = !isErr;
-              if (!allOpens_ && !write) {
-                if (!okCall || isNoisyPath(canon)) {
-                  break;  // default filter: failed read-opens + noisy paths
-                }
-              }
-              const long fd = okCall ? static_cast<long>(rval) : -1;
-              emitEv("{" + ts + ",\"ev\":\"fs.open\",\"path\":" + jsonEscape(canon) +
-                     ",\"write\":" + (write ? "true" : "false") +
-                     ",\"create\":" + (create ? "true" : "false") +
-                     ",\"trunc\":" + (trunc ? "true" : "false") + ",\"fd\":" + std::to_string(fd) +
-                     "}");
+            if (isCreat) {
+              flagArg = O_WRONLY | O_CREAT | O_TRUNC;
+            }
+            std::string path, detail;
+            if (!vmReadStr(pid, pathAddr, path, detail)) {
+              emitDecodeError(pid, nr, "open path: " + detail);
               break;
             }
-            case Kind::Unlink: {
-              bool isAt = false;
+            const std::string canon = canonicalPath(pid, dirfd, path);
+            const bool write = ((flagArg & O_WRONLY) != 0) || ((flagArg & O_RDWR) != 0) || isCreat;
+            const bool create = ((flagArg & O_CREAT) != 0) || isCreat;
+            const bool trunc = ((flagArg & O_TRUNC) != 0) || isCreat;
+            const bool okCall = !isErr;
+            if (!allOpens_ && !write) {
+              if (!okCall || isNoisyPath(canon)) {
+                break; // default filter: failed read-opens + noisy paths
+              }
+            }
+            const long fd = okCall ? static_cast<long>(rval) : -1;
+            emitEv("{" + ts + ",\"ev\":\"fs.open\",\"path\":" + jsonEscape(canon) + ",\"write\":" +
+                   (write ? "true" : "false") + ",\"create\":" + (create ? "true" : "false") +
+                   ",\"trunc\":" + (trunc ? "true" : "false") + ",\"fd\":" + std::to_string(fd) +
+                   "}");
+            break;
+          }
+          case Kind::Unlink: {
+            bool isAt = false;
 #ifdef SYS_unlinkat
-              isAt = (nr == static_cast<uint64_t>(SYS_unlinkat));
+            isAt = (nr == static_cast<uint64_t>(SYS_unlinkat));
 #endif
-              long dirfd = AT_FDCWD;
-              uint64_t pathAddr = pi.entryArgs[0];
-              if (isAt) {
-                dirfd = static_cast<long>(pi.entryArgs[0]);
-                pathAddr = pi.entryArgs[1];
-              }
-              std::string path, detail;
-              if (!vmReadStr(pid, pathAddr, path, detail)) {
-                emitDecodeError(pid, nr, "unlink path: " + detail);
-                break;
-              }
-              emitEv("{" + ts + ",\"ev\":\"fs.unlink\",\"path\":" +
-                     jsonEscape(canonicalPath(pid, dirfd, path)) +
-                     ",\"ok\":" + (!isErr ? "true" : "false") + "}");
+            long dirfd = AT_FDCWD;
+            uint64_t pathAddr = pi.entryArgs[0];
+            if (isAt) {
+              dirfd = static_cast<long>(pi.entryArgs[0]);
+              pathAddr = pi.entryArgs[1];
+            }
+            std::string path, detail;
+            if (!vmReadStr(pid, pathAddr, path, detail)) {
+              emitDecodeError(pid, nr, "unlink path: " + detail);
               break;
             }
-            case Kind::Rename: {
-              bool twoDir = false;
+            emitEv("{" + ts +
+                   ",\"ev\":\"fs.unlink\",\"path\":" + jsonEscape(canonicalPath(pid, dirfd, path)) +
+                   ",\"ok\":" + (!isErr ? "true" : "false") + "}");
+            break;
+          }
+          case Kind::Rename: {
+            bool twoDir = false;
 #ifdef SYS_renameat
-              twoDir = (nr == static_cast<uint64_t>(SYS_renameat));
+            twoDir = (nr == static_cast<uint64_t>(SYS_renameat));
 #endif
 #ifdef SYS_renameat2
-              twoDir = twoDir || (nr == static_cast<uint64_t>(SYS_renameat2));
+            twoDir = twoDir || (nr == static_cast<uint64_t>(SYS_renameat2));
 #endif
-              long fromDir = AT_FDCWD, toDir = AT_FDCWD;
-              uint64_t fromAddr = pi.entryArgs[0], toAddr = pi.entryArgs[1];
-              if (twoDir) {
-                fromDir = static_cast<long>(pi.entryArgs[0]);
-                fromAddr = pi.entryArgs[1];
-                toDir = static_cast<long>(pi.entryArgs[2]);
-                toAddr = pi.entryArgs[3];
-              }
-              std::string from, to, d;
-              if (!vmReadStr(pid, fromAddr, from, d)) {
-                emitDecodeError(pid, nr, "rename from: " + d);
-                break;
-              }
-              if (!vmReadStr(pid, toAddr, to, d)) {
-                emitDecodeError(pid, nr, "rename to: " + d);
-                break;
-              }
-              emitEv("{" + ts + ",\"ev\":\"fs.rename\",\"from\":" +
-                     jsonEscape(canonicalPath(pid, fromDir, from)) + ",\"to\":" +
-                     jsonEscape(canonicalPath(pid, toDir, to)) +
-                     ",\"ok\":" + (!isErr ? "true" : "false") + "}");
+            long fromDir = AT_FDCWD, toDir = AT_FDCWD;
+            uint64_t fromAddr = pi.entryArgs[0], toAddr = pi.entryArgs[1];
+            if (twoDir) {
+              fromDir = static_cast<long>(pi.entryArgs[0]);
+              fromAddr = pi.entryArgs[1];
+              toDir = static_cast<long>(pi.entryArgs[2]);
+              toAddr = pi.entryArgs[3];
+            }
+            std::string from, to, d;
+            if (!vmReadStr(pid, fromAddr, from, d)) {
+              emitDecodeError(pid, nr, "rename from: " + d);
               break;
             }
-            case Kind::Mkdir: {
-              bool isAt = false;
+            if (!vmReadStr(pid, toAddr, to, d)) {
+              emitDecodeError(pid, nr, "rename to: " + d);
+              break;
+            }
+            emitEv("{" + ts + ",\"ev\":\"fs.rename\",\"from\":" +
+                   jsonEscape(canonicalPath(pid, fromDir, from)) +
+                   ",\"to\":" + jsonEscape(canonicalPath(pid, toDir, to)) +
+                   ",\"ok\":" + (!isErr ? "true" : "false") + "}");
+            break;
+          }
+          case Kind::Mkdir: {
+            bool isAt = false;
 #ifdef SYS_mkdirat
-              isAt = (nr == static_cast<uint64_t>(SYS_mkdirat));
+            isAt = (nr == static_cast<uint64_t>(SYS_mkdirat));
 #endif
-              long dirfd = AT_FDCWD;
-              uint64_t pathAddr = pi.entryArgs[0];
-              if (isAt) {
-                dirfd = static_cast<long>(pi.entryArgs[0]);
-                pathAddr = pi.entryArgs[1];
-              }
-              std::string path, detail;
-              if (!vmReadStr(pid, pathAddr, path, detail)) {
-                emitDecodeError(pid, nr, "mkdir path: " + detail);
-                break;
-              }
-              emitEv("{" + ts + ",\"ev\":\"fs.mkdir\",\"path\":" +
-                     jsonEscape(canonicalPath(pid, dirfd, path)) + "}");
+            long dirfd = AT_FDCWD;
+            uint64_t pathAddr = pi.entryArgs[0];
+            if (isAt) {
+              dirfd = static_cast<long>(pi.entryArgs[0]);
+              pathAddr = pi.entryArgs[1];
+            }
+            std::string path, detail;
+            if (!vmReadStr(pid, pathAddr, path, detail)) {
+              emitDecodeError(pid, nr, "mkdir path: " + detail);
               break;
             }
-            case Kind::Connect:
-            case Kind::Sendto:
-            case Kind::Bind: {
-              // connect(fd, addr, len) / sendto(fd, buf, len, flags, addr, len)
-              uint64_t addrArg = pi.entryArgs[1];
-              uint64_t lenArg = pi.entryArgs[2];
-              if (kind == Kind::Sendto) {
-                addrArg = pi.entryArgs[4];
-                lenArg = pi.entryArgs[5];
+            emitEv("{" + ts + ",\"ev\":\"fs.mkdir\",\"path\":" +
+                   jsonEscape(canonicalPath(pid, dirfd, path)) + "}");
+            break;
+          }
+          case Kind::Connect:
+          case Kind::Sendto:
+          case Kind::Bind: {
+            // connect(fd, addr, len) / sendto(fd, buf, len, flags, addr, len)
+            uint64_t addrArg = pi.entryArgs[1];
+            uint64_t lenArg = pi.entryArgs[2];
+            if (kind == Kind::Sendto) {
+              addrArg = pi.entryArgs[4];
+              lenArg = pi.entryArgs[5];
+            }
+            const char* evName = kind == Kind::Connect
+                                     ? "net.connect"
+                                     : (kind == Kind::Sendto ? "net.sendto" : "net.bind");
+            if (addrArg == 0 || lenArg == 0 || lenArg > 256) {
+              if (kind == Kind::Connect) {
+                emitEv("{" + ts + ",\"ev\":\"net.connect\",\"family\":\"unknown\"}");
               }
-              const char* evName =
-                  kind == Kind::Connect ? "net.connect" : (kind == Kind::Sendto ? "net.sendto" : "net.bind");
-              if (addrArg == 0 || lenArg == 0 || lenArg > 256) {
-                if (kind == Kind::Connect) {
-                  emitEv("{" + ts + ",\"ev\":\"net.connect\",\"family\":\"unknown\"}");
-                }
-                break;
-              }
-              char sbuf[256] = {};
-              const std::size_t wantLen = static_cast<std::size_t>(lenArg) > sizeof(sbuf)
-                                              ? sizeof(sbuf)
-                                              : static_cast<std::size_t>(lenArg);
-              if (vmRead(pid, addrArg, sbuf, wantLen) < 0) {
-                emitDecodeError(pid, nr, std::string("sockaddr: ") + errnoText(errno));
-                break;
-              }
-              const std::string formatted =
-                  util::formatSockaddr(sbuf, static_cast<unsigned long>(wantLen));
-              emitEv("{" + ts + ",\"ev\":\"" + evName + "\",\"addr\":" + jsonEscape(formatted) +
-                     ",\"ok\":" + (!isErr ? "true" : "false") + "}");
               break;
             }
-            case Kind::None: break;
+            char sbuf[256] = {};
+            const std::size_t wantLen = static_cast<std::size_t>(lenArg) > sizeof(sbuf)
+                                            ? sizeof(sbuf)
+                                            : static_cast<std::size_t>(lenArg);
+            if (vmRead(pid, addrArg, sbuf, wantLen) < 0) {
+              emitDecodeError(pid, nr, std::string("sockaddr: ") + errnoText(errno));
+              break;
+            }
+            const std::string formatted =
+                util::formatSockaddr(sbuf, static_cast<unsigned long>(wantLen));
+            emitEv("{" + ts + ",\"ev\":\"" + evName + "\",\"addr\":" + jsonEscape(formatted) +
+                   ",\"ok\":" + (!isErr ? "true" : "false") + "}");
+            break;
+          }
+          case Kind::None: break;
           }
         }
       }
@@ -858,6 +858,6 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   return finalSet ? finalCode : 0;
 }
 
-}  // namespace snowglobe::tracer
+} // namespace snowglobe::tracer
 
-#endif  // __linux__
+#endif // __linux__

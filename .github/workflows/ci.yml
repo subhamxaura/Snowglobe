@@ -17,13 +17,17 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build cmake g++ python3
+          sudo apt-get install -y ninja-build cmake g++ python3 python3-pip
+          # AGENTS.md mandates CMake >= 3.25; Ubuntu 22.04 apt ships 3.22,
+          # so ensure a new-enough Kitware cmake is first on PATH.
+          pip install --break-system-packages "cmake>=3.25,<5"
+          cmake --version
       - name: Configure (${{ matrix.preset }})
         run: cmake --preset ${{ matrix.preset }}
       - name: Build (${{ matrix.preset }})
         run: cmake --build --preset ${{ matrix.preset }}
       - name: Test (${{ matrix.preset }})
-        run: ctest --preset ${{ matrix.preset == 'debug' && 'debug' || 'asan-ubsan' }} --output-on-failure
+        run: ctest --preset ${{ matrix.preset }} --output-on-failure
 
   lint:
     runs-on: ubuntu-24.04

@@ -33,7 +33,7 @@ int main(void) {
   int st = 0;
   waitpid(c, &st, 0);
   printf("first stop sig=%d\n", WSTOPSIG(st));
-  ptrace(PTRACE_SETOPTIONS, c, 0, (void *)(PTRACE_O_TRACESYSGOOD | PTRACE_O_EXITKILL));
+  ptrace(PTRACE_SETOPTIONS, c, 0, (void*)(PTRACE_O_TRACESYSGOOD | PTRACE_O_EXITKILL));
   ptrace(PTRACE_SYSCALL, c, 0, 0);
   for (int i = 0; i < 8; i++) {
     const pid_t p = waitpid(c, &st, 0);
@@ -46,9 +46,8 @@ int main(void) {
       break;
     }
     struct Sci info = {0};
-    const long r = ptrace(PTRACE_GET_SYSCALL_INFO, c, (void *)sizeof(info), &info);
-    printf("stop sig=%d getinfo r=%ld op=%u nr=%llu\n", WSTOPSIG(st), r, info.op,
-           info.entry.nr);
+    const long r = ptrace(PTRACE_GET_SYSCALL_INFO, c, (void*)sizeof(info), &info);
+    printf("stop sig=%d getinfo r=%ld op=%u nr=%llu\n", WSTOPSIG(st), r, info.op, info.entry.nr);
     ptrace(PTRACE_SYSCALL, c, 0, 0);
   }
   return 0;

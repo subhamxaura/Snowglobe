@@ -1,38 +1,50 @@
-// probe/seccomp_notif.c — is seccomp user-notification (5.11+) usable?
-// Build: cc -o /tmp/probe_seccomp probe/seccomp_notif.c -lseccomp && /tmp/probe_seccomp
-// Prints "seccomp-notify: yes|no". Full notif-fd flow lands in Phase 4.
+// probe/seccomp_notif.c — is SECCOMP_RET_USER_NOTIF available? Ask the kernel.
+// Calls seccomp(SECCOMP_GET_ACTION_AVAIL, 0, &SECCOMP_RET_USER_NOTIF):
+// 0 means the action is available (USER_NOTIF needs kernel >= 5.11).
+// Build: cc -o /tmp/probe_seccomp probe/seccomp_notif.c && /tmp/probe_seccomp
+// (raw syscall(2); no libseccomp needed.)
+// Prints "seccomp-notify: yes" or "seccomp-notify: no: <reason>".
+// Mapping: 0 → available; EINVAL → action unknown (kernel < 5.11);
+// ENOSYS → no seccomp(2). Full notif-fd flow lands in Phase 4.
+#include <errno.h>
 #include <stdio.h>
-
-#ifdef __linux__
-#include <linux/audit.h>
-#include <linux/filter.h>
-#include <linux/seccomp.h>
+#include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+
+#ifndef SYS_seccomp
+#if defined(__x86_64__) || defined(__aarch64__)
+#define SYS_seccomp 317
+#endif
+#endif
+#ifndef SECCOMP_GET_ACTION_AVAIL
+#define SECCOMP_GET_ACTION_AVAIL 2
+#endif
+#ifndef SECCOMP_RET_USER_NOTIF
+#define SECCOMP_RET_USER_NOTIF 0x7fc00000U
 #endif
 
 int main(void) {
-#ifdef __linux__
-  // SECCOMP_USER_NOTIF_FLAG_CONTINUE is 5.11+; presence of the constant
-  // plus kernel >= 5.11 implies availability (runtime check in doctor).
-  FILE* f = fopen("/proc/version", "r");
-  char ver[256] = {};
-  if (f != NULL) {
-    if (fgets(ver, sizeof(ver), f) == NULL) {
-      ver[0] = '\0';
-    }
-    fclose(f);
-  }
-  int major = 0, minor = 0;
-  sscanf(ver, "Linux version %d.%d", &major, &minor);
-  if (major > 5 || (major == 5 && minor >= 11)) {
-    printf("seccomp-notify: yes (kernel %d.%d)\n", major, minor);
+#ifdef SYS_seccomp
+  unsigned int act = SECCOMP_RET_USER_NOTIF;
+  errno = 0;
+  const long r = syscall(SYS_seccomp, SECCOMP_GET_ACTION_AVAIL, 0, &act);
+  if (r == 0) {
+    printf("seccomp-notify: yes\n");
     return 0;
   }
-  printf("seccomp-notify: no (kernel %d.%d < 5.11)\n", major, minor);
+  const char* why = NULL;
+  if (errno == EINVAL) {
+    why = "SECCOMP_RET_USER_NOTIF unknown (EINVAL; kernel < 5.11)";
+  } else if (errno == ENOSYS) {
+    why = "no seccomp(2) (ENOSYS)";
+  } else {
+    why = strerror(errno);
+  }
+  printf("seccomp-notify: no: %s\n", why);
   return 1;
 #else
-  printf("seccomp-notify: no (non-Linux)\n");
+  printf("seccomp-notify: no: no SYS_seccomp for this arch\n");
   return 1;
 #endif
 }

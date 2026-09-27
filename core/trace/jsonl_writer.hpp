@@ -13,7 +13,7 @@ namespace snowglobe::trace {
 // returns the full line written (with seq, ts fields supplied by caller inside
 // the payload, plus chain fields appended).
 class JsonlWriter {
- public:
+public:
   explicit JsonlWriter(const std::string& path);
   ~JsonlWriter();
 
@@ -23,12 +23,20 @@ class JsonlWriter {
   // Appends chain fields and writes one line. Flushes per event (crash-safe).
   // Returns false + sets error() on I/O failure.
   bool writeEvent(uint64_t seq, const std::string& jsonWithoutChain);
-  bool ok() const { return ok_; }
-  const std::string& error() const { return error_; }
-  const std::string& lastHash() const { return lastHash_; }
-  uint64_t count() const { return count_; }
+  bool ok() const {
+    return ok_;
+  }
+  const std::string& error() const {
+    return error_;
+  }
+  const std::string& lastHash() const {
+    return lastHash_;
+  }
+  uint64_t count() const {
+    return count_;
+  }
 
- private:
+private:
   std::ofstream out_;
   std::string lastHash_;
   uint64_t count_ = 0;
@@ -36,4 +44,4 @@ class JsonlWriter {
   std::string error_;
 };
 
-}  // namespace snowglobe::trace
+} // namespace snowglobe::trace

@@ -32,3 +32,11 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   recompute test added a single-object tripwire.
 - `extern char** environ` moved to global scope (was namespace-scoped,
   undefined reference at link).
+- `snowglobe doctor` no longer guesses: Landlock ABI via
+  `landlock_create_ruleset(NULL, 0, LANDLOCK_CREATE_RULESET_VERSION)`,
+  seccomp-notif via `seccomp(SECCOMP_GET_ACTION_AVAIL, 0, &USER_NOTIF)`,
+  overlayfs via a real unshare+self-map+mount dance in a forked tester
+  (drops cleanly to nobody: empty groups + restored dumpability, else even
+  self map files EACCES); AppArmor userns knob reported in the userns row.
+- clang-format clean (`AllowShortCaseLabelsOnASingleLine: true` added);
+  CI test step simplified to `ctest --preset ${{ matrix.preset }}`.

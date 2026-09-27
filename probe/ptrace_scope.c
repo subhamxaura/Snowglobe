@@ -13,6 +13,7 @@ int main(void) {
     v = -1;
   }
   fclose(f);
-  printf("ptrace_scope: %d%s\n", v, v <= 1 ? " (tracing child processes OK)" : " (may need adjustment)");
+  printf("ptrace_scope: %d%s\n", v,
+         v <= 1 ? " (tracing child processes OK)" : " (may need adjustment)");
   return 0;
 }

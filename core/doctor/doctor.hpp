@@ -15,4 +15,4 @@ struct Capability {
 std::vector<Capability> checkAll();
 int printTable();
 
-}  // namespace snowglobe::doctor
+} // namespace snowglobe::doctor

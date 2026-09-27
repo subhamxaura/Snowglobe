@@ -10,4 +10,4 @@ namespace snowglobe::util {
 std::string sha256Hex(const std::string& data);
 std::string sha256Hex(const std::vector<uint8_t>& data);
 
-}  // namespace snowglobe::util
+} // namespace snowglobe::util

@@ -31,7 +31,7 @@ namespace fs = std::filesystem;
 using snowglobe::util::jsonEscape;
 
 // Global environ (declared here: <unistd.h> may not expose it under -Wpedantic).
-extern char** environ;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+extern char** environ; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 namespace {
 
@@ -189,12 +189,13 @@ int cmdRun(const RunOptions& o) {
   const std::string manifestPath = (runDir / "manifest.json").string();
   {
     std::ofstream m(manifestPath, std::ios::trunc);
-    m << "{\"schema\":" << SNOWGLOBE_SCHEMA_VERSION << ",\"snowglobe_version\":"
-      << jsonEscape(SNOWGLOBE_VERSION) << ",\"started\":" << jsonEscape(started)
-      << ",\"finished\":null,\"cmd\":[" << cmdJson << "],\"cwd\":" << jsonEscape(cwd)
-      << ",\"project\":" << jsonEscape(project) << ",\"kernel\":" << jsonEscape(kernelStr())
-      << ",\"tracer\":" << jsonEscape(tracerName) << ",\"isolate\":{},\"env_fingerprint\":"
-      << jsonEscape(envFingerprint()) << ",\"event_count\":0,\"last_hash\":\"0\",\"file_hashes\":{}}";
+    m << "{\"schema\":" << SNOWGLOBE_SCHEMA_VERSION
+      << ",\"snowglobe_version\":" << jsonEscape(SNOWGLOBE_VERSION)
+      << ",\"started\":" << jsonEscape(started) << ",\"finished\":null,\"cmd\":[" << cmdJson
+      << "],\"cwd\":" << jsonEscape(cwd) << ",\"project\":" << jsonEscape(project)
+      << ",\"kernel\":" << jsonEscape(kernelStr()) << ",\"tracer\":" << jsonEscape(tracerName)
+      << ",\"isolate\":{},\"env_fingerprint\":" << jsonEscape(envFingerprint())
+      << ",\"event_count\":0,\"last_hash\":\"0\",\"file_hashes\":{}}";
   }
 
   snowglobe::trace::JsonlWriter writer((runDir / "events.jsonl").string());
@@ -234,13 +235,14 @@ int cmdRun(const RunOptions& o) {
   const std::string finished = runTimestamp();
   {
     std::ofstream m(manifestPath, std::ios::trunc);
-    m << "{\"schema\":" << SNOWGLOBE_SCHEMA_VERSION << ",\"snowglobe_version\":"
-      << jsonEscape(SNOWGLOBE_VERSION) << ",\"started\":" << jsonEscape(started)
-      << ",\"finished\":" << jsonEscape(finished) << ",\"cmd\":[" << cmdJson << "],\"cwd\":"
-      << jsonEscape(cwd) << ",\"project\":" << jsonEscape(project) << ",\"kernel\":"
-      << jsonEscape(kernelStr()) << ",\"tracer\":" << jsonEscape(tracerName)
-      << ",\"isolate\":{},\"env_fingerprint\":" << jsonEscape(envFingerprint()) << ",\"event_count\":"
-      << writer.count() << ",\"last_hash\":" << jsonEscape(writer.lastHash())
+    m << "{\"schema\":" << SNOWGLOBE_SCHEMA_VERSION
+      << ",\"snowglobe_version\":" << jsonEscape(SNOWGLOBE_VERSION)
+      << ",\"started\":" << jsonEscape(started) << ",\"finished\":" << jsonEscape(finished)
+      << ",\"cmd\":[" << cmdJson << "],\"cwd\":" << jsonEscape(cwd)
+      << ",\"project\":" << jsonEscape(project) << ",\"kernel\":" << jsonEscape(kernelStr())
+      << ",\"tracer\":" << jsonEscape(tracerName)
+      << ",\"isolate\":{},\"env_fingerprint\":" << jsonEscape(envFingerprint())
+      << ",\"event_count\":" << writer.count() << ",\"last_hash\":" << jsonEscape(writer.lastHash())
       << ",\"file_hashes\":{}}";
   }
 
@@ -249,11 +251,12 @@ int cmdRun(const RunOptions& o) {
               << ",\"events\":" << writer.count() << "}\n";
   } else {
     std::cerr << "run: " << runDir.string() << "\n";
-    std::cerr << "exit: " << code << " | events: " << writer.count() << " | turns: 0 (no LLM proxy yet)\n";
-    std::cerr << "next: snowglobe diff " << runDir.string() << " | snowglobe view " << runDir.string()
-              << " | snowglobe replay " << runDir.string() << "\n";
+    std::cerr << "exit: " << code << " | events: " << writer.count()
+              << " | turns: 0 (no LLM proxy yet)\n";
+    std::cerr << "next: snowglobe diff " << runDir.string() << " | snowglobe view "
+              << runDir.string() << " | snowglobe replay " << runDir.string() << "\n";
   }
-  return code;  // propagate agent exit code (AGENTS.md §2)
+  return code; // propagate agent exit code (AGENTS.md §2)
 }
 
 int cmdLs(bool json) {
@@ -285,7 +288,7 @@ int cmdLs(bool json) {
   return 0;
 }
 
-}  // namespace
+} // namespace
 
 int main(int argc, char** argv) {
   std::vector<std::string> args(argv + 1, argv + argc);
@@ -301,8 +304,8 @@ int main(int argc, char** argv) {
   if (sub == "version") {
     const bool json = std::find(args.begin(), args.end(), "--json") != args.end();
     if (json) {
-      std::cout << "{\"version\":" << jsonEscape(SNOWGLOBE_VERSION) << ",\"schema\":"
-                << SNOWGLOBE_SCHEMA_VERSION << "}\n";
+      std::cout << "{\"version\":" << jsonEscape(SNOWGLOBE_VERSION)
+                << ",\"schema\":" << SNOWGLOBE_SCHEMA_VERSION << "}\n";
     } else {
       std::cerr << "snowglobe " << SNOWGLOBE_VERSION << "\n";
     }
@@ -362,7 +365,8 @@ int main(int argc, char** argv) {
       } else if (a.rfind("--", 0) == 0) {
         std::cerr << "note: ignoring unsupported Phase-0 flag " << a << "\n";
       } else {
-        std::cerr << "snowglobe run: unexpected argument '" << a << "' (did you mean -- <command>?)\n";
+        std::cerr << "snowglobe run: unexpected argument '" << a
+                  << "' (did you mean -- <command>?)\n";
         return kExUsage;
       }
     }
@@ -373,7 +377,8 @@ int main(int argc, char** argv) {
   }
   if (sub == "view" || sub == "diff" || sub == "apply" || sub == "replay" || sub == "compare" ||
       sub == "share") {
-    std::cerr << "snowglobe " << sub << ": not yet implemented (Phase " << (sub == "view" ? "1C" : "2+") << ")\n";
+    std::cerr << "snowglobe " << sub << ": not yet implemented (Phase "
+              << (sub == "view" ? "1C" : "2+") << ")\n";
     return kExUnavailable;
   }
   std::cerr << "unknown subcommand '" << sub << "'\n";
