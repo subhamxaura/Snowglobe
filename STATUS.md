@@ -1,11 +1,11 @@
 # STATUS — Snowglobe
-Updated: 2026-09-26  ·  Phase: 0 — Bootstrap: VERIFIED IN WSL2, PENDING PUSH/CI  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-27  ·  Phase: 0 — Bootstrap: DONE  ·  Next launch: v0.1.0, week 9
 
-> Gate update: tracer/doctor/run lifecycle executed for real on WSL2 Ubuntu
-> 24.04 (kernel 6.6.87.2-microsoft-standard-WSL2). Debug + asan-ubsan green,
-> doctor/run/kill tests pass (see "Verification" below). Phase 0 is done when
-> the push + CI run (all jobs green) is pasted in. No push yet: no remote, no
-> GitHub auth on this box — needs the human (repo URL + credentials).
+> Gate CLOSED 2026-09-27: CI run
+> https://github.com/subhamxaura/Snowglobe/actions/runs/36291693217 — all 6
+> jobs green (22.04 debug + asan-ubsan, 24.04 debug + asan-ubsan,
+> cross-aarch64, lint). The 22.04 pip failure was fixed via setup-python
+> (commit 3449f7d). Phase 1A kickoff is a separate session; do not start it here.
 
 ## Done (this phase)
 - Repo skeleton: CMake ≥3.25 + Ninja, presets (debug/release/asan-ubsan/tsan),
@@ -20,9 +20,7 @@ Updated: 2026-09-26  ·  Phase: 0 — Bootstrap: VERIFIED IN WSL2, PENDING PUSH/
   CHANGELOG.md
 
 ## In progress
-- CI green (22.04 red: `pip install --break-system-packages` unsupported by
-  pip 22.0.2; fixed via setup-python + modern pip, scoped to 22.04) — awaiting
-  pushed run result
+- None — Phase 0 DONE. Next: Phase 1A kickoff (separate session).
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
 - `cmake --preset debug && cmake --build --preset debug && ctest --preset debug`:
