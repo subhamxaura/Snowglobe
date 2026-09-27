@@ -21,6 +21,10 @@ STRIP = {"seq", "ts_us", "t_ms", "t_us", "prev_hash", "hash", "fd"}
 TMP_RE = re.compile(r"/tmp/tmp\.[A-Za-z0-9]+")
 PYVER_RE = re.compile(r"python3\.\d+")
 CPYTHON_RE = re.compile(r"cpython-3\d+")
+# Ephemeral loopback ports (bind :0, freed-port reconnects): stable per run,
+# meaningless across runs.
+V4PORT_RE = re.compile(r"127\.0\.0\.1:\d+")
+V6PORT_RE = re.compile(r"\[::1\]:\d+")
 
 
 def main():
@@ -83,6 +87,8 @@ def main():
             o = o.replace(repo, "$REPO")
             o = PYVER_RE.sub("python3.V", o)
             o = CPYTHON_RE.sub("cpython-3V", o)
+            o = V4PORT_RE.sub("127.0.0.1:PORT", o)
+            o = V6PORT_RE.sub("[::1]:PORT", o)
             return o
         return o
 

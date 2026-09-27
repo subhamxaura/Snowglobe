@@ -109,11 +109,15 @@ Rules: `run` propagates the agent's exit code; Snowglobe's own failures use 64+ 
 Common fields: `seq, ts_us (CLOCK_REALTIME), t_ms (monotonic since run start), ev, pid, tid, turn
 (nullable), tool_call (nullable), prev_hash, hash` where
 `hash = sha256(prev_hash || canonical_json(event minus prev_hash/hash))`.
+`pid` is the thread-group id, `tid` the kernel thread id (equal for
+single-threaded processes).
 
-Event kinds: `run.meta`, `proc.start{ppid,root?}`, `proc.exec{path,argv[],cwd}`,
-`proc.exec_failed{errno}`, `proc.exit{code|signal}`, `fs.open{path,write,create,trunc,fd}`,
-`fs.unlink{path,ok}`, `fs.rename{from,to,ok}`, `fs.mkdir{path}`, `net.connect{family,addr,port|path,
-host?,initiated}`, `net.dns{name,answers[]}` (proxy-only mode), `llm.request{id,provider,model,blob,bytes,
+Event kinds: `run.meta`, `proc.start{ppid,root?,thread?}`, `proc.exec{path,argv[],cwd}`,
+`proc.exec_failed{path,errno}`, `proc.exit{code,signal}` or `{vanished:true}` (exec-vaporised thread),
+`fs.open{path,write,create,trunc,fd,tmpfile?}`, `fs.unlink{path,ok}`, `fs.rmdir{path,ok}`,
+`fs.rename{from,to,ok}`, `fs.mkdir{path}`, `fs.symlink{target,path,ok}`, `fs.chmod{path,mode,ok}`
+(mode is an octal string), `net.connect{addr,ok,initiated}`, `net.sendto{addr,ok}`,
+`net.bind{addr,ok}`, `net.dns{name,answers[]}` (proxy-only mode), `llm.request{id,provider,model,blob,bytes,
 stream}`, `llm.chunk{id,i,ts_us}`, `llm.response{id,status,blob,bytes,ttfb_ms,total_ms,usage?,cost_usd?,
 tool_calls[]}`, `trace.decode_error{syscall,errno,reason}`, `trace.dropped{count,reason}`.
 

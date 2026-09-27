@@ -210,7 +210,19 @@ int cmdRun(const RunOptions& o) {
     return kExUnavailable;
   }
   uint64_t seq = 0;
-  tracer->setSink([&](const std::string& json) { return writer.writeEvent(seq++, json); });
+  bool writeWarned = false;
+  tracer->setSink([&](const std::string& json) {
+    if (writer.writeEvent(seq++, json)) {
+      return true;
+    }
+    // The trace stays prefix-consistent (counts match what was written),
+    // but say so loudly instead of losing events silently.
+    if (!writeWarned) {
+      writeWarned = true;
+      std::cerr << "snowglobe run: trace write failed (" << writer.error() << "); continuing\n";
+    }
+    return false;
+  });
   snowglobe::tracer::TraceOptions topts;
   topts.allOpens = o.allOpens;
   topts.tracer = tracerName;

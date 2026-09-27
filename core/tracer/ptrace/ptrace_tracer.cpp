@@ -31,7 +31,6 @@
 #include <cstring>
 #include <fstream>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -116,9 +115,9 @@ struct SgPtraceSyscallInfo {
 namespace snowglobe::tracer {
 namespace {
 
-std::atomic<bool> gStop{false};
+std::atomic<int> gStop{0};
 void onSignal(int) {
-  gStop.store(true);
+  gStop.fetch_add(1);
 }
 
 uint64_t clockUs(clockid_t clk) {
@@ -276,6 +275,7 @@ struct ProcInfo {
   // after a successful exec, so exit-time reads fault with EFAULT).
   bool hasPendingExec = false;
   uint64_t pendingExecNr = 0;
+  bool pendingExecTrunc = false;
   std::string pendingExecCanon;
   std::string pendingExecArgvJson;
 };
@@ -321,7 +321,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   sigemptyset(&sa.sa_mask);
   sigaction(SIGINT, &sa, &oldInt);
   sigaction(SIGTERM, &sa, &oldTerm);
-  gStop.store(false);
+  gStop.store(0);
 
   // Build argv for execvp.
   std::vector<char*> cargv;
@@ -358,8 +358,6 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   procs[child].tgid = child; // root starts single-threaded
   int finalCode = 0;
   bool finalSet = false;
-  uint64_t evSeqHint = 0;
-  (void)evSeqHint;
 
   // run.meta
   {
@@ -408,8 +406,9 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   };
 
   auto emitDecodeError = [&](pid_t tid, uint64_t nr, const std::string& reason) {
+    const int e = errno; // capture first: tsIds() below must not clobber it
     emitEv("{" + tsIds(tid) + ",\"ev\":\"trace.decode_error\",\"syscall\":" + std::to_string(nr) +
-           ",\"errno\":" + std::to_string(errno) + ",\"reason\":" + jsonEscape(reason) + "}");
+           ",\"errno\":" + std::to_string(e) + ",\"reason\":" + jsonEscape(reason) + "}");
   };
 
   auto canonicalPath = [&](pid_t pid, long dirfd, const std::string& raw) -> std::string {
@@ -432,27 +431,44 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
 
   // Read an execve/execveat path+argv from the tracee *now* (valid only while
   // the calling image is still mapped — i.e. at ENTRY, or at EXIT on failure).
+  // truncatedOut is set when argv was cut (64-entry cap or mid-array read
+  // failure): callers report truncated:true rather than dropping silently.
   auto readExecStrings = [&](pid_t tpid, long dirfd, uint64_t pathAddr, uint64_t argvAddr,
                              std::string& canonOut, std::string& argvJsonOut,
-                             std::string& detailOut) -> bool {
+                             std::string& detailOut, bool& truncatedOut) -> bool {
     std::string path;
     if (!vmReadStr(tpid, pathAddr, path, detailOut)) {
       return false;
     }
     std::string argvJson;
+    bool done = false;
+    int got = 0;
     for (int i = 0; i < 64; ++i) {
       uint64_t p = 0;
-      if (!vmReadU64(tpid, argvAddr + static_cast<uint64_t>(i) * 8, p) || p == 0) {
+      if (!vmReadU64(tpid, argvAddr + static_cast<uint64_t>(i) * 8, p)) {
+        break; // unreadable pointer slot: truncated
+      }
+      if (p == 0) {
+        done = true; // argv terminator: complete
         break;
       }
       std::string s, d2;
       if (!vmReadStr(tpid, p, s, d2)) {
-        break;
+        break; // unreadable string: truncated, keep the prefix
       }
       if (!argvJson.empty()) {
         argvJson += ",";
       }
       argvJson += jsonEscape(s);
+      ++got;
+    }
+    truncatedOut = !done;
+    if (truncatedOut && got == 64) {
+      // Boundary check: exactly 64 args plus terminator is complete, not cut.
+      uint64_t p = 1;
+      if (vmReadU64(tpid, argvAddr + 64 * 8, p) && p == 0) {
+        truncatedOut = false;
+      }
     }
     canonOut = canonicalPath(tpid, dirfd, path);
     argvJsonOut = argvJson;
@@ -460,9 +476,11 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   };
 
   while (!dead) {
-    if (gStop.load()) {
-      gStop.store(false); // consume; a second SIGINT/SIGTERM re-arms
-      ++stopCount;
+    // Consume pending signals as a count: two rapid SIGINTs must not
+    // coalesce into one (second Ctrl-C means SIGKILL).
+    const int pending = gStop.exchange(0);
+    if (pending > 0) {
+      stopCount += pending;
       if (stopCount == 1) {
         // First interrupt: SIGTERM the root only, then keep tracing until
         // the tree drains. Exits (incl. signal deaths) are recorded normally
@@ -512,6 +530,20 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
     if (WIFEXITED(status) || WIFSIGNALED(status)) {
       const int code = WIFEXITED(status) ? WEXITSTATUS(status) : 128 + WTERMSIG(status);
       const int sig = WIFSIGNALED(status) ? WTERMSIG(status) : 0;
+      if (firstStop && pid == child) {
+        // The tracee always stops at SIGSTOP before exec: dying first means
+        // either PTRACE_TRACEME failed (already under another tracer — a
+        // supervisor failure, never the agent's exit code) or an external
+        // SIGKILL/SIGTERM in the microsecond window (a genuine death).
+        firstStop = false;
+        if (WIFEXITED(status)) {
+          procs.erase(pid);
+          error_ = "tracee exited before first stop (already traced elsewhere?)";
+          finalCode = kExitSoftware;
+          finalSet = true;
+          break;
+        }
+      }
       emitEv("{" + tsIds(pid) + ",\"ev\":\"proc.exit\",\"code\":" + std::to_string(code) +
              ",\"signal\":" + std::to_string(sig) + "}");
       // exec-failed detection: first process exiting 127 without a prior exec event
@@ -582,6 +614,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
           if (g.hasPendingExec) {
             ex.hasPendingExec = true;
             ex.pendingExecNr = g.pendingExecNr;
+            ex.pendingExecTrunc = g.pendingExecTrunc;
             ex.pendingExecCanon = g.pendingExecCanon;
             ex.pendingExecArgvJson = g.pendingExecArgvJson;
             ex.inSyscall = true;
@@ -649,8 +682,9 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
           const uint64_t argvAddr = isAt ? info.entry.args[2] : info.entry.args[1];
           const long dirfd = isAt ? static_cast<long>(info.entry.args[0]) : AT_FDCWD;
           std::string detail;
+          pi.pendingExecTrunc = false;
           if (readExecStrings(pid, dirfd, pathAddr, argvAddr, pi.pendingExecCanon,
-                              pi.pendingExecArgvJson, detail)) {
+                              pi.pendingExecArgvJson, detail, pi.pendingExecTrunc)) {
             pi.hasPendingExec = true;
             pi.pendingExecNr = enr;
           }
@@ -799,8 +833,10 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
             if (!isErr && pi.hasPendingExec) {
               emitEv("{" + ts +
                      ",\"ev\":\"proc.exec\",\"path\":" + jsonEscape(pi.pendingExecCanon) +
-                     ",\"argv\":[" + pi.pendingExecArgvJson + "],\"cwd\":" + jsonEscape(cwd) + "}");
+                     ",\"argv\":[" + pi.pendingExecArgvJson + "],\"cwd\":" + jsonEscape(cwd) +
+                     (pi.pendingExecTrunc ? ",\"truncated\":true}" : "}"));
               pi.hasPendingExec = false;
+              pi.pendingExecTrunc = false;
               break;
             }
             const bool isAt =
@@ -815,12 +851,15 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
             if (!isErr) {
               // No entry cache (e.g. tracer attached mid-syscall): best effort.
               std::string detail, canon, argvJson;
-              if (!readExecStrings(pid, dirfd, pathAddr, argvAddr, canon, argvJson, detail)) {
+              bool truncated = false;
+              if (!readExecStrings(pid, dirfd, pathAddr, argvAddr, canon, argvJson, detail,
+                                   truncated)) {
                 emitDecodeError(pid, nr, "exec path: " + detail);
                 break;
               }
               emitEv("{" + ts + ",\"ev\":\"proc.exec\",\"path\":" + jsonEscape(canon) +
-                     ",\"argv\":[" + argvJson + "],\"cwd\":" + jsonEscape(cwd) + "}");
+                     ",\"argv\":[" + argvJson + "],\"cwd\":" + jsonEscape(cwd) +
+                     (truncated ? ",\"truncated\":true}" : "}"));
               break;
             }
             std::string path, detail;
@@ -1001,7 +1040,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
           }
           case Kind::Chmod: {
             // chmod(path, mode) / fchmodat(dirfd, path, mode) / fchmod(fd, mode).
-            // mode is emitted as a JSON number (raw mode bits; readers show octal).
+            // mode is an octal string ("0755"), not a number.
             bool isFd = false;
 #ifdef SYS_fchmod
             isFd = (nr == static_cast<uint64_t>(SYS_fchmod));
@@ -1058,10 +1097,22 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
             const char* evName = kind == Kind::Connect
                                      ? "net.connect"
                                      : (kind == Kind::Sendto ? "net.sendto" : "net.bind");
-            if (addrArg == 0 || lenArg == 0 || lenArg > 256) {
+            if (addrArg == 0 || lenArg == 0) {
               if (kind == Kind::Connect) {
-                emitEv("{" + ts + ",\"ev\":\"net.connect\",\"family\":\"unknown\"}");
+                bool initiated = !isErr;
+#ifdef EINPROGRESS
+                if (isErr && rval == -EINPROGRESS) {
+                  initiated = true;
+                }
+#endif
+                emitEv("{" + ts + ",\"ev\":\"net.connect\",\"family\":\"unknown\"" +
+                       (initiated ? ",\"initiated\":true}" : ",\"initiated\":false}"));
               }
+              break;
+            }
+            if (lenArg > 256) {
+              // No real sockaddr is this large; report instead of dropping.
+              emitDecodeError(pid, nr, "sockaddr too long");
               break;
             }
             char sbuf[256] = {};
@@ -1074,8 +1125,21 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
             }
             const std::string formatted =
                 util::formatSockaddr(sbuf, static_cast<unsigned long>(wantLen));
+            // initiated: the kernel took the connection attempt (success or
+            // EINPROGRESS for non-blocking). Immediate failures (refused,
+            // unreachable) never initiated.
+            bool initiated = !isErr;
+#ifdef EINPROGRESS
+            if (isErr && rval == -EINPROGRESS) {
+              initiated = true;
+            }
+#endif
             emitEv("{" + ts + ",\"ev\":\"" + evName + "\",\"addr\":" + jsonEscape(formatted) +
-                   ",\"ok\":" + (!isErr ? "true" : "false") + "}");
+                   ",\"ok\":" + (!isErr ? "true" : "false") +
+                   (kind == Kind::Connect
+                        ? (initiated ? ",\"initiated\":true" : ",\"initiated\":false")
+                        : "") +
+                   "}");
             break;
           }
           case Kind::None: break;
@@ -1108,7 +1172,10 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
 
   sigaction(SIGINT, &oldInt, nullptr);
   sigaction(SIGTERM, &oldTerm, nullptr);
-  if (!error_.empty() && error_ == "interrupted") {
+  if (!error_.empty()) {
+    // Supervisor failure (interrupted, waitpid error, tracee gone before
+    // first stop): loud EX_SOFTWARE with a partial manifest, never a fake
+    // agent exit code. The CLI prints error_ in this path.
     return -kExitSoftware;
   }
   if (!finalSet) {

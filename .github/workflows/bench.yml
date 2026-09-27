@@ -1,0 +1,36 @@
+name: bench
+on:
+  push:
+    branches: [main]
+    paths:
+      - bench/**
+      - core/tracer/**
+      - test/fixtures/**
+  workflow_dispatch:
+
+# Records Phase 4 "before" numbers on real CI hardware. Runs only when
+# bench/tracer/fixture code changes (paths filter above), never per push.
+jobs:
+  ptrace-baseline:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake g++ git python3
+      - name: Configure (release)
+        run: cmake --preset release
+      - name: Build (release)
+        run: cmake --build --preset release
+      - name: Run baseline
+        run: bench/ptrace_baseline.sh ./build/release/core/snowglobe bench/results/ptrace-baseline-ci-24.04.md "$GITHUB_WORKSPACE"
+      - name: Commit CI baseline separately
+        run: |
+          git config user.name "snowglobe-bench[bot]"
+          git config user.email "snowglobe-bench[bot]@users.noreply.github.com"
+          git add bench/results/ptrace-baseline-ci-24.04.md
+          git commit -m "bench: CI 24.04 baseline [skip ci]" || echo "no changes to commit"
+          git push

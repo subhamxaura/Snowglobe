@@ -13,9 +13,9 @@
 {"argv": ["$HELPERS/sg_sockets", "$TMP"], "cwd": "$REPO/test/fixtures/scenarios/unix_sockets", "ev": "proc.exec", "path": "$HELPERS/sg_sockets", "pid": "P4", "tid": "T3"}
 {"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
 {"addr": "unix:$TMP/sock", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "unix:$TMP/sock", "ev": "net.connect", "ok": true, "pid": "P4", "tid": "T3"}
+{"addr": "unix:$TMP/sock", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P4", "tid": "T3"}
 {"addr": "unix:", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "unix:", "ev": "net.connect", "ok": true, "pid": "P4", "tid": "T3"}
+{"addr": "unix:", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P4", "tid": "T3"}
 {"addr": "unix:$TMP/dg-a", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
 {"addr": "unix:$TMP/dg-b", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
 {"addr": "unix:$TMP/dg-b", "ev": "net.sendto", "ok": true, "pid": "P4", "tid": "T3"}

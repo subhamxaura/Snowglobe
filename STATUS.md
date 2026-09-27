@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-09-27  ·  Phase: 1A Block 2 — DONE  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-27  ·  Phase: 1A Block 3 — IN PROGRESS (local green, CI pending)  ·  Next launch: v0.1.0, week 9
 
 > Block 2 gate closed: CI run
 > https://github.com/subhamxaura/Snowglobe/actions/runs/36301575125 — all 6
@@ -24,8 +24,8 @@ Updated: 2026-09-27  ·  Phase: 1A Block 2 — DONE  ·  Next launch: v0.1.0, we
   CHANGELOG.md
 
 ## In progress
-- None — Block 2 DONE. Next: Block 3 (baseline numbers, docs, real
-  recordings), separate session. Do not start Block 3 here.
+- Block 3: CI poll for Block 3 push (incl. new tcp_loopback + bench jobs),
+  then Phase 1A DONE + tag v0.1.0-alpha.1. Do not start Phase 1B here.
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
 - `cmake --preset debug && cmake --build --preset debug && ctest --preset debug`:
@@ -78,6 +78,23 @@ Updated: 2026-09-27  ·  Phase: 1A Block 2 — DONE  ·  Next launch: v0.1.0, we
 - Env notes: drvfs denies chmod/utime to non-root (cmake configure must run
   as root; all test execution as uid 1000); /tmp is cleaned across WSL
   reboots (persistent artifacts live outside /tmp).
+
+## Block 3 verification (all as uid 1000 in ~/src/snowglobe ext4 unless noted)
+- tcp_loopback (23 events): binds + blocking connects initiated:true;
+  non-blocking to 192.0.2.1:80 initiated:true/ok:false (EINPROGRESS proven);
+  closed-port connect initiated:false/ok:false; deterministic across reruns.
+- Bench: forkexec-300 13.79×, python-import 4.38×, git-status 11.75×,
+  find-usrlib 2.63× (release, WSL2, medians of 5). CI bench job commits
+  its own md separately.
+- Realistic fixture: `pip download requests`, 1025 normalised events,
+  0 decode_error, key-material grep 0. No API keys on the box (WSL, tester,
+  Windows all checked); "record real-agent fixtures" issue left for human.
+- D1 self-review of core/tracer/ptrace (builder==reviewer here; re-run with
+  a second model per Part E): 2 High (argv truncation → truncated:true;
+  first-stop death → loud error) + 6 Medium fixed, verified (nested tracer
+  errors LOUD with message; 100-arg exec flagged truncated:true).
+- ctest debug + asan-ubsan 15/15 (incl. tcp_loopback), zero sanitizer
+  findings; clang-format clean.
 
 ## Next up (ordered)
 1. Phase 1A — tracer hardening (6 golden trees, kill-9 no-orphans, bench publish)

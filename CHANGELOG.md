@@ -44,6 +44,30 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   (22.04 ships pip 22.0.2, which predates the flag); 22.04 gets Python via
   setup-python and the Kitware cmake wheel through its modern pip.
 
+### Added (Phase 1A Block 3)
+- `tcp_loopback` scenario (C helper: 127.0.0.1:0 + ::1:0 binds, blocking
+  connects, non-blocking connect asserting EINPROGRESS, closed-port connect
+  asserting ECONNREFUSED); `net.connect` carries `initiated` (true on
+  success/EINPROGRESS, false on refused/unreachable).
+- `bench/ptrace_baseline.sh` (fork/exec ×300, python import, git status,
+  find /usr/lib; 5 runs, medians, traced vs untraced) + local
+  `bench/results/ptrace-baseline.md` + CI `bench` workflow committing
+  `ptrace-baseline-ci-24.04.md` separately.
+- `docs/limitations.md` (setuid, one-tracer, io_uring, ASan tracees, TOCTOU,
+  overhead, interpreter noise); trace-format + AGENTS §3 synced.
+- Realistic fixture `test/fixtures/real/pip-download-requests/` (1171
+  normalised events, 0 decode errors; no API keys on the box, so the
+  real-agent recording is a human-filed issue).
+
+### Fixed (Phase 1A Block 3, D1 adversarial review of core/tracer/ptrace)
+- Silent argv truncation now emits `truncated:true` (64-entry cap).
+- Tracee death before first stop: external SIGKILL finalises normally;
+  TRACEME failure (nested tracer) errors loudly instead of faking agent-127.
+- Dead code removed (`evSeqHint`, `<set>`); signal coalescing fixed (atomic
+  counter); errno captured before envelope build; oversized sockaddr emits
+  decode_error; CLI warns once on trace-write failure; stale chmod comment
+  corrected; supervisor failures return loud EX_SOFTWARE, never fake codes.
+
 ### Added (Phase 1A Block 2)
 - Golden fixture suite: `test/fixtures/scenarios/` (fork_storm, threads,
   exec_chain, deep_dirs, unix_sockets, failing_exec) with `run.sh` +

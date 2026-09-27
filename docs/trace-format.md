@@ -1,8 +1,8 @@
 # Trace format — schema v0 (source of truth)
 
-Status: Phase 1A Block 1 implementation (schema still 0: all changes are
-additive optional fields). Any change bumps `schema` in manifest.json and
-ships a migration note here (AGENTS.md §3).
+Status: Phase 1A implementation (schema still 0: all changes are additive
+optional fields). Any change bumps `schema` in manifest.json and ships a
+migration note here (AGENTS.md §3).
 
 ## Layout
 
@@ -38,7 +38,7 @@ own tid. Threads that vanish in an exec without an exit stop get
 |---|---|
 | `run.meta` | `cmd[], cwd` |
 | `proc.start` | `ppid, root?, thread?` |
-| `proc.exec` | `path, argv[], cwd` |
+| `proc.exec` | `path, argv[], cwd` — plus `truncated:true` when argv was cut (64-entry cap) |
 | `proc.exec_failed` | `path, errno` |
 | `proc.exit` | `code, signal` — or `vanished:true` (exec-vaporised thread) |
 | `fs.open` | `path, write, create, trunc, fd` — plus `tmpfile:true` for O_TMPFILE (path = directory) |
@@ -48,7 +48,7 @@ own tid. Threads that vanish in an exec without an exit stop get
 | `fs.mkdir` | `path` |
 | `fs.symlink` | `target, path, ok` |
 | `fs.chmod` | `path, mode, ok` (mode = octal string, e.g. `"0755"`) |
-| `net.connect` | `addr (formatted), ok` |
+| `net.connect` | `addr (formatted), ok, initiated` (initiated:false = refused/unreachable; true also on -EINPROGRESS) |
 | `net.sendto` | `addr, ok` (UDP/DNS visibility) |
 | `net.bind` | `addr, ok` |
 | `trace.decode_error` | `syscall, errno, reason` |

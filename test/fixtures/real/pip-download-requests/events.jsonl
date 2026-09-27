@@ -1,0 +1,1025 @@
+{"cmd": ["python3", "-m", "pip", "download", "requests", "-d", "$TMP"], "cwd": "$REPO", "ev": "run.meta", "pid": "P1", "tid": "T1"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P2", "root": true, "tid": "T1"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/sbin/python3", "pid": "P1", "tid": "T1"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/bin/python3", "pid": "P1", "tid": "T1"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/sbin/python3", "pid": "P1", "tid": "T1"}
+{"argv": ["python3", "-m", "pip", "download", "requests", "-d", "$TMP"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/python3", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libm.so.6", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libz.so.1", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libexpat.so.1", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/localtime", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/encodings/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/encodings/__pycache__/aliases.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/encodings/__pycache__/utf_8.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/distutils-precedence.pth", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/_distutils_hack/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/zope.interface-6.1-nspkg.pth", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/types.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/warnings.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/__pycache__/_abc.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/threading.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/functools.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/collections/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/keyword.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/operator.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/reprlib.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/_weakrefset.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/sitecustomize.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/__pycache__/apport_python_hook.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/typing.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/collections/__pycache__/abc.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/copyreg.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/contextlib.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/re/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/enum.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/re/__pycache__/_compiler.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/re/__pycache__/_parser.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/re/__pycache__/_constants.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/re/__pycache__/_casefix.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/__pycache__/__main__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/_log.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/logging/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/traceback.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/linecache.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/tokenize.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/token.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/textwrap.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/weakref.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/string.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/main.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/locale.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/autocompletion.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/optparse.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/gettext.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/main_parser.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/subprocess.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/signal.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/selectors.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/__pycache__/build_env.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/pathlib.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/fnmatch.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/urllib/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/urllib/__pycache__/parse.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/ipaddress.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/__future__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/glob.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/certifi/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/certifi/__pycache__/core.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/resources/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/resources/__pycache__/_common.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/tempfile.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/shutil.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/bz2.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/_compression.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/_bz2.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libbz2.so.1.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/lzma.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/_lzma.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/liblzma.so.5", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/random.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/bisect.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/inspect.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/ast.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/dis.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/opcode.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/resources/__pycache__/abc.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/resources/__pycache__/_adapters.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/resources/__pycache__/_legacy.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/__about__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/requirements.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/util.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/exceptions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/unicode.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/actions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/core.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/copy.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/results.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/pprint.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/dataclasses.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/core.py", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/helpers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/html/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/html/__pycache__/entities.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/testing.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyparsing/__pycache__/common.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/datetime.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/markers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/platform.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/specifiers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/utils.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/tags.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/sysconfig.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/_manylinux.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/struct.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/_musllinux.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/version.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/__pycache__/_structures.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/packaging/markers.py", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/spinners.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/compat.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/logging.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/logging/__pycache__/handlers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/socket.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/pickle.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/_compat_pickle.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/queue.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/heapq.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/_queue.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_extension.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/console.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/getpass.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/termios.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_null_file.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/errors.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/themes.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/default_styles.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/style.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/color.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/colorsys.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_palettes.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/palette.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/color_triplet.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/repr.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/terminal_theme.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/theme.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/configparser.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_emoji_replace.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_emoji_codes.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_export_format.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_fileno.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_log_render.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/text.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_loop.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_pick.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_wrap.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/cells.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_cell_widths.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/align.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/constrain.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/jupyter.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/segment.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/measure.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/protocol.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/containers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/control.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/emoji.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/highlighter.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/markup.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/pager.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/pretty.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/converters.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/_compat.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/_make.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/_config.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/setters.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/exceptions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/filters.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/validators.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/_cmp.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/_funcs.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/_next_gen.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attr/__pycache__/_version_info.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/abc.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/region.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/scope.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/panel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/box.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/padding.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/table.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_ratio.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/fractions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/decimal.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/_decimal.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/numbers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/screen.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/styled.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/logging.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/traceback.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/lexers/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/lexers/__pycache__/_mapping.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/__pycache__/modeline.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/__pycache__/plugin.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/__pycache__/util.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/__pycache__/token.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/columns.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/syntax.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/__pycache__/lexer.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/__pycache__/filter.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/filters/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/__pycache__/regexopt.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/__pycache__/style.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pygments/styles/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/deprecation.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/misc.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/hashlib.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/_hashlib.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libcrypto.so.3", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/ssl/openssl.cnf", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyproject_hooks/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyproject_hooks/__pycache__/_impl.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/json/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/json/__pycache__/decoder.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/json/__pycache__/scanner.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/_json.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/json/__pycache__/encoder.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pyproject_hooks/_in_process/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/concurrent/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/concurrent/futures/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/concurrent/futures/__pycache__/_base.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/retry.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/nap.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/stop.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/_utils.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/wait.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/before.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/after.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/before_sleep.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tenacity/__pycache__/_asyncio.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/base_events.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/ssl.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/_ssl.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libssl.so.3", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/base64.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/constants.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/coroutines.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/events.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/contextvars.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/_contextvars.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/format_helpers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/_asyncio.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/base_futures.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/exceptions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/base_tasks.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/futures.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/protocols.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/sslproto.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/transports.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/log.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/staggered.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/locks.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/mixins.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/tasks.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/timeouts.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/trsock.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/runners.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/queues.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/streams.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/subprocess.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/taskgroups.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/threads.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/unix_events.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/base_subprocess.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/asyncio/__pycache__/selector_events.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/__pycache__/exceptions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/exceptions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/packages/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/packages/__pycache__/six.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/http/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/http/__pycache__/client.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/parser.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/feedparser.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/errors.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/_policybase.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/header.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/quoprimime.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/base64mime.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/charset.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/encoders.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/quopri.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/utils.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/_parseaddr.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/calendar.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/message.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/_encoded_words.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/email/__pycache__/iterators.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/_version.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/connectionpool.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/_collections.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/connection.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/connection.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/contrib/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/contrib/__pycache__/_appengine_environ.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/wait.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"addr": "[::1]:PORT", "ev": "net.bind", "ok": true, "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/request.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/response.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/retry.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/ssl_.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/hmac.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/url.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/ssltransport.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/timeout.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/proxy.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/ssl_match_hostname.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/request.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/filepost.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/fields.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/mimetypes.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/response.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/util/__pycache__/queue.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/__pycache__/poolmanager.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/exceptions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/compat.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/charsetgroupprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/charsetprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/enums.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/resultdict.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/universaldetector.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/escprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/codingstatemachine.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/codingstatemachinedict.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/escsm.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/latin1prober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/macromanprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/mbcsgroupprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/big5prober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/chardistribution.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/big5freq.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/euckrfreq.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/euctwfreq.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/gb2312freq.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/jisfreq.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/johabfreq.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/mbcharsetprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/mbcssm.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/cp949prober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/eucjpprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/jpcntx.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/euckrprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/euctwprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/gb2312prober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/johabprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/sjisprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/utf8prober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/sbcsgroupprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/hebrewprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/sbcharsetprober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/langbulgarianmodel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/langgreekmodel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/langhebrewmodel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/langrussianmodel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/langthaimodel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/langturkishmodel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/utf1632prober.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/chardet/__pycache__/version.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/http/__pycache__/cookiejar.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/urllib/__pycache__/request.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/urllib/__pycache__/error.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/urllib/__pycache__/response.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/http/__pycache__/cookies.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/packages.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/idna/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/idna/__pycache__/package_data.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/idna/__pycache__/core.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/idna/__pycache__/idnadata.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/idna/__pycache__/intranges.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/utils.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/zipfile/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/zipfile/_path/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/zipfile/_path/__pycache__/glob.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/certs.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/__version__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/_internal_utils.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/cookies.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/structures.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/api.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/sessions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/adapters.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/auth.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/models.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/encodings/__pycache__/idna.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/stringprep.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/hooks.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/requests/__pycache__/status_codes.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/urllib3/contrib/__pycache__/socks.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/locations/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/scheme.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/virtualenv.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/locations/__pycache__/_sysconfig.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/locations/__pycache__/base.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/appdirs.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/platformdirs/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/platformdirs/__pycache__/api.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/platformdirs/__pycache__/version.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/platformdirs/__pycache__/unix.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/_sysconfigdata__x86_64-linux-gnu.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/metadata/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/metadata/__pycache__/base.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/csv.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/direct_url.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/egg_link.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/urls.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/metadata/__pycache__/_json.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/subprocess.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/shlex.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/temp_dir.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/cmdoptions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/parser.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/status_codes.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/__pycache__/configuration.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/format_control.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/index.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/target_python.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/compatibility_tags.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/hashes.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/commands/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/base_command.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/logging/__pycache__/config.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/socketserver.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/command_context.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/filesystem.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/commands/__pycache__/download.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/req_command.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/__pycache__/cache.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/link.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/filetypes.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/models.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/wheel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/index/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/index/__pycache__/collector.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/html/__pycache__/parser.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/_markupbase.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/search_scope.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/network/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/network/__pycache__/session.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/__pycache__/adapter.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/__pycache__/cache.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/__pycache__/controller.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/__pycache__/serialize.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/msgpack/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/msgpack/__pycache__/exceptions.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/msgpack/__pycache__/ext.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/msgpack/__pycache__/fallback.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/__pycache__/filewrapper.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload/mmap.cpython-3V-x86_64-linux-gnu.so", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/__pycache__/wrapper.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/network/__pycache__/auth.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/vcs/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/vcs/__pycache__/bazaar.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/vcs/__pycache__/versioncontrol.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/vcs/__pycache__/git.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/vcs/__pycache__/mercurial.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/vcs/__pycache__/subversion.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/network/__pycache__/cache.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/caches/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/caches/__pycache__/file_cache.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/cachecontrol/caches/__pycache__/redis_cache.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/glibc.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/network/__pycache__/utils.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/index/__pycache__/sources.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/candidate.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/index/__pycache__/package_finder.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/models/__pycache__/selection_prefs.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/req/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/req/__pycache__/req_file.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/encoding.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/req/__pycache__/req_install.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/uuid.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/build/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/build/__pycache__/metadata.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/build/__pycache__/metadata_editable.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/build/__pycache__/metadata_legacy.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/setuptools_build.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/install/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/install/__pycache__/editable_legacy.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/install/__pycache__/wheel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/compileall.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/py_compile.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/filecmp.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/distlib/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/distlib/__pycache__/scripts.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/distlib/__pycache__/compat.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/xmlrpc/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/xmlrpc/__pycache__/client.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/xml/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/xml/parsers/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/xml/parsers/__pycache__/expat.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/gzip.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/distlib/__pycache__/resources.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/pkgutil.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/distlib/__pycache__/util.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/tarfile.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/unpacking.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/wheel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/__pycache__/pyproject.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tomli/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tomli/__pycache__/_parser.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tomli/__pycache__/_re.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/tomli/__pycache__/_types.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/req/__pycache__/req_uninstall.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/packaging.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/req/__pycache__/req_set.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/build/__pycache__/build_tracker.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/operations/__pycache__/prepare.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/distributions/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/distributions/__pycache__/base.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/distributions/__pycache__/sdist.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/distributions/__pycache__/wheel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/distributions/__pycache__/installed.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/network/__pycache__/download.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/cli/__pycache__/progress_bars.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/progress.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/filesize.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/live.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/file_proxy.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/ansi.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/live_render.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/progress_bar.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/spinner.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/rich/__pycache__/_spinners.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/network/__pycache__/lazy_wheel.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/direct_url_helpers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/req/__pycache__/constructors.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/__pycache__/base.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/__pycache__/self_outdated_check.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/entrypoints.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "$TMP", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/distro/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/distro/__pycache__/distro.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/argparse.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/os-release", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/dev/null", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"ev": "proc.start", "pid": "P3", "ppid": "P1", "tid": "T2"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/sbin/lsb_release", "pid": "P3", "tid": "T2"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/bin/lsb_release", "pid": "P3", "tid": "T2"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/sbin/lsb_release", "pid": "P3", "tid": "T2"}
+{"argv": ["lsb_release", "-a"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/lsb_release", "pid": "P3", "tid": "T2"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P3", "tid": "T2", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/bin/lsb_release", "pid": "P3", "tid": "T2", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P4", "ppid": "P3", "tid": "T3"}
+{"argv": ["getopt", "--name", "lsb_release", "-o", "hvidrcas", "-l", "help,version,id,description,release,codename,all,short", "--", "-a"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/getopt", "pid": "P4", "tid": "T3"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P4", "signal": 0, "tid": "T3"}
+{"create": false, "ev": "fs.open", "path": "/etc/os-release", "pid": "P3", "tid": "T2", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P5", "ppid": "P3", "tid": "T4"}
+{"ev": "proc.start", "pid": "P6", "ppid": "P5", "tid": "T5"}
+{"code": 0, "ev": "proc.exit", "pid": "P6", "signal": 0, "tid": "T5"}
+{"ev": "proc.start", "pid": "P7", "ppid": "P5", "tid": "T6"}
+{"argv": ["cut", "-c1"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/cut", "pid": "P7", "tid": "T6"}
+{"ev": "proc.start", "pid": "P8", "ppid": "P5", "tid": "T7"}
+{"argv": ["tr", "[:lower:]", "[:upper:]"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/tr", "pid": "P8", "tid": "T7"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P7", "tid": "T6", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P8", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P8", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P7", "tid": "T6", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P7", "signal": 0, "tid": "T6"}
+{"code": 0, "ev": "proc.exit", "pid": "P8", "signal": 0, "tid": "T7"}
+{"code": 0, "ev": "proc.exit", "pid": "P5", "signal": 0, "tid": "T4"}
+{"ev": "proc.start", "pid": "P9", "ppid": "P3", "tid": "T8"}
+{"ev": "proc.start", "pid": "P10", "ppid": "P9", "tid": "T9"}
+{"code": 0, "ev": "proc.exit", "pid": "P10", "signal": 0, "tid": "T9"}
+{"ev": "proc.start", "pid": "P11", "ppid": "P9", "tid": "T10"}
+{"argv": ["cut", "-c2-"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/cut", "pid": "P11", "tid": "T10"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P11", "tid": "T10", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P11", "tid": "T10", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P11", "signal": 0, "tid": "T10"}
+{"code": 0, "ev": "proc.exit", "pid": "P9", "signal": 0, "tid": "T8"}
+{"ev": "proc.start", "pid": "P12", "ppid": "P3", "tid": "T11"}
+{"ev": "proc.start", "pid": "P13", "ppid": "P12", "tid": "T12"}
+{"code": 0, "ev": "proc.exit", "pid": "P13", "signal": 0, "tid": "T12"}
+{"ev": "proc.start", "pid": "P14", "ppid": "P12", "tid": "T13"}
+{"argv": ["tr", "[:upper:]", "[:lower:]"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/tr", "pid": "P14", "tid": "T13"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P14", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P14", "tid": "T13", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P14", "signal": 0, "tid": "T13"}
+{"code": 0, "ev": "proc.exit", "pid": "P12", "signal": 0, "tid": "T11"}
+{"ev": "proc.start", "pid": "P15", "ppid": "P3", "tid": "T14"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P15", "tid": "T15"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T15"}
+{"ev": "proc.start", "pid": "P17", "ppid": "P15", "tid": "T16"}
+{"argv": ["tr", "[:upper:]", "[:lower:]"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/tr", "pid": "P17", "tid": "T16"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P17", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P17", "tid": "T16", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P17", "signal": 0, "tid": "T16"}
+{"code": 0, "ev": "proc.exit", "pid": "P15", "signal": 0, "tid": "T14"}
+{"code": 0, "ev": "proc.exit", "pid": "P3", "signal": 0, "tid": "T2"}
+{"create": false, "ev": "fs.open", "path": "/dev/null", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"ev": "proc.start", "pid": "P18", "ppid": "P1", "tid": "T17"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/sbin/uname", "pid": "P18", "tid": "T17"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/bin/uname", "pid": "P18", "tid": "T17"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/sbin/uname", "pid": "P18", "tid": "T17"}
+{"argv": ["uname", "-rs"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/uname", "pid": "P18", "tid": "T17"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P18", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P18", "tid": "T17", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P18", "signal": 0, "tid": "T17"}
+{"create": false, "ev": "fs.open", "path": "/etc/debian_version", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/encodings/__pycache__/ascii.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/metadata/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/metadata/__pycache__/_adapters.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/metadata/__pycache__/_text.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/metadata/__pycache__/_functools.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/metadata/__pycache__/_meta.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/metadata/__pycache__/_collections.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/metadata/__pycache__/_itertools.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/importlib/__pycache__/abc.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/metadata/importlib/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/metadata/importlib/__pycache__/_dists.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/metadata/importlib/__pycache__/_compat.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/metadata/importlib/__pycache__/_envs.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/pkg_resources/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/plistlib.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/utils/__pycache__/_jaraco_text.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/Automat-22.10.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/Babel-2.10.3.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/Jinja2-3.1.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/MarkupSafe-2.1.5.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/PyGObject-3.48.2.egg-info", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/bcrypt-3.2.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/certifi-2023.11.17.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/click-8.1.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/cloud_init-26.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/command_not_found-0.3.egg-info", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/constantly-23.10.4.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/cryptography.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/dbus_python-1.3.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/distro_info-1.7+build1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/hyperlink-21.0.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/jsonpatch-1.32.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/jsonpointer-2.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/launchpadlib-1.11.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/lazr.restfulclient-0.14.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/lazr.uri-1.0.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/netifaces-0.11.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/oauthlib-3.2.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyOpenSSL-23.2.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyasn1-0.4.8.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyasn1_modules-0.2.8.egg-info", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pycurl-7.45.3.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyrsistent-0.20.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyserial-3.5.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/python_apt-2.7.7+ubuntu5.3.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pytz-2024.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/requests-2.31.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/setuptools-68.1.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/six-1.16.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/systemd_python-235.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/ubuntu_pro_client-8001.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/unattended_upgrades-0.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/wadllib-1.3.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/zope.interface-6.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/lazr.restfulclient-0.14.6.egg-info/namespace_packages.txt", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/lazr.uri-1.0.6.egg-info/namespace_packages.txt", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/zope.interface-6.1.egg-info/namespace_packages.txt", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/Automat-22.10.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/Babel-2.10.3.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/Jinja2-3.1.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/MarkupSafe-2.1.5.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/PyGObject-3.48.2.egg-info", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/bcrypt-3.2.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/certifi-2023.11.17.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/click-8.1.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/cloud_init-26.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/command_not_found-0.3.egg-info", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/constantly-23.10.4.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/cryptography.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/dbus_python-1.3.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/distro_info-1.7+build1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/hyperlink-21.0.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/jsonpatch-1.32.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/jsonpointer-2.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/launchpadlib-1.11.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/lazr.restfulclient-0.14.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/lazr.uri-1.0.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/netifaces-0.11.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/oauthlib-3.2.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyOpenSSL-23.2.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyasn1-0.4.8.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyasn1_modules-0.2.8.egg-info", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pycurl-7.45.3.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyrsistent-0.20.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyserial-3.5.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/python_apt-2.7.7+ubuntu5.3.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pytz-2024.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/requests-2.31.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/setuptools-68.1.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/six-1.16.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/systemd_python-235.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/ubuntu_pro_client-8001.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/unattended_upgrades-0.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/wadllib-1.3.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/zope.interface-6.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/metadata/__pycache__/pkg_resources.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/lib-dynload", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/local/lib/python3.V/dist-packages", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/httplib2-0.20.4.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/Babel-2.10.3.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/command_not_found-0.3.egg-info", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyasn1-0.4.8.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/configobj-5.0.8.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/oauthlib-3.2.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/idna-3.6.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/twisted-24.3.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/lazr.restfulclient-0.14.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/ubuntu_pro_client-8001.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/typing_extensions-4.10.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/PyGObject-3.48.2.egg-info", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/PyYAML-6.0.1.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip-24.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/wheel-0.42.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/incremental-22.10.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/chardet-5.2.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/zope.interface-6.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyhamcrest-2.1.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyserial-3.5.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/bcrypt-3.2.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/service_identity-24.1.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/Automat-22.10.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/cryptography.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/cryptography-41.0.7.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/attrs-23.2.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/netifaces-0.11.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyasn1_modules-0.2.8.egg-info", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/MarkupSafe-2.1.5.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pycurl-7.45.3.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/launchpadlib-1.11.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/hyperlink-21.0.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/mdurl-0.1.2.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyrsistent-0.20.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/jsonpointer-2.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/unattended_upgrades-0.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/urllib3-2.0.7.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/distro-1.9.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/markdown_it_py-3.0.0.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/Jinja2-3.1.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/jsonschema-4.10.3.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/rich-13.7.1.dist-info/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pyOpenSSL-23.2.0.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/dbus_python-1.3.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/certifi-2023.11.17.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/constantly-23.10.4.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/wadllib-1.3.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/distro_info-1.7+build1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/click-8.1.6.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/python_apt-2.7.7+ubuntu5.3.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/cloud_init-26.1.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/setuptools-68.1.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/setuptools-68.1.2.egg-info/PKG-INFO", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/iq0jqdmp", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/iq0jqdmp", "pid": "P1", "tid": "T1"}
+{"ev": "fs.mkdir", "path": "/tmp/pip-build-tracker-lhsuqrat", "pid": "P1", "tid": "T1"}
+{"ev": "fs.mkdir", "path": "/tmp/pip-download-xhj579vx", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/resolvelib/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/resolvelib/__pycache__/resolver.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/resolvelib/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/resolvelib/__pycache__/providers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/resolvelib/__pycache__/reporters.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/resolvelib/__pycache__/resolvers.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/resolvelib/__pycache__/structs.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/resolvelib/compat/__pycache__/__init__.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_vendor/resolvelib/compat/__pycache__/collections_abc.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/resolvelib/__pycache__/provider.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/resolvelib/__pycache__/base.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/resolvelib/__pycache__/candidates.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/resolvelib/__pycache__/factory.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/resolvelib/__pycache__/found_candidates.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/resolvelib/__pycache__/requirements.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3/dist-packages/pip/_internal/resolution/resolvelib/__pycache__/reporter.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/netrc.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/e/a/c/6/1/eac61126daf80149d2a016f12a54eab5e3b5c1dbc77410ff1a97edc4", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/e/a/c/6/1/eac61126daf80149d2a016f12a54eab5e3b5c1dbc77410ff1a97edc4.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"addr": "unix:/var/run/nscd/socket", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T1"}
+{"addr": "unix:/var/run/nscd/socket", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/etc/host.conf", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/resolv.conf", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/hosts", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"addr": "10.255.255.254:53", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/etc/gai.conf", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"addr": "family=16", "ev": "net.bind", "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "family=16", "ev": "net.sendto", "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "151.101.64.223:443", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "family=0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "151.101.192.223:443", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "family=0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "151.101.128.223:443", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "family=0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "151.101.0.223:443", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "[2a04:4e42::223]:443", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T1"}
+{"addr": "family=0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "[2a04:4e42:200::223]:443", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T1"}
+{"addr": "family=0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "[2a04:4e42:400::223]:443", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T1"}
+{"addr": "family=0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T1"}
+{"addr": "[2a04:4e42:600::223]:443", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T1"}
+{"addr": "151.101.64.223:443", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/ca-certificates.crt", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/e/a/c/6/1/eac61126daf80149d2a016f12a54eab5e3b5c1dbc77410ff1a97edc4", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/e/a/c/6/1/eac61126daf80149d2a016f12a54eab5e3b5c1dbc77410ff1a97edc4.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/home/tester/.cache/pip/http-v2/e/a/c/6/1", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/e/a/c/6/1/eac61126daf80149d2a016f12a54eab5e3b5c1dbc77410ff1a97edc4h_vlffix.tmp", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"ev": "fs.rename", "from": "/home/tester/.cache/pip/http-v2/e/a/c/6/1/eac61126daf80149d2a016f12a54eab5e3b5c1dbc77410ff1a97edc4h_vlffix.tmp", "ok": true, "pid": "P1", "tid": "T1", "to": "/home/tester/.cache/pip/http-v2/e/a/c/6/1/eac61126daf80149d2a016f12a54eab5e3b5c1dbc77410ff1a97edc4"}
+{"create": false, "ev": "fs.open", "path": "/usr/bin/python3", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/tmp/pip-unpack-w1qp5xv6", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/1/0/b/2/a/10b2a8b62ea67a4cd49d0d353a09c43832fb02ba7b3a804e29c73417", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/1/0/b/2/a/10b2a8b62ea67a4cd49d0d353a09c43832fb02ba7b3a804e29c73417.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-w1qp5xv6/requests-2.34.2-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-w1qp5xv6/requests-2.34.2-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-w1qp5xv6/requests-2.34.2-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/tmp/pip-metadata-r69kg6l2", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-metadata-r69kg6l2/METADATA", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-r69kg6l2/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-r69kg6l2/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-r69kg6l2/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-r69kg6l2/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/5/b/d/8/9/5bd894eeb3dfe1c8aaee1daecdfb74bbb314293813a730238621f077", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/5/b/d/8/9/5bd894eeb3dfe1c8aaee1daecdfb74bbb314293813a730238621f077.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/5/b/d/8/9/5bd894eeb3dfe1c8aaee1daecdfb74bbb314293813a730238621f077", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/5/b/d/8/9/5bd894eeb3dfe1c8aaee1daecdfb74bbb314293813a730238621f077.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/home/tester/.cache/pip/http-v2/5/b/d/8/9", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/5/b/d/8/9/5bd894eeb3dfe1c8aaee1daecdfb74bbb314293813a730238621f077k863moxc.tmp", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"ev": "fs.rename", "from": "/home/tester/.cache/pip/http-v2/5/b/d/8/9/5bd894eeb3dfe1c8aaee1daecdfb74bbb314293813a730238621f077k863moxc.tmp", "ok": true, "pid": "P1", "tid": "T1", "to": "/home/tester/.cache/pip/http-v2/5/b/d/8/9/5bd894eeb3dfe1c8aaee1daecdfb74bbb314293813a730238621f077"}
+{"ev": "fs.mkdir", "path": "/tmp/pip-unpack-c_ed6i96", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/e/d/a/9/1/eda914c11ae7b83051fc8dde515d5019ed0e54fc514332d71244ac84", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/e/d/a/9/1/eda914c11ae7b83051fc8dde515d5019ed0e54fc514332d71244ac84.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-c_ed6i96/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-c_ed6i96/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-c_ed6i96/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/tmp/pip-metadata-6gei802j", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-metadata-6gei802j/METADATA", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-6gei802j/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-6gei802j/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-6gei802j/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-6gei802j/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/b/2/4/2/8b24226e2da88df4abeee0d8ca6bce79b19ca2bcd5f94b543939c66c", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/b/2/4/2/8b24226e2da88df4abeee0d8ca6bce79b19ca2bcd5f94b543939c66c.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/b/2/4/2/8b24226e2da88df4abeee0d8ca6bce79b19ca2bcd5f94b543939c66c", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/b/2/4/2/8b24226e2da88df4abeee0d8ca6bce79b19ca2bcd5f94b543939c66c.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/home/tester/.cache/pip/http-v2/8/b/2/4/2", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/b/2/4/2/8b24226e2da88df4abeee0d8ca6bce79b19ca2bcd5f94b543939c66cpgvk45ma.tmp", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"ev": "fs.rename", "from": "/home/tester/.cache/pip/http-v2/8/b/2/4/2/8b24226e2da88df4abeee0d8ca6bce79b19ca2bcd5f94b543939c66cpgvk45ma.tmp", "ok": true, "pid": "P1", "tid": "T1", "to": "/home/tester/.cache/pip/http-v2/8/b/2/4/2/8b24226e2da88df4abeee0d8ca6bce79b19ca2bcd5f94b543939c66c"}
+{"ev": "fs.mkdir", "path": "/tmp/pip-unpack-8gc4jjl7", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/0/a/4/b/3/0a4b30c32de5c577e2dc938a411fca44968f5e16b63e4d561d3b1e6d", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/0/a/4/b/3/0a4b30c32de5c577e2dc938a411fca44968f5e16b63e4d561d3b1e6d.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-8gc4jjl7/idna-3.20-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-8gc4jjl7/idna-3.20-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-8gc4jjl7/idna-3.20-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/tmp/pip-metadata-mldj4wtc", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-metadata-mldj4wtc/METADATA", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-mldj4wtc/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-mldj4wtc/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-mldj4wtc/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-mldj4wtc/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/d/0/e/1/8d0e104919449355aedb55b5b546bb9fd53f0e1a8ca1b082109464e9", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/d/0/e/1/8d0e104919449355aedb55b5b546bb9fd53f0e1a8ca1b082109464e9.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/d/0/e/1/8d0e104919449355aedb55b5b546bb9fd53f0e1a8ca1b082109464e9", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/d/0/e/1/8d0e104919449355aedb55b5b546bb9fd53f0e1a8ca1b082109464e9.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/home/tester/.cache/pip/http-v2/8/d/0/e/1", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/8/d/0/e/1/8d0e104919449355aedb55b5b546bb9fd53f0e1a8ca1b082109464e9_g5t5x58.tmp", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"ev": "fs.rename", "from": "/home/tester/.cache/pip/http-v2/8/d/0/e/1/8d0e104919449355aedb55b5b546bb9fd53f0e1a8ca1b082109464e9_g5t5x58.tmp", "ok": true, "pid": "P1", "tid": "T1", "to": "/home/tester/.cache/pip/http-v2/8/d/0/e/1/8d0e104919449355aedb55b5b546bb9fd53f0e1a8ca1b082109464e9"}
+{"ev": "fs.mkdir", "path": "/tmp/pip-unpack-x78l6pf8", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/9/0/c/c/6/90cc6e876cfbbf822d3438296fb13a1644fad34add976996b38c9362", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/9/0/c/c/6/90cc6e876cfbbf822d3438296fb13a1644fad34add976996b38c9362.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-x78l6pf8/urllib3-2.8.0-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-x78l6pf8/urllib3-2.8.0-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-x78l6pf8/urllib3-2.8.0-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/tmp/pip-metadata-u3gz4nrn", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-metadata-u3gz4nrn/METADATA", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-u3gz4nrn/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-u3gz4nrn/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-u3gz4nrn/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-u3gz4nrn/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/4/b/e/0/7/4be07d3ac353e38d2c9e3a257cad36ee2a758fc88b4cd5f0d479a5a9", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/4/b/e/0/7/4be07d3ac353e38d2c9e3a257cad36ee2a758fc88b4cd5f0d479a5a9.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/4/b/e/0/7/4be07d3ac353e38d2c9e3a257cad36ee2a758fc88b4cd5f0d479a5a9", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/4/b/e/0/7/4be07d3ac353e38d2c9e3a257cad36ee2a758fc88b4cd5f0d479a5a9.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/home/tester/.cache/pip/http-v2/4/b/e/0/7", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/4/b/e/0/7/4be07d3ac353e38d2c9e3a257cad36ee2a758fc88b4cd5f0d479a5a9vg8a1zed.tmp", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"ev": "fs.rename", "from": "/home/tester/.cache/pip/http-v2/4/b/e/0/7/4be07d3ac353e38d2c9e3a257cad36ee2a758fc88b4cd5f0d479a5a9vg8a1zed.tmp", "ok": true, "pid": "P1", "tid": "T1", "to": "/home/tester/.cache/pip/http-v2/4/b/e/0/7/4be07d3ac353e38d2c9e3a257cad36ee2a758fc88b4cd5f0d479a5a9"}
+{"ev": "fs.mkdir", "path": "/tmp/pip-unpack-ja1n94va", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/c/c/6/6/2/cc6625d74966fd723a5bf2c16450d5d92fc300bf538ae394f7885dc0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/c/c/6/6/2/cc6625d74966fd723a5bf2c16450d5d92fc300bf538ae394f7885dc0.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-ja1n94va/certifi-2026.7.22-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-ja1n94va/certifi-2026.7.22-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-ja1n94va/certifi-2026.7.22-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/tmp/pip-metadata-354bdmcg", "pid": "P1", "tid": "T1"}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-metadata-354bdmcg/METADATA", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-354bdmcg/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-354bdmcg/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-354bdmcg/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-354bdmcg/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-6gei802j/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-mldj4wtc/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-u3gz4nrn/METADATA", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/tmp/pip-unpack-n4zfbp9h", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/0/a/6/b/7/0a6b76df38e61ac4e1f757a1132d2c6424dcb9c23751423afee448ac", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/0/a/6/b/7/0a6b76df38e61ac4e1f757a1132d2c6424dcb9c23751423afee448ac.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/requests-2.34.2-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/4/1/9/6/f/4196fb32cd5477509fa68e914f1472976a27100798a6d4a646f26472", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/4/1/9/6/f/4196fb32cd5477509fa68e914f1472976a27100798a6d4a646f26472.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/certifi-2026.7.22-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/0/d/d/f/3/0ddf3da1bd23b188cd74a9d99e744d094f1b0bb76f98a722a39006e3", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/0/d/d/f/3/0ddf3da1bd23b188cd74a9d99e744d094f1b0bb76f98a722a39006e3.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/5/5/7/8/f/5578f04015bc72d34ccff0865612606d646694de3865112ddef4292f", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/5/5/7/8/f/5578f04015bc72d34ccff0865612606d646694de3865112ddef4292f.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/idna-3.20-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/2/e/0/b/1/2e0b104156b59fc95cf18a269ffed21374c7d170902fa4d96c00004d", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/home/tester/.cache/pip/http-v2/2/e/0/b/1/2e0b104156b59fc95cf18a269ffed21374c7d170902fa4d96c00004d.body", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/urllib3-2.8.0-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/requests-2.34.2-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/mime.types", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/requests-2.34.2-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/encodings/__pycache__/cp437.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/certifi-2026.7.22-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/certifi-2026.7.22-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/idna-3.20-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/idna-3.20-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/urllib3-2.8.0-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/urllib3-2.8.0-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/requests-2.34.2-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/requests-2.34.2-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"ev": "fs.chmod", "mode": "0644", "ok": true, "path": "$TMP/requests-2.34.2-py3-none-any.whl", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/certifi-2026.7.22-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/certifi-2026.7.22-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"ev": "fs.chmod", "mode": "0644", "ok": true, "path": "$TMP/certifi-2026.7.22-py3-none-any.whl", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"ev": "fs.chmod", "mode": "0644", "ok": true, "path": "$TMP/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/idna-3.20-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/idna-3.20-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"ev": "fs.chmod", "mode": "0644", "ok": true, "path": "$TMP/idna-3.20-py3-none-any.whl", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/urllib3-2.8.0-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/urllib3-2.8.0-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"ev": "fs.chmod", "mode": "0644", "ok": true, "path": "$TMP/urllib3-2.8.0-py3-none-any.whl", "pid": "P1", "tid": "T1"}
+{"ev": "fs.mkdir", "path": "/tmp/pip-unpack-c2d08m42", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/requests-2.34.2-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/requests-2.34.2-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/certifi-2026.7.22-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/certifi-2026.7.22-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/idna-3.20-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/idna-3.20-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/urllib3-2.8.0-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h/urllib3-2.8.0-py3-none-any.whl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-build-tracker-lhsuqrat", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-build-tracker-lhsuqrat", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-c2d08m42", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-unpack-c2d08m42", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-n4zfbp9h", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-n4zfbp9h/requests-2.34.2-py3-none-any.whl", "pid": "P1", "tid": "T1"}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-n4zfbp9h/certifi-2026.7.22-py3-none-any.whl", "pid": "P1", "tid": "T1"}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-n4zfbp9h/idna-3.20-py3-none-any.whl", "pid": "P1", "tid": "T1"}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-n4zfbp9h/urllib3-2.8.0-py3-none-any.whl", "pid": "P1", "tid": "T1"}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-n4zfbp9h/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-unpack-n4zfbp9h", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-354bdmcg", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-metadata-354bdmcg/METADATA", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-metadata-354bdmcg", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-ja1n94va", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-ja1n94va/certifi-2026.7.22-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-unpack-ja1n94va", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-u3gz4nrn", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-metadata-u3gz4nrn/METADATA", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-metadata-u3gz4nrn", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-x78l6pf8", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-x78l6pf8/urllib3-2.8.0-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-unpack-x78l6pf8", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-mldj4wtc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-metadata-mldj4wtc/METADATA", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-metadata-mldj4wtc", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-8gc4jjl7", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-8gc4jjl7/idna-3.20-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-unpack-8gc4jjl7", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-6gei802j", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-metadata-6gei802j/METADATA", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-metadata-6gei802j", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-c_ed6i96", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-c_ed6i96/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-unpack-c_ed6i96", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-metadata-r69kg6l2", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-metadata-r69kg6l2/METADATA", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-metadata-r69kg6l2", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-unpack-w1qp5xv6", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/pip-unpack-w1qp5xv6/requests-2.34.2-py3-none-any.whl.metadata", "pid": "P1", "tid": "T1"}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-unpack-w1qp5xv6", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/tmp/pip-download-xhj579vx", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/pip-download-xhj579vx", "pid": "P1", "tid": "T1"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T1"}
