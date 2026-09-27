@@ -18,7 +18,7 @@ static void* worker(void* arg) {
 int main(void) {
   pthread_t t;
   pthread_create(&t, NULL, worker, NULL);
-  sleep(1);  // let the worker appear in the traced tree
+  sleep(1); // let the worker appear in the traced tree
   execl("/bin/echo", "echo", "exec-ok", NULL);
   perror("execl");
   return 127;
