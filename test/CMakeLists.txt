@@ -10,6 +10,7 @@ add_executable(snowglobe_tests
   unit/test_json_escape.cpp
   unit/test_sha256.cpp
   unit/test_hash_chain.cpp
+  unit/test_open_flags.cpp
 )
 target_link_libraries(snowglobe_tests PRIVATE snowglobe_core Catch2::Catch2WithMain)
 target_include_directories(snowglobe_tests PRIVATE ${CMAKE_SOURCE_DIR}/core)

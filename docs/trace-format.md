@@ -1,6 +1,7 @@
 # Trace format — schema v0 (source of truth)
 
-Status: Phase 0 implementation. Any change bumps `schema` in manifest.json and
+Status: Phase 1A Block 1 implementation (schema still 0: all changes are
+additive optional fields). Any change bumps `schema` in manifest.json and
 ships a migration note here (AGENTS.md §3).
 
 ## Layout
@@ -25,19 +26,28 @@ tid, prev_hash, hash` where `hash = sha256(prev_hash || line_without_hash)`.
 Genesis `prev_hash` is `"0"`. `turn`/`tool_call` are null/absent until Phase 1D
 causal linking.
 
+`pid` is the thread-group id (tgid); `tid` is the kernel thread id. For
+single-threaded processes they are equal. Thread creation is a
+`proc.start` with `thread:true`; a thread's death is a `proc.exit` with its
+own tid. Threads that vanish in an exec without an exit stop get
+`proc.exit` with `vanished:true` (no `code`/`signal`).
+
 ## Events emitted in Phase 0
 
 | ev | fields |
 |---|---|
 | `run.meta` | `cmd[], cwd` |
-| `proc.start` | `ppid, root?` |
+| `proc.start` | `ppid, root?, thread?` |
 | `proc.exec` | `path, argv[], cwd` |
 | `proc.exec_failed` | `path, errno` |
-| `proc.exit` | `code, signal` |
-| `fs.open` | `path, write, create, trunc, fd` |
+| `proc.exit` | `code, signal` — or `vanished:true` (exec-vaporised thread) |
+| `fs.open` | `path, write, create, trunc, fd` — plus `tmpfile:true` for O_TMPFILE (path = directory) |
 | `fs.unlink` | `path, ok` |
+| `fs.rmdir` | `path, ok` (unlinkat with AT_REMOVEDIR) |
 | `fs.rename` | `from, to, ok` |
 | `fs.mkdir` | `path` |
+| `fs.symlink` | `target, path, ok` |
+| `fs.chmod` | `path, mode, ok` (mode = raw bits as a JSON number; display octal) |
 | `net.connect` | `addr (formatted), ok` |
 | `net.sendto` | `addr, ok` (UDP/DNS visibility) |
 | `net.bind` | `addr, ok` |
@@ -48,6 +58,8 @@ causal linking.
 ## Filtering (default; `-a`/`--all-opens` disables)
 
 - Read-only opens (`write=false`) that fail, or target noisy paths, are skipped.
+- `O_DIRECTORY` / `O_PATH` opens are skipped (handles carry no content).
+- `O_TMPFILE` opens are recorded as `write:true` with `tmpfile:true`.
 - Noisy prefixes: `/proc/`, `/sys/`, `/dev/`, `/etc/ld.so*`, `/etc/passwd`,
   `/etc/nsswitch*`, `/usr/share/locale`, `/usr/lib/locale`.
 

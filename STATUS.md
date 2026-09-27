@@ -1,11 +1,10 @@
 # STATUS — Snowglobe
-Updated: 2026-09-27  ·  Phase: 0 — Bootstrap: DONE  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-27  ·  Phase: 1A Block 1 — DONE  ·  Next launch: v0.1.0, week 9
 
-> Gate CLOSED 2026-09-27: CI run
-> https://github.com/subhamxaura/Snowglobe/actions/runs/36291693217 — all 6
-> jobs green (22.04 debug + asan-ubsan, 24.04 debug + asan-ubsan,
-> cross-aarch64, lint). The 22.04 pip failure was fixed via setup-python
-> (commit 3449f7d). Phase 1A kickoff is a separate session; do not start it here.
+> Phase 0 gate closed 2026-09-27 (CI run 36291693217, all 6 green). This
+> session did Phase 1A Block 1 only (process-tree correctness); Blocks 2
+> (goldens + kill test) and 3 (bench + docs + real recordings) are separate
+> sessions. Schema stays 0 (all trace changes are additive optional fields).
 
 ## Done (this phase)
 - Repo skeleton: CMake ≥3.25 + Ninja, presets (debug/release/asan-ubsan/tsan),
@@ -20,7 +19,8 @@ Updated: 2026-09-27  ·  Phase: 0 — Bootstrap: DONE  ·  Next launch: v0.1.0, 
   CHANGELOG.md
 
 ## In progress
-- None — Phase 0 DONE. Next: Phase 1A kickoff (separate session).
+- None — Block 1 DONE. Next: Block 2 (golden fixture suite + automated kill
+  test), separate session. Do not start Block 2 here.
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
 - `cmake --preset debug && cmake --build --preset debug && ctest --preset debug`:
@@ -44,6 +44,23 @@ Updated: 2026-09-27  ·  Phase: 0 — Bootstrap: DONE  ·  Next launch: v0.1.0, 
   apparmor userns knob reported (absent on WSL kernel). Datasets: WSL2 6.6.
 - Format clean (`clang-format --dry-run --Werror`), aarch64 cross-build clean,
   CI test step simplified to `ctest --preset ${{ matrix.preset }}`.
+
+## Block 1 verification (WSL2 Ubuntu 24.04, all real output)
+- `probe/threads.c` (4 pthreads × file open): 4 `proc.start thread:true` with
+  pid=tgid + distinct tids; all 4 `fs.open` attributed to the right tid —
+  THREAD-ATTRIBUTION-PASSED.
+- `probe/mt_exec.c` (leader execs): worker death reported, one `proc.exec`,
+  clean end. Non-leader exec (throwaway): vanished-tid exit + scavenged
+  `proc.exec /bin/echo argv=[echo nonleader-exec-ok]`, 0 decode_error.
+- Signals: SIGKILL root → exit 137 + finalised manifest; SIGTERM snowglobe →
+  root TERM'd, drain, exit 143 + finalised; double Ctrl-C → SIGKILL tree,
+  exit 70, partial manifest, no orphans.
+- Filters: `find` 12 events default vs 43 with `-a`; `fs.rmdir`, `fs.symlink`,
+  `fs.chmod mode=493`, `O_TMPFILE` → `path=/tmp write:true tmpfile:true`.
+- vfork smoke: child exit 42, parent resumes, exit 0. `UV_USE_IO_URING=0`
+  present in child env.
+- ctest debug + asan-ubsan: 100% (5/5 incl. new open-flags unit test), zero
+  sanitizer findings; clang-format clean.
 
 ## Next up (ordered)
 1. Phase 1A — tracer hardening (6 golden trees, kill-9 no-orphans, bench publish)

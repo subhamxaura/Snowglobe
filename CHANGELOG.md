@@ -43,3 +43,21 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 - CI: Ubuntu 22.04 no longer uses `pip install --break-system-packages`
   (22.04 ships pip 22.0.2, which predates the flag); 22.04 gets Python via
   setup-python and the Kitware cmake wheel through its modern pip.
+
+### Added (Phase 1A Block 1)
+- Threads: every event carries `pid` (=tgid) + `tid`; `proc.start` sets
+  `thread:true` for clone-with-thread; `probe/threads.c` proves per-tid
+  attribution (4 threads, 4 files, 4 distinct tids).
+- Exec in a multithreaded process: vanished tids get `proc.exit` with
+  `vanished:true`; exec details scavenged from the vanishing sibling so the
+  single `proc.exec` survives even non-leader exec (`probe/mt_exec.c`).
+- `fs.rmdir` (unlinkat + AT_REMOVEDIR), `fs.symlink` (symlink/symlinkat),
+  `fs.chmod` (chmod/fchmod/fchmodat, mode as JSON number).
+- Default filters skip `O_DIRECTORY`/`O_PATH`; `O_TMPFILE` records
+  `write:true` + `tmpfile:true`. `UV_USE_IO_URING=0` forced in the child env.
+
+### Fixed (Phase 1A Block 1)
+- `PTRACE_EVENT_VFORK_DONE` resumes bare (was injecting stray SIGTRAP).
+- ESRCH on GETEVENTMSG/GET_SYSCALL_INFO no longer emits bogus decode errors.
+- Signals: first SIGINT/SIGTERM SIGTERMs the root only and keeps tracing to
+  drain (exit code + finalised manifest); second SIGKILLs the tree.

@@ -9,7 +9,16 @@
 //    trace.decode_error — never a silent drop (AGENTS.md §3).
 //  - Unknown pids (fork-race) are tracked as pending with ppid=-1 and
 //    reconciled when the parent's fork event arrives.
+//  - Threads: every event carries pid (=tgid) and tid; thread creation is a
+//    PTRACE_EVENT_CLONE whose tgid (!= tid) is resolved via /proc/TID/status.
+//    proc.start for threads sets thread:true.
+//  - Exec in a multithreaded process: siblings may vanish with no exit stop
+//    (or report a bare death first); the EXEC-event sweep emits proc.exit
+//    with vanished:true for any still-tracked tids of the old tgid.
+//  - Signals: first SIGINT/SIGTERM SIGTERMs the root only and keeps tracing
+//    until the tree drains (manifest finalised); the second SIGKILLs all.
 #include "ptrace_tracer.hpp"
+#include "open_flags.hpp"
 
 #include "../../util/string_util.hpp"
 
@@ -18,7 +27,9 @@
 #include <csignal>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <map>
 #include <set>
 #include <string>
@@ -73,6 +84,9 @@ bool PtraceTracer::emitEv(const std::string&) {
 #endif
 #ifndef PTRACE_O_TRACESYSGOOD
 #define PTRACE_O_TRACESYSGOOD 0x00000001
+#endif
+#ifndef PTRACE_EVENT_VFORK_DONE
+#define PTRACE_EVENT_VFORK_DONE 5
 #endif
 
 // Minimal replica of <linux/ptrace.h> struct (avoid kernel-header dependency).
@@ -181,6 +195,23 @@ std::string readLink(const std::string& path) {
   return std::string(buf, static_cast<std::size_t>(n));
 }
 
+// Resolve a tid's thread-group id via /proc. Leaders resolve to themselves;
+// unreadable (already gone) resolves to tid — the tid attribution survives,
+// the tgid may be approximate for flash-lived threads.
+pid_t threadGroupId(pid_t tid) {
+  char path[64];
+  std::snprintf(path, sizeof(path), "/proc/%d/status", (int)tid);
+  std::ifstream f(path);
+  std::string line;
+  while (std::getline(f, line)) {
+    if (line.compare(0, 5, "Tgid:") == 0) {
+      const int tgid = std::atoi(line.c_str() + 5);
+      return tgid > 0 ? (pid_t)tgid : tid;
+    }
+  }
+  return tid;
+}
+
 // Normalise an absolute path lexically (no filesystem access).
 std::string normaliseAbs(const std::string& p) {
   std::vector<std::string> parts;
@@ -236,12 +267,15 @@ bool isNoisyPath(const std::string& p) {
 
 struct ProcInfo {
   pid_t ppid = -1;
+  pid_t tgid = -1; // thread-group id (== tid for leaders; -1 = unresolved, use tid)
+  bool isThread = false;
   bool inSyscall = false;
   uint64_t entryNr = 0;
   uint64_t entryArgs[6] = {};
   // execve path/argv captured at ENTRY (the old image is gone by EXIT time
   // after a successful exec, so exit-time reads fault with EFAULT).
   bool hasPendingExec = false;
+  uint64_t pendingExecNr = 0;
   std::string pendingExecCanon;
   std::string pendingExecArgvJson;
 };
@@ -310,6 +344,10 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       _exit(127);
     }
     ::raise(SIGSTOP);
+    // libuv/Node file ops via io_uring bypass syscall tracing entirely;
+    // force the syscall path unless the user overrode it. io_uring remains
+    // a known blind spot (see docs/limitations.md in Block 3).
+    ::setenv("UV_USE_IO_URING", "0", 0);
     ::execvp(cargv[0], cargv.data());
     _exit(127); // exec failed; parent reports proc.exec_failed via exit code 127 path
   }
@@ -317,6 +355,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   // --- supervisor ---
   std::map<pid_t, ProcInfo> procs;
   procs[child].ppid = ::getpid();
+  procs[child].tgid = child; // root starts single-threaded
   int finalCode = 0;
   bool finalSet = false;
   uint64_t evSeqHint = 0;
@@ -350,11 +389,26 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
                           PTRACE_O_TRACESYSGOOD;
   bool firstStop = true;
   bool dead = false;
+  int stopCount = 0;
 
-  auto emitDecodeError = [&](pid_t pid, uint64_t nr, const std::string& reason) {
-    emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
-           ",\"ev\":\"trace.decode_error\",\"pid\":" + std::to_string(pid) +
-           ",\"tid\":" + std::to_string(pid) + ",\"syscall\":" + std::to_string(nr) +
+  // Common envelope prefix with pid (=tgid) + tid resolution. Unknown tids
+  // (fork-race window) fall back to pid == tid; attribution by tid survives.
+  auto tsIds = [&](pid_t tid) -> std::string {
+    pid_t tgid = tid;
+    const auto it = procs.find(tid);
+    if (it != procs.end() && it->second.tgid >= 0) {
+      tgid = it->second.tgid;
+    }
+    return "\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
+           ",\"pid\":" + std::to_string(tgid) + ",\"tid\":" + std::to_string(tid);
+  };
+
+  auto emitVanished = [&](pid_t tid) {
+    emitEv("{" + tsIds(tid) + ",\"ev\":\"proc.exit\",\"vanished\":true}");
+  };
+
+  auto emitDecodeError = [&](pid_t tid, uint64_t nr, const std::string& reason) {
+    emitEv("{" + tsIds(tid) + ",\"ev\":\"trace.decode_error\",\"syscall\":" + std::to_string(nr) +
            ",\"errno\":" + std::to_string(errno) + ",\"reason\":" + jsonEscape(reason) + "}");
   };
 
@@ -407,17 +461,27 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
 
   while (!dead) {
     if (gStop.load()) {
-      // Graceful shutdown: terminate the whole traced group.
-      for (const auto& [pid, _] : procs) {
-        ::kill(pid, SIGTERM);
+      gStop.store(false); // consume; a second SIGINT/SIGTERM re-arms
+      ++stopCount;
+      if (stopCount == 1) {
+        // First interrupt: SIGTERM the root only, then keep tracing until
+        // the tree drains. Exits (incl. signal deaths) are recorded normally
+        // and the manifest is finalised with the root's exit code.
+        if (procs.find(child) != procs.end()) {
+          ::kill(child, SIGTERM);
+        } else {
+          for (const auto& [tid, _] : procs) {
+            ::kill(tid, SIGTERM);
+          }
+        }
+      } else {
+        // Second interrupt: SIGKILL everything, leave a partial trace.
+        for (const auto& [tid, _] : procs) {
+          ::kill(tid, SIGKILL);
+        }
+        error_ = "interrupted";
+        break;
       }
-      // Give them a moment, then KILL.
-      usleep(200 * 1000);
-      for (const auto& [pid, _] : procs) {
-        ::kill(pid, SIGKILL);
-      }
-      error_ = "interrupted";
-      break;
     }
     int status = 0;
     const pid_t pid = ::waitpid(-1, &status, __WALL);
@@ -426,6 +490,13 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
         continue;
       }
       if (errno == ECHILD) {
+        // No waitable tracees left but entries remain (e.g. threads that
+        // vanished in an exec race we never saw): close them out honestly
+        // rather than hanging or dropping them silently.
+        for (const auto& [tid, _] : procs) {
+          emitVanished(tid);
+        }
+        procs.clear();
         break;
       }
       error_ = std::string("waitpid: ") + errnoText(errno);
@@ -441,9 +512,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
     if (WIFEXITED(status) || WIFSIGNALED(status)) {
       const int code = WIFEXITED(status) ? WEXITSTATUS(status) : 128 + WTERMSIG(status);
       const int sig = WIFSIGNALED(status) ? WTERMSIG(status) : 0;
-      emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
-             ",\"ev\":\"proc.exit\",\"pid\":" + std::to_string(pid) +
-             ",\"tid\":" + std::to_string(pid) + ",\"code\":" + std::to_string(code) +
+      emitEv("{" + tsIds(pid) + ",\"ev\":\"proc.exit\",\"code\":" + std::to_string(code) +
              ",\"signal\":" + std::to_string(sig) + "}");
       // exec-failed detection: first process exiting 127 without a prior exec event
       // is reported as proc.exec_failed for visibility.
@@ -472,23 +541,67 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
 
     if (event == PTRACE_EVENT_FORK || event == PTRACE_EVENT_VFORK || event == PTRACE_EVENT_CLONE) {
       unsigned long msg = 0;
-      ptrace(PTRACE_GETEVENTMSG, pid, nullptr, &msg);
+      if (ptrace(PTRACE_GETEVENTMSG, pid, nullptr, &msg) != 0) {
+        // ESRCH: tracee died mid-event; its exit will be reaped next.
+        ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
+        continue;
+      }
       const auto cpid = static_cast<pid_t>(msg);
       auto& ci = procs[cpid]; // reconciles fork-race pending entries
       ci.ppid = pid;
       ci.inSyscall = false;
-      emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
-             ",\"ev\":\"proc.start\",\"pid\":" + std::to_string(cpid) +
-             ",\"tid\":" + std::to_string(cpid) + ",\"ppid\":" + std::to_string(pid) + "}");
+      // Thread or process? A CLONE event covers both (and clone3); resolve
+      // via /proc. Threads get pid=tgid + thread:true.
+      const pid_t tgid = threadGroupId(cpid);
+      ci.tgid = tgid;
+      ci.isThread = (tgid != cpid);
+      emitEv("{" + tsIds(cpid) + ",\"ev\":\"proc.start\",\"ppid\":" + std::to_string(pid) +
+             (ci.isThread ? ",\"thread\":true}" : "}"));
       ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
       continue;
     }
     if (event == PTRACE_EVENT_EXEC) {
-      // exec details come from the execve syscall-exit decoder; nothing extra here.
+      // Siblings of the old image may vanish with no exit stop (or report a
+      // bare death first, which the normal exit path already consumed):
+      // close out anything still tracked under the old tgid. The execve
+      // syscall-exit decoder still emits the single proc.exec.
+      ProcInfo& ex = procs[pid];
+      const pid_t oldTgid = ex.tgid < 0 ? pid : ex.tgid;
+      std::vector<pid_t> gone;
+      for (const auto& [tid, info] : procs) {
+        if (tid != pid && info.tgid == oldTgid) {
+          gone.push_back(tid);
+        }
+      }
+      for (const pid_t t : gone) {
+        // Non-leader exec: the ENTRY (with path/argv) was recorded on the
+        // vanishing sibling while the EXIT lands on the surviving tid.
+        // Scavenge it so the single proc.exec is still emitted.
+        if (!ex.hasPendingExec) {
+          const ProcInfo& g = procs[t];
+          if (g.hasPendingExec) {
+            ex.hasPendingExec = true;
+            ex.pendingExecNr = g.pendingExecNr;
+            ex.pendingExecCanon = g.pendingExecCanon;
+            ex.pendingExecArgvJson = g.pendingExecArgvJson;
+            ex.inSyscall = true;
+            ex.entryNr = g.pendingExecNr;
+          }
+        }
+        emitVanished(t);
+        procs.erase(t);
+      }
+      ex.tgid = pid;
+      ex.isThread = false;
       ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
       continue;
     }
     if (event == PTRACE_EVENT_EXIT) {
+      ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
+      continue;
+    }
+    if (event == PTRACE_EVENT_VFORK_DONE) {
+      // vfork parent unblocked (child exec'd or exited): just resume.
       ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
       continue;
     }
@@ -499,7 +612,11 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       if (ptrace(PTRACE_GET_SYSCALL_INFO, pid, reinterpret_cast<void*>(sizeof(info)),
                  reinterpret_cast<void*>(&info)) < 0) {
-        emitDecodeError(pid, 0, std::string("PTRACE_GET_SYSCALL_INFO: ") + errnoText(errno));
+        // ESRCH: tracee died between the stop and the read; its exit is next.
+        // Anything else is a real decoder failure — report it, never swallow.
+        if (errno != ESRCH) {
+          emitDecodeError(pid, 0, std::string("PTRACE_GET_SYSCALL_INFO: ") + errnoText(errno));
+        }
         ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
         continue;
       }
@@ -535,6 +652,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
           if (readExecStrings(pid, dirfd, pathAddr, argvAddr, pi.pendingExecCanon,
                               pi.pendingExecArgvJson, detail)) {
             pi.hasPendingExec = true;
+            pi.pendingExecNr = enr;
           }
         }
       } else if (info.op == PTRACE_SYSCALL_INFO_EXIT && pi.inSyscall) {
@@ -544,7 +662,19 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
         const bool isErr = info.exit.is_error != 0;
 
         // Classify with portability guards (numbers differ per arch).
-        enum class Kind { None, Exec, Open, Unlink, Rename, Mkdir, Connect, Sendto, Bind };
+        enum class Kind {
+          None,
+          Exec,
+          Open,
+          Unlink,
+          Rename,
+          Mkdir,
+          Connect,
+          Sendto,
+          Bind,
+          Symlink,
+          Chmod
+        };
         Kind kind = Kind::None;
 #ifdef SYS_execve
         if (nr == static_cast<uint64_t>(SYS_execve)) {
@@ -626,11 +756,34 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
           kind = Kind::Bind;
         }
 #endif
+#ifdef SYS_symlink
+        if (nr == static_cast<uint64_t>(SYS_symlink)) {
+          kind = Kind::Symlink;
+        }
+#endif
+#ifdef SYS_symlinkat
+        if (nr == static_cast<uint64_t>(SYS_symlinkat)) {
+          kind = Kind::Symlink;
+        }
+#endif
+#ifdef SYS_chmod
+        if (nr == static_cast<uint64_t>(SYS_chmod)) {
+          kind = Kind::Chmod;
+        }
+#endif
+#ifdef SYS_fchmod
+        if (nr == static_cast<uint64_t>(SYS_fchmod)) {
+          kind = Kind::Chmod;
+        }
+#endif
+#ifdef SYS_fchmodat
+        if (nr == static_cast<uint64_t>(SYS_fchmodat)) {
+          kind = Kind::Chmod;
+        }
+#endif
 
         if (kind != Kind::None) {
-          const std::string ts =
-              "\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
-              ",\"pid\":" + std::to_string(pid) + ",\"tid\":" + std::to_string(pid);
+          const std::string ts = tsIds(pid);
           switch (kind) {
           case Kind::Exec: {
             // execve(path, argv, envp) / execveat(dirfd, path, argv, envp, flags).
@@ -695,8 +848,9 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
               flagArg = pi.entryArgs[1];
             }
 #endif
-            if (isCreat) {
-              flagArg = O_WRONLY | O_CREAT | O_TRUNC;
+            const OpenFlags of = classifyOpenFlags(flagArg, isCreat);
+            if (!allOpens_ && of.dirOrPath) {
+              break; // default filter: O_DIRECTORY / O_PATH opens carry no content
             }
             std::string path, detail;
             if (!vmReadStr(pid, pathAddr, path, detail)) {
@@ -704,20 +858,17 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
               break;
             }
             const std::string canon = canonicalPath(pid, dirfd, path);
-            const bool write = ((flagArg & O_WRONLY) != 0) || ((flagArg & O_RDWR) != 0) || isCreat;
-            const bool create = ((flagArg & O_CREAT) != 0) || isCreat;
-            const bool trunc = ((flagArg & O_TRUNC) != 0) || isCreat;
             const bool okCall = !isErr;
-            if (!allOpens_ && !write) {
+            if (!allOpens_ && !of.write) {
               if (!okCall || isNoisyPath(canon)) {
                 break; // default filter: failed read-opens + noisy paths
               }
             }
             const long fd = okCall ? static_cast<long>(rval) : -1;
             emitEv("{" + ts + ",\"ev\":\"fs.open\",\"path\":" + jsonEscape(canon) + ",\"write\":" +
-                   (write ? "true" : "false") + ",\"create\":" + (create ? "true" : "false") +
-                   ",\"trunc\":" + (trunc ? "true" : "false") + ",\"fd\":" + std::to_string(fd) +
-                   "}");
+                   (of.write ? "true" : "false") + ",\"create\":" + (of.create ? "true" : "false") +
+                   ",\"trunc\":" + (of.trunc ? "true" : "false") + ",\"fd\":" + std::to_string(fd) +
+                   (of.tmpfile ? ",\"tmpfile\":true" : "") + "}");
             break;
           }
           case Kind::Unlink: {
@@ -731,13 +882,18 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
               dirfd = static_cast<long>(pi.entryArgs[0]);
               pathAddr = pi.entryArgs[1];
             }
+            // unlinkat with AT_REMOVEDIR removes a directory: report fs.rmdir.
+            bool rmdir = false;
+#ifdef AT_REMOVEDIR
+            rmdir = isAt && ((pi.entryArgs[2] & AT_REMOVEDIR) != 0);
+#endif
             std::string path, detail;
             if (!vmReadStr(pid, pathAddr, path, detail)) {
               emitDecodeError(pid, nr, "unlink path: " + detail);
               break;
             }
-            emitEv("{" + ts +
-                   ",\"ev\":\"fs.unlink\",\"path\":" + jsonEscape(canonicalPath(pid, dirfd, path)) +
+            emitEv("{" + ts + ",\"ev\":\"" + (rmdir ? "fs.rmdir" : "fs.unlink") +
+                   "\",\"path\":" + jsonEscape(canonicalPath(pid, dirfd, path)) +
                    ",\"ok\":" + (!isErr ? "true" : "false") + "}");
             break;
           }
@@ -792,6 +948,75 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
                    jsonEscape(canonicalPath(pid, dirfd, path)) + "}");
             break;
           }
+          case Kind::Symlink: {
+            // symlink(target, link) / symlinkat(target, dirfd, link)
+            bool isAt = false;
+#ifdef SYS_symlinkat
+            isAt = (nr == static_cast<uint64_t>(SYS_symlinkat));
+#endif
+            uint64_t targetAddr = pi.entryArgs[0];
+            long dirfd = AT_FDCWD;
+            uint64_t linkAddr = pi.entryArgs[1];
+            if (isAt) {
+              dirfd = static_cast<long>(pi.entryArgs[1]);
+              linkAddr = pi.entryArgs[2];
+            }
+            std::string target, link, d;
+            if (!vmReadStr(pid, targetAddr, target, d)) {
+              emitDecodeError(pid, nr, "symlink target: " + d);
+              break;
+            }
+            if (!vmReadStr(pid, linkAddr, link, d)) {
+              emitDecodeError(pid, nr, "symlink path: " + d);
+              break;
+            }
+            emitEv("{" + ts + ",\"ev\":\"fs.symlink\",\"target\":" + jsonEscape(target) +
+                   ",\"path\":" + jsonEscape(canonicalPath(pid, dirfd, link)) +
+                   ",\"ok\":" + (!isErr ? "true" : "false") + "}");
+            break;
+          }
+          case Kind::Chmod: {
+            // chmod(path, mode) / fchmodat(dirfd, path, mode) / fchmod(fd, mode).
+            // mode is emitted as a JSON number (raw mode bits; readers show octal).
+            bool isFd = false;
+#ifdef SYS_fchmod
+            isFd = (nr == static_cast<uint64_t>(SYS_fchmod));
+#endif
+            bool isAt = false;
+#ifdef SYS_fchmodat
+            isAt = (nr == static_cast<uint64_t>(SYS_fchmodat));
+#endif
+            std::string path;
+            uint64_t mode = 0;
+            if (isFd) {
+              const long fd = static_cast<long>(pi.entryArgs[0]);
+              mode = pi.entryArgs[1];
+              path = readLink("/proc/" + std::to_string(pid) + "/fd/" + std::to_string(fd));
+              if (path.empty()) {
+                emitDecodeError(pid, nr, "fchmod fd has no path");
+                break;
+              }
+              path = normaliseAbs(path);
+            } else {
+              long dirfd = AT_FDCWD;
+              uint64_t pathAddr = pi.entryArgs[0];
+              mode = pi.entryArgs[1];
+              if (isAt) {
+                dirfd = static_cast<long>(pi.entryArgs[0]);
+                pathAddr = pi.entryArgs[1];
+                mode = pi.entryArgs[2];
+              }
+              std::string raw, detail;
+              if (!vmReadStr(pid, pathAddr, raw, detail)) {
+                emitDecodeError(pid, nr, "chmod path: " + detail);
+                break;
+              }
+              path = canonicalPath(pid, dirfd, raw);
+            }
+            emitEv("{" + ts + ",\"ev\":\"fs.chmod\",\"path\":" + jsonEscape(path) + ",\"mode\":" +
+                   std::to_string(mode) + ",\"ok\":" + (!isErr ? "true" : "false") + "}");
+            break;
+          }
           case Kind::Connect:
           case Kind::Sendto:
           case Kind::Bind: {
@@ -833,11 +1058,11 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       continue;
     }
 
-    // Forward real signals; swallow SIGSTOP/SIGCHLD noise appropriately.
-    if (sig == SIGSTOP || sig == SIGCHLD) {
-      ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
-    } else if (sig == SIGTRAP && event == 0) {
-      // exec-stop or stray trap after EXEC event.
+    // Resume strategy: event stops (EXEC/EXIT/VFORK_DONE/...) and SIGSTOP/SIGCHLD
+    // noise resume bare. A bare SIGTRAP with no event is a stray trap, also
+    // resumed bare. Anything else is a real signal for the tracee. In
+    // particular we never inject SIGTRAP into the tracee on event stops.
+    if (sig == SIGSTOP || sig == SIGCHLD || event != 0 || sig == SIGTRAP) {
       ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
     } else {
       ptrace(PTRACE_SYSCALL, pid, nullptr, reinterpret_cast<void*>(static_cast<long>(sig)));
@@ -855,7 +1080,13 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   if (!error_.empty() && error_ == "interrupted") {
     return -kExitSoftware;
   }
-  return finalSet ? finalCode : 0;
+  if (!finalSet) {
+    // The tree is gone but the root never reported (exec-vanish race the
+    // sweep missed, or an ECHILD drain): partial trace, honest failure.
+    error_ = "lost track of root exit status";
+    return -kExitSoftware;
+  }
+  return finalCode;
 }
 
 } // namespace snowglobe::tracer
