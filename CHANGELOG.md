@@ -49,6 +49,9 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   exec_chain, deep_dirs, unix_sockets, failing_exec) with `run.sh` +
   `expected.jsonl`; `test/normalize.py` (P/T ids, $TMP/$REPO, python-version
   paths) and `test/golden.py` (`--update` regeneration + unified diffs).
+  threads/unix_sockets/exec_chain avoid interpreters (CPython startup file
+  sets differ per release and cannot be normalised): compiled C helpers and
+  pure sh+env instead — goldens regenerated accordingly.
 - Automated kill tests: supervisor SIGKILL (no survivors in 2 s), root
   SIGKILL (exit 137 + finalised manifest), supervisor SIGTERM (exit 143).
 - `probe/openat2.c`; openat2 flags now read from `struct open_how`.

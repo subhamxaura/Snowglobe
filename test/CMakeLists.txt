@@ -31,12 +31,18 @@ if(Python3_FOUND)
   # Golden scenario fixtures: run each scenario under snowglobe, compare
   # normalised events to test/fixtures/scenarios/<name>/expected.jsonl.
   # Regenerate with SNOWGLOBE_UPDATE_GOLDENS=1 (plus a CHANGELOG line).
+  # threads/unix_sockets use compiled C helpers (no interpreter: python
+  # startup file sets differ per release and cannot be normalised).
+  add_executable(sg_threads fixtures/scenarios/threads/sg_threads.c)
+  add_executable(sg_sockets fixtures/scenarios/unix_sockets/sg_sockets.c)
+  set_target_properties(sg_threads sg_sockets
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/helpers)
   foreach(scn IN ITEMS fork_storm threads exec_chain deep_dirs unix_sockets failing_exec)
     add_test(
       NAME golden_${scn}
       COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/golden.py
               $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/fixtures/scenarios/${scn}
-              ${CMAKE_SOURCE_DIR}
+              ${CMAKE_SOURCE_DIR} $<TARGET_FILE_DIR:sg_threads>
     )
   endforeach()
 

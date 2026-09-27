@@ -5,9 +5,13 @@ Each `<name>/` holds `run.sh` (deterministic, network-free workload) and
 
 ## Conventions (keep them — goldens depend on each)
 
-- `run.sh` starts with `export PATH=/usr/bin:/bin` (fixed execvp search),
-  `PYTHONHASHSEED=0`, `PYTHONDONTWRITEBYTECODE=1`; Python via `python3 -B -S`
-  (`-S` skips site imports: dist-packages/.pth file sets differ per release).
+- `run.sh` starts with `export PATH=/usr/bin:/bin` (fixed execvp search).
+- No interpreted languages in scenarios: python startup file sets differ per
+  release (import closure, .so link order) and cannot be normalised — threads
+  and unix_sockets use compiled C helpers (`sg_threads.c`, `sg_sockets.c`,
+  built by CMake into `test/helpers/`), exec_chain is pure sh+env. Helpers
+  are found via `$SG_HELPERS` (set by the driver; env is never recorded) and
+  normalise to `$HELPERS`.
 - Work dir is `mktemp -d` (`/tmp/tmp.XXXXXXXXXX` → normalised to `$TMP`).
 - Repo paths normalise to `$REPO`; `python3.V` / `cpython-3V` cover 3.10/3.12.
 - Scripts exit 0 (handle expected failures internally with `|| true`).

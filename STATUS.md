@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-09-27  ·  Phase: 1A Block 1 — DONE  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-27  ·  Phase: 1A Block 2 — IN PROGRESS (local green, CI pending)  ·  Next launch: v0.1.0, week 9
 
 > Phase 0 gate closed 2026-09-27 (CI run 36291693217, all 6 green). This
 > session did Phase 1A Block 1 only (process-tree correctness); Blocks 2

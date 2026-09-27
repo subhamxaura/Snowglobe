@@ -11,7 +11,7 @@ Rules (Phase 1A Block 2):
   (python3.V, cpython-3V) so one golden serves 22.04 (3.10) and 24.04 (3.12).
 - output: one canonical JSON object per line (sorted keys).
 
-Usage: normalize.py <events.jsonl> --repo <repo-path>
+Usage: normalize.py <events.jsonl> --repo <repo-path> [--helpers <dir>]
 """
 import json
 import re
@@ -26,12 +26,17 @@ CPYTHON_RE = re.compile(r"cpython-3\d+")
 def main():
     args = sys.argv[1:]
     repo = None
+    helpers = None
     if "--repo" in args:
         i = args.index("--repo")
         repo = args[i + 1]
         del args[i : i + 2]
+    if "--helpers" in args:
+        i = args.index("--helpers")
+        helpers = args[i + 1]
+        del args[i : i + 2]
     if not args or repo is None:
-        print("usage: normalize.py <events.jsonl> --repo <repo-path>")
+        print("usage: normalize.py <events.jsonl> --repo <repo-path> [--helpers <dir>]")
         return 2
     pid_map = {}
     tid_map = {}
@@ -70,6 +75,8 @@ def main():
         if isinstance(o, str):
             o = TMP_RE.sub("$TMP", o)
             o = o.replace(repo, "$REPO")
+            if helpers:
+                o = o.replace(helpers, "$HELPERS")
             o = PYVER_RE.sub("python3.V", o)
             o = CPYTHON_RE.sub("cpython-3V", o)
             return o
