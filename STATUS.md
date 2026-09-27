@@ -1,5 +1,10 @@
 # STATUS — Snowglobe
-Updated: 2026-09-27  ·  Phase: 1A Block 2 — IN PROGRESS (local green, CI pending)  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-27  ·  Phase: 1A Block 2 — DONE  ·  Next launch: v0.1.0, week 9
+
+> Block 2 gate closed: CI run
+> https://github.com/subhamxaura/Snowglobe/actions/runs/36301575125 — all 6
+> jobs green (22.04 + 24.04 × debug + asan-ubsan, cross-aarch64, lint).
+> Block 3 (bench + docs + real recordings) is a separate session.
 
 > Phase 0 gate closed 2026-09-27 (CI run 36291693217, all 6 green). This
 > session did Phase 1A Block 1 only (process-tree correctness); Blocks 2
@@ -19,8 +24,8 @@ Updated: 2026-09-27  ·  Phase: 1A Block 2 — IN PROGRESS (local green, CI pend
   CHANGELOG.md
 
 ## In progress
-- None — Block 1 DONE. Next: Block 2 (golden fixture suite + automated kill
-  test), separate session. Do not start Block 2 here.
+- None — Block 2 DONE. Next: Block 3 (baseline numbers, docs, real
+  recordings), separate session. Do not start Block 3 here.
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
 - `cmake --preset debug && cmake --build --preset debug && ctest --preset debug`:
@@ -61,6 +66,18 @@ Updated: 2026-09-27  ·  Phase: 1A Block 2 — IN PROGRESS (local green, CI pend
   present in child env.
 - ctest debug + asan-ubsan: 100% (5/5 incl. new open-flags unit test), zero
   sanitizer findings; clang-format clean.
+
+## Block 2 verification (all as uid 1000 except builds; WSL2 Ubuntu 24.04)
+- 6 goldens (262/28/22/59/23/38 events), byte-stable across repeat runs;
+  14/14 debug (2.6 s) and 14/14 asan-ubsan (3.4 s), zero sanitizer findings.
+- Kill tests: supervisor SIGKILL → no survivors in 2 s; root SIGKILL →
+  exit 137 + finalised manifest; supervisor SIGTERM → exit 143 + finalised.
+- CI run 36301575125 all green, incl. 22.04 (C helpers dodge CPython
+  startup divergence; helpers build sanitizer-free — LSAN is fatal under
+  ptrace — with $HELPERS normalised before $REPO).
+- Env notes: drvfs denies chmod/utime to non-root (cmake configure must run
+  as root; all test execution as uid 1000); /tmp is cleaned across WSL
+  reboots (persistent artifacts live outside /tmp).
 
 ## Next up (ordered)
 1. Phase 1A — tracer hardening (6 golden trees, kill-9 no-orphans, bench publish)
