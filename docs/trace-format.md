@@ -47,7 +47,7 @@ own tid. Threads that vanish in an exec without an exit stop get
 | `fs.rename` | `from, to, ok` |
 | `fs.mkdir` | `path` |
 | `fs.symlink` | `target, path, ok` |
-| `fs.chmod` | `path, mode, ok` (mode = raw bits as a JSON number; display octal) |
+| `fs.chmod` | `path, mode, ok` (mode = octal string, e.g. `"0755"`) |
 | `net.connect` | `addr (formatted), ok` |
 | `net.sendto` | `addr, ok` (UDP/DNS visibility) |
 | `net.bind` | `addr, ok` |

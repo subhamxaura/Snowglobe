@@ -1,0 +1,48 @@
+{"cmd": ["$REPO/test/fixtures/scenarios/unix_sockets/run.sh"], "cwd": "$REPO/test/fixtures/scenarios/unix_sockets", "ev": "run.meta", "pid": "P1", "tid": "T1"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P2", "root": true, "tid": "T1"}
+{"argv": ["$REPO/test/fixtures/scenarios/unix_sockets/run.sh"], "cwd": "$REPO/test/fixtures/scenarios/unix_sockets", "ev": "proc.exec", "path": "$REPO/test/fixtures/scenarios/unix_sockets/run.sh", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/scenarios/unix_sockets/run.sh", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P3", "ppid": "P1", "tid": "T2"}
+{"argv": ["dirname", "$REPO/test/fixtures/scenarios/unix_sockets/run.sh"], "cwd": "$REPO/test/fixtures/scenarios/unix_sockets", "ev": "proc.exec", "path": "/usr/bin/dirname", "pid": "P3", "tid": "T2"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P3", "tid": "T2", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P3", "tid": "T2", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P3", "signal": 0, "tid": "T2"}
+{"ev": "proc.start", "pid": "P4", "ppid": "P1", "tid": "T3"}
+{"argv": ["mktemp", "-d"], "cwd": "$REPO/test/fixtures/scenarios/unix_sockets", "ev": "proc.exec", "path": "/usr/bin/mktemp", "pid": "P4", "tid": "T3"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "$TMP", "pid": "P4", "tid": "T3"}
+{"code": 0, "ev": "proc.exit", "pid": "P4", "signal": 0, "tid": "T3"}
+{"ev": "proc.start", "pid": "P5", "ppid": "P1", "tid": "T4"}
+{"argv": ["python3", "-B", "-S", "$REPO/test/fixtures/scenarios/unix_sockets/sock.py", "$TMP"], "cwd": "$REPO/test/fixtures/scenarios/unix_sockets", "ev": "proc.exec", "path": "/usr/bin/python3", "pid": "P5", "tid": "T4"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libm.so.6", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libz.so.1", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libexpat.so.1", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/localtime", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/encodings/__pycache__/__init__.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/encodings/__pycache__/aliases.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/encodings/__pycache__/utf_8.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/scenarios/unix_sockets/sock.py", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/scenarios/unix_sockets/sock.py", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/socket.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/selectors.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/collections/__pycache__/__init__.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/keyword.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/operator.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/reprlib.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/collections/__pycache__/abc.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/enum.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/types.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/functools.cpython-3V.pyc", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"addr": "unix:$TMP/sock", "ev": "net.bind", "ok": true, "pid": "P5", "tid": "T4"}
+{"addr": "unix:$TMP/sock", "ev": "net.connect", "ok": true, "pid": "P5", "tid": "T4"}
+{"addr": "unix:", "ev": "net.bind", "ok": true, "pid": "P5", "tid": "T4"}
+{"addr": "unix:", "ev": "net.connect", "ok": true, "pid": "P5", "tid": "T4"}
+{"addr": "unix:$TMP/dg-a", "ev": "net.bind", "ok": true, "pid": "P5", "tid": "T4"}
+{"addr": "unix:$TMP/dg-b", "ev": "net.bind", "ok": true, "pid": "P5", "tid": "T4"}
+{"addr": "unix:$TMP/dg-b", "ev": "net.sendto", "ok": true, "pid": "P5", "tid": "T4"}
+{"code": 0, "ev": "proc.exit", "pid": "P5", "signal": 0, "tid": "T4"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T1"}

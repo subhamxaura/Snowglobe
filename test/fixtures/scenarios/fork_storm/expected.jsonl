@@ -1,0 +1,262 @@
+{"cmd": ["$REPO/test/fixtures/scenarios/fork_storm/run.sh"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "run.meta", "pid": "P1", "tid": "T1"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P2", "root": true, "tid": "T1"}
+{"argv": ["$REPO/test/fixtures/scenarios/fork_storm/run.sh"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "$REPO/test/fixtures/scenarios/fork_storm/run.sh", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/scenarios/fork_storm/run.sh", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P3", "ppid": "P1", "tid": "T2"}
+{"argv": ["mktemp", "-d"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/mktemp", "pid": "P3", "tid": "T2"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P3", "tid": "T2", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P3", "tid": "T2", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "$TMP", "pid": "P3", "tid": "T2"}
+{"code": 0, "ev": "proc.exit", "pid": "P3", "signal": 0, "tid": "T2"}
+{"ev": "proc.start", "pid": "P4", "ppid": "P1", "tid": "T3"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-1"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P4", "tid": "T3"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-1", "pid": "P4", "tid": "T3", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P4", "signal": 0, "tid": "T3"}
+{"ev": "proc.start", "pid": "P5", "ppid": "P1", "tid": "T4"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-2"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P5", "tid": "T4"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P5", "tid": "T4", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-2", "pid": "P5", "tid": "T4", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P5", "signal": 0, "tid": "T4"}
+{"ev": "proc.start", "pid": "P6", "ppid": "P1", "tid": "T5"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-3"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P6", "tid": "T5"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P6", "tid": "T5", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-3", "pid": "P6", "tid": "T5", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P6", "signal": 0, "tid": "T5"}
+{"ev": "proc.start", "pid": "P7", "ppid": "P1", "tid": "T6"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-4"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P7", "tid": "T6"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P7", "tid": "T6", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-4", "pid": "P7", "tid": "T6", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P7", "signal": 0, "tid": "T6"}
+{"ev": "proc.start", "pid": "P8", "ppid": "P1", "tid": "T7"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-5"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P8", "tid": "T7"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P8", "tid": "T7", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-5", "pid": "P8", "tid": "T7", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P8", "signal": 0, "tid": "T7"}
+{"ev": "proc.start", "pid": "P9", "ppid": "P1", "tid": "T8"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-6"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P9", "tid": "T8"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P9", "tid": "T8", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-6", "pid": "P9", "tid": "T8", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P9", "signal": 0, "tid": "T8"}
+{"ev": "proc.start", "pid": "P10", "ppid": "P1", "tid": "T9"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-7"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P10", "tid": "T9"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P10", "tid": "T9", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-7", "pid": "P10", "tid": "T9", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P10", "signal": 0, "tid": "T9"}
+{"ev": "proc.start", "pid": "P11", "ppid": "P1", "tid": "T10"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-8"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P11", "tid": "T10"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P11", "tid": "T10", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-8", "pid": "P11", "tid": "T10", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P11", "signal": 0, "tid": "T10"}
+{"ev": "proc.start", "pid": "P12", "ppid": "P1", "tid": "T11"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-9"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P12", "tid": "T11"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P12", "tid": "T11", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-9", "pid": "P12", "tid": "T11", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P12", "signal": 0, "tid": "T11"}
+{"ev": "proc.start", "pid": "P13", "ppid": "P1", "tid": "T12"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-10"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P13", "tid": "T12"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P13", "tid": "T12", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-10", "pid": "P13", "tid": "T12", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P13", "signal": 0, "tid": "T12"}
+{"ev": "proc.start", "pid": "P14", "ppid": "P1", "tid": "T13"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-11"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P14", "tid": "T13"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P14", "tid": "T13", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-11", "pid": "P14", "tid": "T13", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P14", "signal": 0, "tid": "T13"}
+{"ev": "proc.start", "pid": "P15", "ppid": "P1", "tid": "T14"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-12"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P15", "tid": "T14"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P15", "tid": "T14", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-12", "pid": "P15", "tid": "T14", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P15", "signal": 0, "tid": "T14"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P1", "tid": "T15"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-13"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P16", "tid": "T15"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P16", "tid": "T15", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-13", "pid": "P16", "tid": "T15", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T15"}
+{"ev": "proc.start", "pid": "P17", "ppid": "P1", "tid": "T16"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-14"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P17", "tid": "T16"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P17", "tid": "T16", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-14", "pid": "P17", "tid": "T16", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P17", "signal": 0, "tid": "T16"}
+{"ev": "proc.start", "pid": "P18", "ppid": "P1", "tid": "T17"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-15"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P18", "tid": "T17"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P18", "tid": "T17", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-15", "pid": "P18", "tid": "T17", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P18", "signal": 0, "tid": "T17"}
+{"ev": "proc.start", "pid": "P19", "ppid": "P1", "tid": "T18"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-16"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P19", "tid": "T18"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P19", "tid": "T18", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-16", "pid": "P19", "tid": "T18", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P19", "signal": 0, "tid": "T18"}
+{"ev": "proc.start", "pid": "P20", "ppid": "P1", "tid": "T19"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-17"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P20", "tid": "T19"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P20", "tid": "T19", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-17", "pid": "P20", "tid": "T19", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P20", "signal": 0, "tid": "T19"}
+{"ev": "proc.start", "pid": "P21", "ppid": "P1", "tid": "T20"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-18"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P21", "tid": "T20"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P21", "tid": "T20", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-18", "pid": "P21", "tid": "T20", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P21", "signal": 0, "tid": "T20"}
+{"ev": "proc.start", "pid": "P22", "ppid": "P1", "tid": "T21"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-19"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P22", "tid": "T21"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P22", "tid": "T21", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-19", "pid": "P22", "tid": "T21", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P22", "signal": 0, "tid": "T21"}
+{"ev": "proc.start", "pid": "P23", "ppid": "P1", "tid": "T22"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-20"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P23", "tid": "T22"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P23", "tid": "T22", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-20", "pid": "P23", "tid": "T22", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P23", "signal": 0, "tid": "T22"}
+{"ev": "proc.start", "pid": "P24", "ppid": "P1", "tid": "T23"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-21"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P24", "tid": "T23"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P24", "tid": "T23", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-21", "pid": "P24", "tid": "T23", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P24", "signal": 0, "tid": "T23"}
+{"ev": "proc.start", "pid": "P25", "ppid": "P1", "tid": "T24"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-22"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P25", "tid": "T24"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P25", "tid": "T24", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-22", "pid": "P25", "tid": "T24", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P25", "signal": 0, "tid": "T24"}
+{"ev": "proc.start", "pid": "P26", "ppid": "P1", "tid": "T25"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-23"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P26", "tid": "T25"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P26", "tid": "T25", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-23", "pid": "P26", "tid": "T25", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P26", "signal": 0, "tid": "T25"}
+{"ev": "proc.start", "pid": "P27", "ppid": "P1", "tid": "T26"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-24"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P27", "tid": "T26"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P27", "tid": "T26", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-24", "pid": "P27", "tid": "T26", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P27", "signal": 0, "tid": "T26"}
+{"ev": "proc.start", "pid": "P28", "ppid": "P1", "tid": "T27"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-25"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P28", "tid": "T27"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P28", "tid": "T27", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-25", "pid": "P28", "tid": "T27", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P28", "signal": 0, "tid": "T27"}
+{"ev": "proc.start", "pid": "P29", "ppid": "P1", "tid": "T28"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-26"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P29", "tid": "T28"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P29", "tid": "T28", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-26", "pid": "P29", "tid": "T28", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P29", "signal": 0, "tid": "T28"}
+{"ev": "proc.start", "pid": "P30", "ppid": "P1", "tid": "T29"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-27"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P30", "tid": "T29"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P30", "tid": "T29", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-27", "pid": "P30", "tid": "T29", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P30", "signal": 0, "tid": "T29"}
+{"ev": "proc.start", "pid": "P31", "ppid": "P1", "tid": "T30"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-28"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P31", "tid": "T30"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P31", "tid": "T30", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-28", "pid": "P31", "tid": "T30", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P31", "signal": 0, "tid": "T30"}
+{"ev": "proc.start", "pid": "P32", "ppid": "P1", "tid": "T31"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-29"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P32", "tid": "T31"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P32", "tid": "T31", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-29", "pid": "P32", "tid": "T31", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P32", "signal": 0, "tid": "T31"}
+{"ev": "proc.start", "pid": "P33", "ppid": "P1", "tid": "T32"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-30"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P33", "tid": "T32"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P33", "tid": "T32", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-30", "pid": "P33", "tid": "T32", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P33", "signal": 0, "tid": "T32"}
+{"ev": "proc.start", "pid": "P34", "ppid": "P1", "tid": "T33"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-31"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P34", "tid": "T33"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P34", "tid": "T33", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-31", "pid": "P34", "tid": "T33", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P34", "signal": 0, "tid": "T33"}
+{"ev": "proc.start", "pid": "P35", "ppid": "P1", "tid": "T34"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-32"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P35", "tid": "T34"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P35", "tid": "T34", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-32", "pid": "P35", "tid": "T34", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P35", "signal": 0, "tid": "T34"}
+{"ev": "proc.start", "pid": "P36", "ppid": "P1", "tid": "T35"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-33"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P36", "tid": "T35"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P36", "tid": "T35", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-33", "pid": "P36", "tid": "T35", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P36", "signal": 0, "tid": "T35"}
+{"ev": "proc.start", "pid": "P37", "ppid": "P1", "tid": "T36"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-34"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P37", "tid": "T36"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P37", "tid": "T36", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-34", "pid": "P37", "tid": "T36", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P37", "signal": 0, "tid": "T36"}
+{"ev": "proc.start", "pid": "P38", "ppid": "P1", "tid": "T37"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-35"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P38", "tid": "T37"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P38", "tid": "T37", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-35", "pid": "P38", "tid": "T37", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P38", "signal": 0, "tid": "T37"}
+{"ev": "proc.start", "pid": "P39", "ppid": "P1", "tid": "T38"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-36"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P39", "tid": "T38"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P39", "tid": "T38", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-36", "pid": "P39", "tid": "T38", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P39", "signal": 0, "tid": "T38"}
+{"ev": "proc.start", "pid": "P40", "ppid": "P1", "tid": "T39"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-37"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P40", "tid": "T39"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P40", "tid": "T39", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-37", "pid": "P40", "tid": "T39", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P40", "signal": 0, "tid": "T39"}
+{"ev": "proc.start", "pid": "P41", "ppid": "P1", "tid": "T40"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-38"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P41", "tid": "T40"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P41", "tid": "T40", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-38", "pid": "P41", "tid": "T40", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P41", "signal": 0, "tid": "T40"}
+{"ev": "proc.start", "pid": "P42", "ppid": "P1", "tid": "T41"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-39"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P42", "tid": "T41"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P42", "tid": "T41", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-39", "pid": "P42", "tid": "T41", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P42", "signal": 0, "tid": "T41"}
+{"ev": "proc.start", "pid": "P43", "ppid": "P1", "tid": "T42"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-40"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P43", "tid": "T42"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P43", "tid": "T42", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-40", "pid": "P43", "tid": "T42", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P43", "signal": 0, "tid": "T42"}
+{"ev": "proc.start", "pid": "P44", "ppid": "P1", "tid": "T43"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-41"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P44", "tid": "T43"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P44", "tid": "T43", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-41", "pid": "P44", "tid": "T43", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P44", "signal": 0, "tid": "T43"}
+{"ev": "proc.start", "pid": "P45", "ppid": "P1", "tid": "T44"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-42"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P45", "tid": "T44"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P45", "tid": "T44", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-42", "pid": "P45", "tid": "T44", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P45", "signal": 0, "tid": "T44"}
+{"ev": "proc.start", "pid": "P46", "ppid": "P1", "tid": "T45"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-43"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P46", "tid": "T45"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P46", "tid": "T45", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-43", "pid": "P46", "tid": "T45", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P46", "signal": 0, "tid": "T45"}
+{"ev": "proc.start", "pid": "P47", "ppid": "P1", "tid": "T46"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-44"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P47", "tid": "T46"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P47", "tid": "T46", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-44", "pid": "P47", "tid": "T46", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P47", "signal": 0, "tid": "T46"}
+{"ev": "proc.start", "pid": "P48", "ppid": "P1", "tid": "T47"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-45"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P48", "tid": "T47"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P48", "tid": "T47", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-45", "pid": "P48", "tid": "T47", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P48", "signal": 0, "tid": "T47"}
+{"ev": "proc.start", "pid": "P49", "ppid": "P1", "tid": "T48"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-46"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P49", "tid": "T48"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P49", "tid": "T48", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-46", "pid": "P49", "tid": "T48", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P49", "signal": 0, "tid": "T48"}
+{"ev": "proc.start", "pid": "P50", "ppid": "P1", "tid": "T49"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-47"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P50", "tid": "T49"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P50", "tid": "T49", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-47", "pid": "P50", "tid": "T49", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P50", "signal": 0, "tid": "T49"}
+{"ev": "proc.start", "pid": "P51", "ppid": "P1", "tid": "T50"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-48"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P51", "tid": "T50"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P51", "tid": "T50", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-48", "pid": "P51", "tid": "T50", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P51", "signal": 0, "tid": "T50"}
+{"ev": "proc.start", "pid": "P52", "ppid": "P1", "tid": "T51"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-49"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P52", "tid": "T51"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P52", "tid": "T51", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-49", "pid": "P52", "tid": "T51", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P52", "signal": 0, "tid": "T51"}
+{"ev": "proc.start", "pid": "P53", "ppid": "P1", "tid": "T52"}
+{"argv": ["sh", "-c", "echo storm > $TMP/f-50"], "cwd": "$REPO/test/fixtures/scenarios/fork_storm", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P53", "tid": "T52"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P53", "tid": "T52", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$TMP/f-50", "pid": "P53", "tid": "T52", "trunc": true, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P53", "signal": 0, "tid": "T52"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T1"}

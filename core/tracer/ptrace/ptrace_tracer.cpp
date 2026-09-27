@@ -716,6 +716,12 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
           kind = Kind::Unlink;
         }
 #endif
+#ifdef SYS_rmdir
+        // rmdir(2): glibc emits the legacy syscall, not unlinkat.
+        if (nr == static_cast<uint64_t>(SYS_rmdir)) {
+          kind = Kind::Unlink;
+        }
+#endif
 #ifdef SYS_rename
         if (nr == static_cast<uint64_t>(SYS_rename)) {
           kind = Kind::Rename;
@@ -829,9 +835,14 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
           }
           case Kind::Open: {
             // open(path, flags) / openat(dirfd, path, flags) / creat(path, mode)
+            // openat2(dirfd, path, open_how*, size): flags live in the struct.
             bool isCreat = false;
 #ifdef SYS_creat
             isCreat = (nr == static_cast<uint64_t>(SYS_creat));
+#endif
+            bool isOpenat2 = false;
+#ifdef SYS_openat2
+            isOpenat2 = (nr == static_cast<uint64_t>(SYS_openat2));
 #endif
             long dirfd = AT_FDCWD;
             uint64_t pathAddr = pi.entryArgs[0];
@@ -848,6 +859,15 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
               flagArg = pi.entryArgs[1];
             }
 #endif
+            if (isOpenat2) {
+              dirfd = static_cast<long>(pi.entryArgs[0]);
+              pathAddr = pi.entryArgs[1];
+              // struct open_how starts with flags (__u64 at offset 0).
+              if (!vmReadU64(pid, pi.entryArgs[2], flagArg)) {
+                emitDecodeError(pid, nr, "openat2 open_how: unreadable");
+                break;
+              }
+            }
             const OpenFlags of = classifyOpenFlags(flagArg, isCreat);
             if (!allOpens_ && of.dirOrPath) {
               break; // default filter: O_DIRECTORY / O_PATH opens carry no content
@@ -882,10 +902,14 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
               dirfd = static_cast<long>(pi.entryArgs[0]);
               pathAddr = pi.entryArgs[1];
             }
-            // unlinkat with AT_REMOVEDIR removes a directory: report fs.rmdir.
+            // unlinkat with AT_REMOVEDIR (or the legacy rmdir syscall)
+            // removes a directory: report fs.rmdir.
             bool rmdir = false;
+#ifdef SYS_rmdir
+            rmdir = (nr == static_cast<uint64_t>(SYS_rmdir));
+#endif
 #ifdef AT_REMOVEDIR
-            rmdir = isAt && ((pi.entryArgs[2] & AT_REMOVEDIR) != 0);
+            rmdir = rmdir || (isAt && ((pi.entryArgs[2] & AT_REMOVEDIR) != 0));
 #endif
             std::string path, detail;
             if (!vmReadStr(pid, pathAddr, path, detail)) {
@@ -1013,8 +1037,12 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
               }
               path = canonicalPath(pid, dirfd, raw);
             }
+            // Mode is an octal string ("0755"): stable across readers, no
+            // decimal/octal ambiguity in goldens.
+            char modeStr[16] = {};
+            std::snprintf(modeStr, sizeof(modeStr), "0%o", (unsigned int)mode);
             emitEv("{" + ts + ",\"ev\":\"fs.chmod\",\"path\":" + jsonEscape(path) + ",\"mode\":" +
-                   std::to_string(mode) + ",\"ok\":" + (!isErr ? "true" : "false") + "}");
+                   jsonEscape(modeStr) + ",\"ok\":" + (!isErr ? "true" : "false") + "}");
             break;
           }
           case Kind::Connect:
@@ -1058,11 +1086,14 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       continue;
     }
 
-    // Resume strategy: event stops (EXEC/EXIT/VFORK_DONE/...) and SIGSTOP/SIGCHLD
+    // Resume strategy: event stops (EXEC/EXIT/VFORK_DONE/...) and SIGSTOP
     // noise resume bare. A bare SIGTRAP with no event is a stray trap, also
     // resumed bare. Anything else is a real signal for the tracee. In
     // particular we never inject SIGTRAP into the tracee on event stops.
-    if (sig == SIGSTOP || sig == SIGCHLD || event != 0 || sig == SIGTRAP) {
+    // NOTE: SIGCHLD is always a genuine delivery (the supervisor may have
+    // stolen the reaping, but the tracee's job control still needs the
+    // notification): it must be forwarded, never swallowed.
+    if (sig == SIGSTOP || event != 0 || sig == SIGTRAP) {
       ptrace(PTRACE_SYSCALL, pid, nullptr, nullptr);
     } else {
       ptrace(PTRACE_SYSCALL, pid, nullptr, reinterpret_cast<void*>(static_cast<long>(sig)));

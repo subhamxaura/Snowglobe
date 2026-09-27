@@ -27,4 +27,26 @@ if(Python3_FOUND)
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/integration/tracer_basic.py
             $<TARGET_FILE:snowglobe>
   )
+
+  # Golden scenario fixtures: run each scenario under snowglobe, compare
+  # normalised events to test/fixtures/scenarios/<name>/expected.jsonl.
+  # Regenerate with SNOWGLOBE_UPDATE_GOLDENS=1 (plus a CHANGELOG line).
+  foreach(scn IN ITEMS fork_storm threads exec_chain deep_dirs unix_sockets failing_exec)
+    add_test(
+      NAME golden_${scn}
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/golden.py
+              $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/fixtures/scenarios/${scn}
+              ${CMAKE_SOURCE_DIR}
+    )
+  endforeach()
+
+  # Automated kill tests: supervisor SIGKILL, root SIGKILL, supervisor SIGTERM.
+  foreach(kill IN ITEMS a b c)
+    add_test(
+      NAME kill_${kill}
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/kill_tests.py
+              $<TARGET_FILE:snowglobe> ${CMAKE_SOURCE_DIR} ${kill}
+    )
+    set_tests_properties(kill_${kill} PROPERTIES TIMEOUT 120)
+  endforeach()
 endif()

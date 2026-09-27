@@ -44,6 +44,16 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   (22.04 ships pip 22.0.2, which predates the flag); 22.04 gets Python via
   setup-python and the Kitware cmake wheel through its modern pip.
 
+### Added (Phase 1A Block 2)
+- Golden fixture suite: `test/fixtures/scenarios/` (fork_storm, threads,
+  exec_chain, deep_dirs, unix_sockets, failing_exec) with `run.sh` +
+  `expected.jsonl`; `test/normalize.py` (P/T ids, $TMP/$REPO, python-version
+  paths) and `test/golden.py` (`--update` regeneration + unified diffs).
+- Automated kill tests: supervisor SIGKILL (no survivors in 2 s), root
+  SIGKILL (exit 137 + finalised manifest), supervisor SIGTERM (exit 143).
+- `probe/openat2.c`; openat2 flags now read from `struct open_how`.
+- `fs.chmod` mode is an octal string (`"0755"`).
+
 ### Added (Phase 1A Block 1)
 - Threads: every event carries `pid` (=tgid) + `tid`; `proc.start` sets
   `thread:true` for clone-with-thread; `probe/threads.c` proves per-tid
