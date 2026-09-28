@@ -1,17 +1,18 @@
 # ptrace baseline (Phase 1A Block 3)
 
-date: 2026-09-27T09:00:13Z
-machine: x86_64 nproc=16 mem_kb=8036540
+date: 2026-09-28T15:06:21Z
+machine: x86_64 nproc=16 mem_kb=8036544
 kernel: 6.6.87.2-microsoft-standard-WSL2
 uid: 1000
 snowglobe: snowglobe 0.1.0-phase0
-repo: /home/tester/src/snowglobe commit=28665aa
+repo: /home/tester/src/snowglobe commit=815ebdf
 repo_dirty_files: 7
-method: 5 runs each, wall clock (date +%s%N), median with min/max; traced runs go through `snowglobe run` with identical `bash -c` shape; .sgr dirs removed after each run
+strace: strace -- version 6.8
+method: 5 runs each, wall clock (date +%s%N), median with min/max; traced runs go through `snowglobe run` with identical `bash -c` shape (.sgr event counts are medians); strace runs use `strace -f -qq -o /dev/null` as the reference tracer; .sgr dirs removed after each run
 
-| workload | untraced med ms (min-max) | traced med ms (min-max) | overhead ms | ratio |
-|---|---|---|---|---|
-| forkexec-300 | 386.3 (381.8-432.1) | 5325.2 (5224.1-5384.0) | 4939.0 | 13.79x |
-| python-import | 80.4 (68.1-81.1) | 352.4 (327.1-371.8) | 272.0 | 4.38x |
-| git-status | 8.2 (7.6-8.5) | 96.2 (95.8-96.9) | 88.0 | 11.75x |
-| find-usrlib | 2809.1 (2745.2-3147.2) | 7375.1 (7077.8-7689.4) | 4566.0 | 2.63x |
+| workload | untraced med ms (min-max) | strace med ms (min-max) | snowglobe med ms (min-max) | overhead vs plain ms | ratio | events |
+|---|---|---|---|---|---|---|
+| forkexec-300 | 471.6 (454.7-498.1) | 6768.7 (6454.8-7004.4) | 5967.7 (5872.8-6165.0) | 5496.0 | 12.65x | 2116 |
+| python-import | 90.7 (87.1-96.2) | 430.8 (416.8-463.3) | 402.2 (383.1-421.7) | 311.5 | 4.43x | 137 |
+| git-status | 9.5 (8.3-9.7) | 129.8 (128.6-135.1) | 121.6 (120.2-125.2) | 112.1 | 12.86x | 43 |
+| find-usrlib | 3181.1 (3130.5-3788.9) | 9196.4 (9190.9-9426.6) | 8673.0 (8554.2-8783.6) | 5491.9 | 2.73x | 24 |

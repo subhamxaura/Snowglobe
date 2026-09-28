@@ -20,7 +20,7 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build cmake g++ git python3
+          sudo apt-get install -y ninja-build cmake g++ git python3 strace
       - name: Configure (release)
         run: cmake --preset release
       - name: Build (release)

@@ -361,14 +361,15 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   int finalCode = 0;
   bool finalSet = false;
 
-  // run.meta
+  // run.meta (cmd is secret-redacted like proc.exec argv — ADR-0003;
+  // secretEnv_ was captured from TraceOptions above).
   {
     std::string cmdJson;
     for (const auto& a : argv) {
       if (!cmdJson.empty()) {
         cmdJson += ",";
       }
-      cmdJson += jsonEscape(a);
+      cmdJson += jsonEscape(redact::redactText(a, secretEnv_));
     }
     char cwd[4096] = {};
     std::string cwdStr;

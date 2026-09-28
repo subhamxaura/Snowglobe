@@ -16,6 +16,44 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 - Supervisor: proxy lifecycle, 6 base-URL env vars, --no-llm-proxy,
   ≤10 s drain, epilogue counts LLM turns.
 
+### Added (Phase 1B Block 2 — mock + toy agent + proxy integration)
+- `test/mockllm/server.py` (stdlib `ThreadingHTTPServer`): OpenAI Chat
+  Completions + Anthropic Messages, streaming (manual chunked framing) and
+  non-streaming, FIFO JSON scenario scripts (bodies verbatim, incl. tool
+  calls; `gen_bytes`/`chunks_gen` emit deterministic multi-MB bodies without
+  multi-MB files), per-response `chunk_delay_ms`/`delay_last_ms` overrides,
+  verbatim headers log + `--sent-dir` req/res bodies for byte-exactness
+  asserts, `GET /test-data`.
+- `examples/toy-agent/agent.py` (~120 lines, stdlib): OpenAI-format tool
+  loop (`write_file`, `run_command` via `sh -c`, `http_get` truncated to
+  2000 chars); reads `OPENAI_BASE_URL`/`OPENAI_API_KEY`; deterministic
+  3-turn dialogue driven entirely by the mock scenario.
+- 8 CTest integrations (`test/proxy/`, stdlib only, own mock per test, no
+  keys): toy_agent (3 pairs + exec/open/connect interleave, REDACTED
+  stored vs real `Bearer` at mock, `3 LLM turns` epilogue), latency
+  (first byte ~10 ms vs 2 s last chunk; median TTFB delta 1.2 ms debug),
+  concurrent (8 streams byte-exact multiset sha256), disconnect
+  (`truncated:true`, next 200), errors (429+500 passthrough, `0 LLM
+  turns`), large (50 MB up intact, ~52 MB streamed down byte-exact),
+  redact_argv (argv+manifest REDACTED, secret grep of run dir empty),
+  anthropic (`x-api-key` REDACTED/stored, intact forwarded).
+- CI `build-test` matrix gains the `tsan` preset (proxy thread coverage).
+- `bench/ptrace_baseline.sh`: `strace -f -qq -o /dev/null` reference
+  column, median traced event counts, `strace` version in the header;
+  `bench.yml` installs `strace`. Local results regenerated (snowglobe is
+  at/below strace on 3/4 workloads); the CI file regenerates via the bench
+  workflow on push.
+
+### Fixed (Phase 1B Block 2)
+- Tracer `run.meta` cmd bypassed secret redaction (manifest cmd was
+  clean) — caught by the new redact_argv e2e (secret bytes in
+  events.jsonl). `ptrace_tracer.cpp` now runs `redactText` over `run.meta`
+  cmd with `secretEnv_`; goldens unchanged (no secret-like argv there).
+- Latency budget is preset-aware: the 5 ms product budget holds on plain
+  builds (debug measures 1.2 ms); ASan slows the proxy ~6 ms, so sanitizer
+  presets bound the delta at 25 ms via `SG_LAT_BUDGET_S` (set in
+  test/CMakeLists from the sanitize flags). Same test, still a bound.
+
 ### Fixed (Phase 1B Block 1 CI, run 36332355926 + follow-up run 36427541348)
 - `cross-aarch64`: host x86_64 OpenSSL cannot be used by
   `aarch64-linux-gnu-g++` (`openssl/opensslconf.h` is arch-specific, then

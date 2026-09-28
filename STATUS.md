@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-09-27  ·  Phase: 1B Block 1 — IN PROGRESS (local green, CI pending)  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-28  ·  Phase: 1B Block 2 — DONE locally (34/34 debug + asan-ubsan as uid 1000; tsan builds, runs in CI) — push + CI poll next, do not start Block 3 here  ·  Next launch: v0.1.0, week 9
 
 > Phase 1A gate closed: CI run
 > https://github.com/subhamxaura/Snowglobe/actions/runs/36311530345 — all 6
@@ -32,8 +32,9 @@ Updated: 2026-09-27  ·  Phase: 1B Block 1 — IN PROGRESS (local green, CI pend
   CHANGELOG.md
 
 ## In progress
-- Block 1: CI poll for the Block 1 push, then close Block 1. Do not start
-  Block 2 (mock/toy-agent/integration tests) here.
+- Block 2: push + CI poll (debug/asan-ubsan/tsan × 22.04/24.04, lint,
+  cross-aarch64, bench regen), then close Block 2. Do not start Block 3
+  (docs, real recording, tag) here.
 - Note: OpenSSL links dynamically for now (static is a Phase 4 problem).
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
@@ -106,6 +107,27 @@ Updated: 2026-09-27  ·  Phase: 1B Block 1 — IN PROGRESS (local green, CI pend
   (curl exit 18 root-caused to its absence in an earlier revision).
 - TSan cannot execute on this WSL box at all (hello-world fails identically:
   unexpected memory mapping) — environmental; CI adjudicates in Block 2.
+
+## Block 2 verification (all as uid 1000 in ~/src/snowglobe ext4 unless noted)
+- Mock (`test/mockllm/server.py`) smoke: non-stream verbatim, SSE chunked +
+  `[DONE]`, `/test-data`, verbatim `Authorization` in headers log, per-req
+  req/res bodies in `--sent-dir`.
+- Toy agent direct-vs-mock: exit 0, `done`, `note.txt` = `hello snowglobe`.
+- Snowglobe e2e: `run --upstream=openai=<mock> -- agent.py` → exit 0,
+  `3 LLM turns`, stored `Authorization: REDACTED`, mock saw 3× real
+  `Bearer`, secret grep over run dir 0.
+- `ctest --preset debug`: 34/34 (20.2 s, incl. 8 new proxy tests);
+  `asan-ubsan`: 34/34 (26.1 s), zero findings. Latency: first byte 10 ms
+  (<1.5 s), median TTFB delta 1.2 ms debug (budget 5 ms) / 6.0 ms asan
+  (budget 25 ms, sanitizer-scaled — see test/CMakeLists).
+- New tests caught a real bug: tracer `run.meta` cmd unredacted (fixed in
+  `ptrace_tracer.cpp`; goldens 8/8 still green, no golden change needed).
+- `tsan` preset compiles + links clean; execution impossible on WSL
+  (memory-mapping, incl. Catch discovery) — CI runs it. No C++ logic
+  changes in Block 2 except the one-line redaction fix.
+- Bench regen (release, WSL2): strace column + median event counts;
+  forkexec 12.65× (2116 ev), python-import 4.43× (137 ev), git-status
+  12.86× (43 ev), find-usrlib 2.73× (24 ev). CI file regenerates on push.
 
 ## Block 3 verification (all as uid 1000 in ~/src/snowglobe ext4 unless noted)
 - tcp_loopback (23 events): binds + blocking connects initiated:true;

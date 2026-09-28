@@ -10,7 +10,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
-        preset: [debug, asan-ubsan]
+        # tsan covers the proxy's threads (Block 2); the C helpers build
+        # sanitizer-free in every preset so goldens stay comparable.
+        preset: [debug, asan-ubsan, tsan]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

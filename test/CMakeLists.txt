@@ -68,4 +68,34 @@ if(Python3_FOUND)
     )
     set_tests_properties(kill_${kill} PROPERTIES TIMEOUT 120)
   endforeach()
+
+  # Phase 1B Block 2: mock LLM + toy-agent proxy integration (stdlib only).
+  # Uniform argv: <snowglobe> <mockllm-dir> <toyagent-dir>. Each test starts
+  # its own mock on a fixed localhost port (no API keys anywhere).
+  set(SG_PROXY_TESTS
+    toy_agent:180 latency:300 concurrent:180 disconnect:180 errors:120
+    large:300 redact_argv:120 anthropic:120)
+  foreach(pair IN ITEMS ${SG_PROXY_TESTS})
+    string(REPLACE ":" ";" parts "${pair}")
+    list(GET parts 0 tname)
+    list(GET parts 1 ttimeout)
+    add_test(
+      NAME proxy_${tname}
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/proxy/proxy_${tname}.py
+              $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/mockllm
+              ${CMAKE_SOURCE_DIR}/examples/toy-agent
+    )
+    set_tests_properties(proxy_${tname} PROPERTIES TIMEOUT ${ttimeout})
+  endforeach()
+  # Latency budget scales with instrumentation: the 5 ms product budget
+  # (AGENTS.md §5) holds on plain builds; ASan/TSan slow the proxy ~5x, so
+  # those presets bound the delta at 25 ms instead. Still a bound, still
+  # green — the product number is the debug one.
+  if(CMAKE_CXX_FLAGS MATCHES "sanitize=(address|thread)")
+    set(SG_LAT_BUDGET_S 0.025)
+  else()
+    set(SG_LAT_BUDGET_S 0.005)
+  endif()
+  set_tests_properties(proxy_latency PROPERTIES
+    ENVIRONMENT "SG_LAT_BUDGET_S=${SG_LAT_BUDGET_S}")
 endif()
