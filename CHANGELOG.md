@@ -16,15 +16,19 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 - Supervisor: proxy lifecycle, 6 base-URL env vars, --no-llm-proxy,
   ≤10 s drain, epilogue counts LLM turns.
 
-### Fixed (Phase 1B Block 1 CI, run 36332355926)
+### Fixed (Phase 1B Block 1 CI, run 36332355926 + follow-up run 36427541348)
 - `cross-aarch64`: host x86_64 OpenSSL cannot be used by
   `aarch64-linux-gnu-g++` (`openssl/opensslconf.h` is arch-specific, then
   host libs mismatch). Added `SNOWGLOBE_WITH_SSL` (default ON); the cross
-  job passes `-DSNOWGLOBE_WITH_SSL=OFF` (httplib without
-  `CPPHTTPLIB_OPENSSL_SUPPORT`, no `OpenSSL::` link). Native jobs keep TLS;
-  the cross job stays build-only. Verified: `aarch64` configure + build
-  clean, `file core/snowglobe` = `ELF 64-bit LSB pie executable, ARM
-  aarch64`.
+  job passes `-DSNOWGLOBE_WITH_SSL=OFF` (no `find_package(OpenSSL)`, no
+  `OpenSSL::` link, httplib with both `HTTPLIB_REQUIRE_OPENSSL=OFF` and
+  `HTTPLIB_USE_OPENSSL_IF_AVAILABLE=OFF` so `CPPHTTPLIB_OPENSSL_SUPPORT` is
+  never defined — the second switch matters because CI has `pkg-config`,
+  which lets httplib auto-find host OpenSSL even with `REQUIRE` off).
+  Native jobs keep TLS; the cross job stays build-only. Verified with
+  `pkg-config` installed (CI-like): cross proxy compile has no
+  `CPPHTTPLIB_OPENSSL_SUPPORT`, build clean, `file core/snowglobe` = `ELF
+  64-bit LSB pie executable, ARM aarch64`; native still defines it.
 - `golden_threads` (22.04 asan-ubsan only): ack-pipe exit handoff was racy —
   successor wake/exit is concurrent with predecessor exit, so `waitpid`
   order varied with observer speed (ASan slowdown flipped it).

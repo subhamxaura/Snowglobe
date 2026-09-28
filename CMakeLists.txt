@@ -47,6 +47,12 @@ FetchContent_Declare(
   SYSTEM
 )
 set(HTTPLIB_REQUIRE_OPENSSL ${SNOWGLOBE_WITH_SSL})
+# httplib also auto-enables SSL via USE_IF_AVAILABLE (default ON) whenever it
+# finds *any* OpenSSL — including host x86_64 libs under a cross compiler
+# (CI has pkg-config, so the host lib is found and CPPHTTPLIB_OPENSSL_SUPPORT
+# gets defined, breaking the aarch64 build on opensslconf.h). Tie it to the
+# same switch so WITH_SSL=OFF truly means no OpenSSL anywhere.
+set(HTTPLIB_USE_OPENSSL_IF_AVAILABLE ${SNOWGLOBE_WITH_SSL})
 set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF)
 set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF)
 set(HTTPLIB_USE_ZSTD_IF_AVAILABLE OFF)
