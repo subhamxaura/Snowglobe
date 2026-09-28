@@ -40,8 +40,8 @@ def main():
             f.write(pre + "Q" * (N - len(pre) - len(suf)) + suf)
         with open(big, "rb") as f:
             sent_sha = hashlib.sha256(f.read()).hexdigest()
-        jobs = [{"path": "/v1/chat/completions", "body_file": big},
-                {"path": "/v1/chat/completions",
+        jobs = [{"path": "/chat/completions", "body_file": big},
+                {"path": "/chat/completions",
                  "body": {"model": "mock-model-1", "stream": True}}]
         jobs_f = os.path.join(work, "jobs.json")
         res_f = os.path.join(work, "results.json")

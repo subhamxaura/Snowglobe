@@ -16,8 +16,45 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 - Supervisor: proxy lifecycle, 6 base-URL env vars, --no-llm-proxy,
   ≤10 s drain, epilogue counts LLM turns.
 
-### Added (Phase 1B Block 2 — mock + toy agent + proxy integration)
-- `test/mockllm/server.py` (stdlib `ThreadingHTTPServer`): OpenAI Chat
+### Added (Phase 1B Block 3 — docs, fallback fixture)
+- `docs/architecture.md`: proxy data-flow, routes, env injection (incl.
+  the load-bearing `/v1` in the OpenAI bases), timing capture, redaction
+  boundaries, thread ownership; stale "epoll forwarder" line corrected.
+- `docs/trace-format.md`: `llm.request`/`llm.response` field tables,
+  `llm/` blob + `.idx` formats, `truncated` semantics, turns counting;
+  records the deliberate deviation from the AGENTS.md §3 sketch (no
+  `llm.chunk` events, no `blob/usage/cost` fields — timing in `.idx`,
+  parsing in the viewer).
+- `docs/limitations.md`: proxy capture chapter (base-URL ignorance,
+  HTTPS_PROXY-only SDKs, HTTP/2, deferred `--mitm`, uninjected
+  Azure/Ollama, upload buffering).
+- `docs/adr/0004-proxy-transport-httplib.md`: cpp-httplib streaming over a
+  custom epoll forwarder, with consequences (incl. the 22.04-tsan regex
+  finding and the per-request setup cost the latency test pins).
+- `test/fixtures/real/toy-agent-3turn/` (FALLBACK, explicitly labelled):
+  125 normalised events + 9 blobs from the toy agent — no
+  `ANTHROPIC_API_KEY`/`claude` on the box, so the real-recording issue
+  stays open. Secret grep empty.
+
+### Fixed (Phase 1B Block 3 — D1 adversarial review, builder==reviewer)
+- High: injected `OPENAI_BASE_URL`/`OPENAI_API_BASE` lacked `/v1`, so every
+  real OpenAI-conformant SDK call misrouted to `api.openai.com/chat/...`
+  (404) — invisible to tests (mock matches substrings; the agent used an
+  explicit `/v1`). Bases now end in `/openai/v1`, clients use SDK-shaped
+  paths; proven live (mock received `/v1/chat/completions`); fixture
+  regenerated. Found by reading `resolve()` against openai-python's
+  `{base}/chat/completions` convention.
+- Medium: the upstream worker lambda captured `this` for two timeout
+  longs; the shutdown-during-head-wait detach path could outlive the
+  `LlmProxy` (use-after-free on `opts_`). Timeouts are now snapshotted by
+  value; the lambda is `this`-free (clang-format reindented the body).
+- Not fixed (documented): `--upstream` base paths are dropped (prefix
+  gateways misroute, loudly); blob `ofstream` opens/writes unchecked
+  (disk-full → silently missing blobs, no error channel in the schema);
+  dead `!haveTtfb && bytes > 0` clause; `base64Decode` accepts len%4==1
+  (fail-closed to 404). Full table in the Block 3 summary.
+
+### Added (Phase 1B Block 2 — mock + toy agent + proxy integration)- `test/mockllm/server.py` (stdlib `ThreadingHTTPServer`): OpenAI Chat
   Completions + Anthropic Messages, streaming (manual chunked framing) and
   non-streaming, FIFO JSON scenario scripts (bodies verbatim, incl. tool
   calls; `gen_bytes`/`chunks_gen` emit deterministic multi-MB bodies without

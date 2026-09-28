@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-09-28  ·  Phase: 1B Block 2 — DONE locally (34/34 debug + asan-ubsan as uid 1000; tsan builds, runs in CI) — push + CI poll next, do not start Block 3 here  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-28  ·  Phase: 1B Block 3 — DONE locally, tag v0.1.0-alpha.2 (push + CI poll next; Phase 1C separate)  ·  Next launch: v0.1.0, week 9
 
 > Phase 1A gate closed: CI run
 > https://github.com/subhamxaura/Snowglobe/actions/runs/36311530345 — all 6
@@ -32,9 +32,8 @@ Updated: 2026-09-28  ·  Phase: 1B Block 2 — DONE locally (34/34 debug + asan-
   CHANGELOG.md
 
 ## In progress
-- Block 2: push + CI poll (debug/asan-ubsan/tsan × 22.04/24.04, lint,
-  cross-aarch64, bench regen), then close Block 2. Do not start Block 3
-  (docs, real recording, tag) here.
+- Block 3: push + tag v0.1.0-alpha.2 + CI poll, then close Phase 1B. Do not
+  start Phase 1C (viewer) here.
 - Note: OpenSSL links dynamically for now (static is a Phase 4 problem).
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
@@ -132,6 +131,20 @@ Updated: 2026-09-28  ·  Phase: 1B Block 2 — DONE locally (34/34 debug + asan-
 - Bench regen (release, WSL2): strace column + median event counts;
   forkexec 12.65× (2116 ev), python-import 4.43× (137 ev), git-status
   12.86× (43 ev), find-usrlib 2.73× (24 ev). CI file regenerates on push.
+
+## Block 3 verification (all as uid 1000 in ~/src/snowglobe ext4 unless noted)
+- No key, no `claude`, zero key-like env on the box → toy-agent fallback
+  fixture `test/fixtures/real/toy-agent-3turn/` (125 normalised events, 9
+  blobs, secret + tmpdir grep 0), explicitly labelled; real-recording
+  issue stays open.
+- Fixture epilogue: `exit: 0 | events: 125 | 3 LLM turns`.
+- D1 (builder==reviewer) over `core/proxy/` + `core/redact/`: 1 High
+  (OpenAI bases lacked `/v1` — fixed + proven live), 1 Medium
+  (`this`-capture in detached thread — fixed), 4 Low/Info documented, no
+  fix. Full table in the session summary.
+- Post-D1: `ctest --preset debug` 34/34, `asan-ubsan` 34/34, zero
+  findings; `clang-format --dry-run --Werror` clean (proxy reindent
+  accepted from the tool).
 
 ## Block 3 verification (all as uid 1000 in ~/src/snowglobe ext4 unless noted)
 - tcp_loopback (23 events): binds + blocking connects initiated:true;

@@ -1,0 +1,1 @@
+{"id": "chatcmpl-3", "model": "mock-model-1", "choices": [{"message": {"role": "assistant", "content": "done"}}]}

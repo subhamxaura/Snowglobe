@@ -40,7 +40,8 @@ TOOLS = [{"type": "function", "function": {
 def chat(base, key, model, messages):
     req = {"model": model, "messages": messages, "tools": TOOLS}
     data = json.dumps(req).encode()
-    r = urllib.request.Request(base.rstrip("/") + "/v1/chat/completions",
+    # SDK-shaped path: the injected OPENAI_BASE_URL already ends in /v1.
+    r = urllib.request.Request(base.rstrip("/") + "/chat/completions",
                                data=data, method="POST",
                                headers={"Content-Type": "application/json",
                                         "Authorization": "Bearer " + key})

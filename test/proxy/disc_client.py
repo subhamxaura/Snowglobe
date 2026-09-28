@@ -26,7 +26,7 @@ def main():
     if not proxy:
         print("disc_client: $OPENAI_BASE_URL is not set", file=sys.stderr)
         return 2
-    u = urllib.parse.urlparse(proxy.rstrip("/") + "/v1/chat/completions")
+    u = urllib.parse.urlparse(proxy.rstrip("/") + "/chat/completions")
     c = http.client.HTTPConnection(u.hostname, u.port or 80, timeout=30)
     c.request("POST", u.path or "/", body=BODY,
               headers={"Content-Type": "application/json"})

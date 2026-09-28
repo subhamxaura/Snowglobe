@@ -31,9 +31,9 @@ def main():
             {"status": 500, "stream": False, "body": b500},
         ]}
         mock = Mock(os.path.join(MOCKLLM, "server.py"), port, scenario)
-        jobs = [{"path": "/v1/chat/completions",
+        jobs = [{"path": "/chat/completions",
                  "body": {"model": "mock-model-1", "stream": False}},
-                {"path": "/v1/chat/completions",
+                {"path": "/chat/completions",
                  "body": {"model": "mock-model-1", "stream": False}}]
         jobs_f = os.path.join(work, "jobs.json")
         res_f = os.path.join(work, "results.json")

@@ -1,4 +1,4 @@
-# Known limitations (tracer + `--isolate` visibility)
+# Known limitations (tracer + proxy capture + `--isolate` visibility)
 
 Snowglobe is *isolation and visibility*, never a security boundary for hostile
 code (see `docs/threat-model.md` in Phase 2). This page lists what the
@@ -55,7 +55,6 @@ backend (Phase 4) exists to bring this under 1.15× on `npm install`/`pytest`.
 Never use `--tracer=ptrace` timings for performance claims about the agent.
 
 ## Interpreters' startup noise vs the default filters
-
 CPython/Node startups open dozens of libraries, locale data, and (without
 `-B -S`) site files whose exact sets differ per distro release — unfixable
 by normalization (import closures and link order differ, not just paths).
@@ -65,3 +64,30 @@ read-opens, noisy system paths, and `O_DIRECTORY`/`O_PATH` handles. What
 remains in a trace is behavior, not loader chatter — but a golden recorded
 on one distro still pins that distro's loader file set; treat loader opens
 as environment, agent file access as signal.
+
+## Proxy capture: base-URL injection only (no MITM)
+
+LLM capture works by pointing SDKs at the local proxy through base-URL
+environment variables. Anything that does not honor them is not captured
+as LLM traffic (it is still visible as `net.connect` from the tracer):
+
+- **Agents/SDKs that ignore base-URL env vars** (hardcoded endpoints,
+  in-process model calls, sidecar daemons): invisible as `llm.*`. If the
+  agent you need falls here, file an issue with the SDK name — the fix is
+  per-SDK plumbing or `--mitm`, not a proxy change.
+- **HTTPS_PROXY-only SDKs**: proxy-tunnel env vars route *through* a proxy
+  without rewriting the authority; our proxy is a base-URL *target*, not a
+  CONNECT tunnel. Same file-an-issue rule.
+- **HTTP/2**: cpp-httplib speaks HTTP/1.1 only. Clients that insist on h2
+  prior-knowledge fail; clients that negotiate (ALPN/h2c upgrade) fall back
+  to HTTP/1.1 and work. Upstream is always HTTP/1.1.
+- **`--mitm` deferred**: TLS interception (custom CA + per-SNI forging) is
+  a CLI flag today that is not implemented. No silent fallback exists: if
+  traffic does not reach the proxy, there are no `llm.*` events, full stop.
+- **Uninjected providers**: `AZURE_OPENAI_ENDPOINT` / `OLLAMA_HOST` from
+  the CLI contract are not injected yet, so Azure/Ollama traffic is not
+  captured. (Anthropic/OpenAI/Gemini are.)
+- **Uploads are buffered**: request bodies accumulate in memory per request
+  (50 MB verified; a hostile gigabyte body would transiently allocate a
+  gigabyte in the supervisor). Downloads stream with zero application
+  buffering.

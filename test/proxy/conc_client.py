@@ -19,6 +19,8 @@ BODY = json.dumps({"model": "mock-model-1", "stream": True}).encode()
 
 
 def one(base, path, i, out):
+    # SDK-shaped path: the injected OPENAI_BASE_URL already ends in /v1,
+    # so callers pass "/chat/completions" and u.path carries /openai/v1/….
     u = urllib.parse.urlparse(base.rstrip("/") + path)
     c = http.client.HTTPConnection(u.hostname, u.port or 80, timeout=120)
     c.request("POST", u.path or "/", body=BODY,
@@ -50,7 +52,7 @@ def main():
 
     def run(i):
         try:
-            one(proxy, "/v1/chat/completions", i, out)
+            one(proxy, "/chat/completions", i, out)
         except Exception as e:  # loud, never silent
             errs[i] = repr(e)
 

@@ -1,6 +1,6 @@
 # Trace format — schema v0 (source of truth)
 
-Status: Phase 1A implementation (schema still 0: all changes are additive
+Status: Phase 1B implementation (schema still 0: all changes are additive
 optional fields). Any change bumps `schema` in manifest.json and ships a
 migration note here (AGENTS.md §3).
 
@@ -13,6 +13,7 @@ migration note here (AGENTS.md §3).
                   env_fingerprint (sha256 of sorted env NAMES), event_count,
                   last_hash, file_hashes{}
   events.jsonl    one event per line, seq strictly increasing from 0
+  llm/            per-request blobs, see "LLM blobs" below (Phase 1B+)
 ```
 
 Phase 0 writes `isolate:{}`, `file_hashes:{}` (populated in Phase 2),
@@ -51,9 +52,41 @@ own tid. Threads that vanish in an exec without an exit stop get
 | `net.connect` | `addr (formatted), ok, initiated` (initiated:false = refused/unreachable; true also on -EINPROGRESS) |
 | `net.sendto` | `addr, ok` (UDP/DNS visibility) |
 | `net.bind` | `addr, ok` |
+| `llm.request` | `id, provider (openai\|anthropic\|gemini\|custom\|unknown), method, path, model (string or null), bytes, stream` — `pid` is the *supervisor* (the proxy lives there), `tid` the handler thread; the stored envelope is `llm/NNNN.req.json` by id convention |
+| `llm.response` | `id, status, bytes, ttfb_ms (first body byte; null when none), total_ms, chunk_count, truncated, req, res, idx` (last three are `llm/…` relative paths) |
 | `trace.decode_error` | `syscall, errno, reason` |
 
-`llm.*`, `net.dns`, `fs.*` (other), `trace.dropped` arrive in Phases 1B/2.
+`net.dns` (proxy-only mode), `fs.*` (other), `trace.dropped` arrive in
+Phase 2+. `turn`/`tool_call` causal linking arrives in Phase 1D.
+
+> Deviation from the AGENTS.md §3 sketch, recorded here deliberately:
+> there are no `llm.chunk` events and no `blob/usage/cost_usd/tool_calls`
+> fields. Per-chunk timing lives in `.res.idx` (chunk volume would explode
+> event counts), and all provider parsing (tokens, cost, tool calls) lives
+> in the TypeScript viewer per the locked format-agnostic decision. The
+> sketch's shape may still guide Phase 3 replay hashing; any adoption bumps
+> `schema` with a migration note.
+
+## LLM blobs (`llm/`, Phase 1B)
+
+`NNNN` = zero-padded request `id` (`%04d`).
+
+- `NNNN.req.json`: `{"method","path","provider","headers":{…},"body","body_encoding"}`
+  — headers stored redacted (`Authorization` → `REDACTED`; forwarding is a
+  separate, byte-identical path). `body` is the verbatim request bytes as
+  a UTF-8 string, or base64 with `"body_encoding":"base64"` when not valid
+  UTF-8 (bodies are never token-redacted: replay needs them verbatim).
+- `NNNN.res.json` / `.sse` / `.bin`: raw upstream response bytes, picked by
+  response `Content-Type` (event-stream → `.sse`, JSON → `.json`, else
+  `.bin`). Written to `.tmp` during the stream, renamed when complete.
+- `NNNN.res.idx`: one `{"off":<bytes received so far>,"ts_us":<wall arrival>}`
+  per received body chunk — the streaming-latency record. Empty for
+  header-only outcomes (unknown-route 404, upstream-unreachable 502, which
+  synthesize their own JSON bodies instead).
+- `truncated:true` means the downstream went away mid-stream (abort) or the
+  upstream broke mid-stream after a complete head — the stored prefix is
+  partial. A clean empty body (204, empty error page) is *not* truncated.
+- The run epilogue's "N LLM turns" counts 2xx responses only.
 
 ## Filtering (default; `-a`/`--all-opens` disables)
 

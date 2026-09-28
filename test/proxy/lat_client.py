@@ -43,7 +43,7 @@ def main():
     if not proxy:
         print("lat_client: $OPENAI_BASE_URL is not set", file=sys.stderr)
         return 2
-    path = "/v1/chat/completions"
+    path = "/chat/completions"  # SDK-shaped; injected base ends in /v1
     out = {"direct": [], "proxy": [], "first": None}
     tp, _ = ttfb(proxy, path)  # delayed stream: first byte must beat 2 s
     out["first"] = tp

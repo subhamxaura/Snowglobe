@@ -422,86 +422,92 @@ void LlmProxy::handleBody(const httplib::Request& req, httplib::Response& res,
 
   // Upstream worker: one client per request (no shared-client races), send
   // with buffered body + streaming receiver. try/catch: an escaping
-  // exception would terminate via the thread.
-  flight->upThread = std::thread([this, flight, rt, fwd, method, body = std::move(body)]() mutable {
-    try {
-      httplib::Client cli(rt.base);
-      cli.set_connection_timeout(opts_.connectTimeoutS, 0);
-      cli.set_read_timeout(opts_.idleTimeoutS, 0); // idle-between-bytes semantics
-      cli.set_write_timeout(opts_.idleTimeoutS, 0);
-      cli.set_decompress(false); // byte-exact bodies, never transcoded
-      // TLS verification stays ON (httplib default); the system CA bundle
-      // honors SSL_CERT_FILE/SSL_CERT_DIR via OpenSSL defaults.
+  // exception would terminate via the thread. Timeouts are snapshotted by
+  // value (never `this->opts_`): the shutdown-during-head-wait path below
+  // detaches this thread, so it must not touch the LlmProxy object, which
+  // may be destroyed while a stuck upstream connect/read is still pending.
+  const long connectTimeoutS = opts_.connectTimeoutS;
+  const long idleTimeoutS = opts_.idleTimeoutS;
+  flight->upThread = std::thread(
+      [flight, rt, fwd, method, body = std::move(body), connectTimeoutS, idleTimeoutS]() mutable {
+        try {
+          httplib::Client cli(rt.base);
+          cli.set_connection_timeout(connectTimeoutS, 0);
+          cli.set_read_timeout(idleTimeoutS, 0); // idle-between-bytes semantics
+          cli.set_write_timeout(idleTimeoutS, 0);
+          cli.set_decompress(false); // byte-exact bodies, never transcoded
+          // TLS verification stays ON (httplib default); the system CA bundle
+          // honors SSL_CERT_FILE/SSL_CERT_DIR via OpenSSL defaults.
 
-      httplib::Request ureq;
-      // NOTE: httplib has no public POST-with-provider AND receiver combo;
-      // Request+send() with req.body set uploads buffered while
-      // req.content_receiver streams the download — the same hook the
-      // Get-with-receiver overloads use internally.
-      ureq.method = method;
-      ureq.path = rt.path;
-      ureq.headers = fwd;
-      ureq.body = std::move(body);
-      ureq.response_handler = [flight](const httplib::Response& r) {
-        std::lock_guard<std::mutex> lk(flight->mu);
-        flight->status = r.status;
-        flight->resHeaders = r.headers;
-        flight->resContentType = r.get_header_value("Content-Type", "");
-        flight->resExt = resExt(flight->resContentType);
-        // NOTE: ttfb is first BODY byte (set in content_receiver), not head
-        // arrival — head time is request RTT, useless for streaming latency.
-        flight->headDone = true;
-        flight->cv.notify_all();
-        return !flight->abort.load();
-      };
-      ureq.content_receiver = [flight](const char* d, size_t n, uint64_t, uint64_t) {
-        if (flight->abort.load()) {
-          return false;
-        }
-        if (!flight->haveTtfb) {
-          flight->haveTtfb = true;
-          flight->ttfbWall = nowUs();
-        }
-        char line[96] = {};
-        std::snprintf(line, sizeof(line), "{\"off\":%llu,\"ts_us\":%llu}",
-                      (unsigned long long)flight->bytes, (unsigned long long)nowUs());
-        flight->idxFile << line << "\n";
-        flight->resFile.write(d, static_cast<std::streamsize>(n));
-        flight->bytes += n;
-        ++flight->chunks;
-        flight->respQ.push(std::string(d, n));
-        return !flight->abort.load();
-      };
+          httplib::Request ureq;
+          // NOTE: httplib has no public POST-with-provider AND receiver combo;
+          // Request+send() with req.body set uploads buffered while
+          // req.content_receiver streams the download — the same hook the
+          // Get-with-receiver overloads use internally.
+          ureq.method = method;
+          ureq.path = rt.path;
+          ureq.headers = fwd;
+          ureq.body = std::move(body);
+          ureq.response_handler = [flight](const httplib::Response& r) {
+            std::lock_guard<std::mutex> lk(flight->mu);
+            flight->status = r.status;
+            flight->resHeaders = r.headers;
+            flight->resContentType = r.get_header_value("Content-Type", "");
+            flight->resExt = resExt(flight->resContentType);
+            // NOTE: ttfb is first BODY byte (set in content_receiver), not head
+            // arrival — head time is request RTT, useless for streaming latency.
+            flight->headDone = true;
+            flight->cv.notify_all();
+            return !flight->abort.load();
+          };
+          ureq.content_receiver = [flight](const char* d, size_t n, uint64_t, uint64_t) {
+            if (flight->abort.load()) {
+              return false;
+            }
+            if (!flight->haveTtfb) {
+              flight->haveTtfb = true;
+              flight->ttfbWall = nowUs();
+            }
+            char line[96] = {};
+            std::snprintf(line, sizeof(line), "{\"off\":%llu,\"ts_us\":%llu}",
+                          (unsigned long long)flight->bytes, (unsigned long long)nowUs());
+            flight->idxFile << line << "\n";
+            flight->resFile.write(d, static_cast<std::streamsize>(n));
+            flight->bytes += n;
+            ++flight->chunks;
+            flight->respQ.push(std::string(d, n));
+            return !flight->abort.load();
+          };
 
-      // Open blob files before dispatch (a crash mid-stream keeps the prefix).
-      flight->resFile.open(flight->resPath + ".tmp", std::ios::trunc | std::ios::binary);
-      flight->idxFile.open(flight->idxPath + ".tmp", std::ios::trunc);
-      httplib::Response ures;
-      httplib::Error err = httplib::Error::Success;
-      const bool ok = cli.send(ureq, ures, err);
-      {
-        std::lock_guard<std::mutex> lk(flight->mu);
-        if (!flight->headDone) {
-          flight->headError = true;
-          flight->headErrText = ok ? "empty upstream response" : httplib::to_string(err);
-          flight->headDone = true;
-        } else if (!ok && !flight->abort.load()) {
-          flight->upError = true; // broke mid-stream with a complete head
+          // Open blob files before dispatch (a crash mid-stream keeps the prefix).
+          flight->resFile.open(flight->resPath + ".tmp", std::ios::trunc | std::ios::binary);
+          flight->idxFile.open(flight->idxPath + ".tmp", std::ios::trunc);
+          httplib::Response ures;
+          httplib::Error err = httplib::Error::Success;
+          const bool ok = cli.send(ureq, ures, err);
+          {
+            std::lock_guard<std::mutex> lk(flight->mu);
+            if (!flight->headDone) {
+              flight->headError = true;
+              flight->headErrText = ok ? "empty upstream response" : httplib::to_string(err);
+              flight->headDone = true;
+            } else if (!ok && !flight->abort.load()) {
+              flight->upError = true; // broke mid-stream with a complete head
+            }
+            flight->cv.notify_all();
+          }
+          flight->respQ.close();
+        } catch (...) {
+          std::lock_guard<std::mutex> lk(flight->mu);
+          if (!flight->headDone) {
+            flight->headError = true;
+            flight->headErrText = "upstream exception";
+            flight->headDone = true;
+          }
+          flight->cv.notify_all();
+          flight->respQ.close();
         }
-        flight->cv.notify_all();
-      }
-      flight->respQ.close();
-    } catch (...) {
-      std::lock_guard<std::mutex> lk(flight->mu);
-      if (!flight->headDone) {
-        flight->headError = true;
-        flight->headErrText = "upstream exception";
-        flight->headDone = true;
-      }
-      flight->cv.notify_all();
-      flight->respQ.close();
-    }
-  });
+      });
 
   // Wait for the upstream head (no timeout: LLM TTFB is unbounded; a hung
   // upstream surfaces via the idle-between-bytes read timeout as an error).

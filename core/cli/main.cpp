@@ -283,9 +283,13 @@ int cmdRun(const RunOptions& o) {
     }
     // Base-URL injection for LLM capture (overwrites any user setting:
     // capture requires our proxy; --no-llm-proxy opts out entirely).
+    // OpenAI-conformant SDKs append "/chat/completions" (unversioned) to the
+    // base, so the injected base carries the "/v1" — without it every real
+    // OpenAI call would misroute to api.openai.com/chat/completions (404).
+    // Anthropic/Gemini SDKs version their own paths, so those bases stay bare.
     const std::string base = "http://127.0.0.1:" + std::to_string(proxyPort);
-    ::setenv("OPENAI_BASE_URL", (base + "/openai").c_str(), 1);
-    ::setenv("OPENAI_API_BASE", (base + "/openai").c_str(), 1);
+    ::setenv("OPENAI_BASE_URL", (base + "/openai/v1").c_str(), 1);
+    ::setenv("OPENAI_API_BASE", (base + "/openai/v1").c_str(), 1);
     ::setenv("ANTHROPIC_BASE_URL", (base + "/anthropic").c_str(), 1);
     ::setenv("ANTHROPIC_API_BASE", (base + "/anthropic").c_str(), 1);
     ::setenv("GOOGLE_GEMINI_BASE_URL", (base + "/gemini").c_str(), 1);
