@@ -16,6 +16,12 @@ endif()
 
 option(BUILD_TESTING "Build tests" ON)
 option(SNOWGLOBE_STATIC "Attempt fully static link (musl release builds)" OFF)
+# TLS for the LLM proxy's upstream HTTPS. ON by default (native builds test
+# TLS); OFF for aarch64 cross compile checks where only host x86_64 OpenSSL
+# exists and the cross compiler cannot use it (opensslconf.h arch mismatch).
+# The proxy still compiles (httplib without CPPHTTPLIB_OPENSSL_SUPPORT);
+# https upstreams would fail at runtime, but the cross job is build-only.
+option(SNOWGLOBE_WITH_SSL "Enable TLS via OpenSSL for LLM proxy" ON)
 
 if(SNOWGLOBE_STATIC)
   # Pinned musl toolchain container handles this for releases; this flag is a
@@ -25,7 +31,11 @@ endif()
 
 # OpenSSL for the LLM proxy's upstream TLS (AGENTS.md §1.2 allowed dep).
 # Static OpenSSL is a Phase 4 problem: link dynamically now (STATUS.md).
-find_package(OpenSSL REQUIRED)
+# SNOWGLOBE_WITH_SSL=OFF skips OpenSSL entirely (aarch64 cross compile check;
+# see option above). httplib then builds without CPPHTTPLIB_OPENSSL_SUPPORT.
+if(SNOWGLOBE_WITH_SSL)
+  find_package(OpenSSL REQUIRED)
+endif()
 
 # cpp-httplib for the LLM proxy (AGENTS.md §1.2 allowed dep). SYSTEM include
 # so -Werror never fires inside the third-party header.
@@ -36,7 +46,7 @@ FetchContent_Declare(
   GIT_TAG v0.20.1
   SYSTEM
 )
-set(HTTPLIB_REQUIRE_OPENSSL ON)
+set(HTTPLIB_REQUIRE_OPENSSL ${SNOWGLOBE_WITH_SSL})
 set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF)
 set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF)
 set(HTTPLIB_USE_ZSTD_IF_AVAILABLE OFF)

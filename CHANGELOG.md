@@ -16,6 +16,23 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 - Supervisor: proxy lifecycle, 6 base-URL env vars, --no-llm-proxy,
   ≤10 s drain, epilogue counts LLM turns.
 
+### Fixed (Phase 1B Block 1 CI, run 36332355926)
+- `cross-aarch64`: host x86_64 OpenSSL cannot be used by
+  `aarch64-linux-gnu-g++` (`openssl/opensslconf.h` is arch-specific, then
+  host libs mismatch). Added `SNOWGLOBE_WITH_SSL` (default ON); the cross
+  job passes `-DSNOWGLOBE_WITH_SSL=OFF` (httplib without
+  `CPPHTTPLIB_OPENSSL_SUPPORT`, no `OpenSSL::` link). Native jobs keep TLS;
+  the cross job stays build-only. Verified: `aarch64` configure + build
+  clean, `file core/snowglobe` = `ELF 64-bit LSB pie executable, ARM
+  aarch64`.
+- `golden_threads` (22.04 asan-ubsan only): ack-pipe exit handoff was racy —
+  successor wake/exit is concurrent with predecessor exit, so `waitpid`
+  order varied with observer speed (ASan slowdown flipped it).
+  `sg_threads.c` now uses main-gated exits (main joins t3, then releases
+  t2..t0 in turn): deaths are strictly t3..t0 in real time. Golden
+  unchanged (same 28 events). Verified: debug 26/26, asan-ubsan 26/26 with
+  20× `golden_threads` green, zero sanitizer findings.
+
 ### Added
 - Phase 0 bootstrap: CMake+Ninja build, presets (debug/release/asan-ubsan/tsan),
   clang-format/tidy configs, Apache-2.0 LICENSE.

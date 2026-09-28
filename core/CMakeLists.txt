@@ -9,7 +9,11 @@ add_library(snowglobe_core STATIC
 )
 target_include_directories(snowglobe_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(snowglobe_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(snowglobe_core PUBLIC httplib::httplib OpenSSL::SSL OpenSSL::Crypto)
+if(SNOWGLOBE_WITH_SSL)
+  target_link_libraries(snowglobe_core PUBLIC httplib::httplib OpenSSL::SSL OpenSSL::Crypto)
+else()
+  target_link_libraries(snowglobe_core PUBLIC httplib::httplib)
+endif()
 
 add_executable(snowglobe cli/main.cpp)
 target_link_libraries(snowglobe PRIVATE snowglobe_core)

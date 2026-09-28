@@ -69,10 +69,15 @@ jobs:
           sudo apt-get install -y ninja-build cmake g++-aarch64-linux-gnu
       - name: Configure (aarch64, no tests)
         run: |
+          # SNOWGLOBE_WITH_SSL=OFF: only host x86_64 OpenSSL exists here; the
+          # aarch64 compiler cannot use it (openssl/opensslconf.h is arch-
+          # specific, host headers + libs mismatch). The proxy still compiles
+          # (httplib without TLS); native jobs cover HTTPS. This is build-only.
           cmake -S . -B build/aarch64 -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
             -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+            -DSNOWGLOBE_WITH_SSL=OFF \
             -DBUILD_TESTING=OFF
       - name: Build (aarch64)
         run: cmake --build build/aarch64
