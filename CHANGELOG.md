@@ -49,6 +49,17 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   clean) — caught by the new redact_argv e2e (secret bytes in
   events.jsonl). `ptrace_tracer.cpp` now runs `redactText` over `run.meta`
   cmd with `secretEnv_`; goldens unchanged (no secret-like argv there).
+- 22.04-tsan `proxy_concurrent` failure (CI run 36447650097, exit 66):
+  concurrent first-use construction of httplib's thread_local
+  response-line regexes (one per upstream thread) races inside
+  libstdc++-11's regex compiler (`_Compiler`/`_Scanner`/`ctype::narrow`
+  on libstdc++.so globals). Both stacks are third-party frames — the only
+  snowglobe frames are `cli.send` and thread spawn — our code has zero
+  `std::regex`/`std::locale` use, and 24.04 (libstdc++ 13) is clean, so
+  this is dependency+toolchain internal, not a proxy logic race.
+  `test/tsan.supp` suppresses exactly those three frames (wired via
+  `TSAN_OPTIONS` for the proxy tests in tsan builds only); unit, golden,
+  kill and tracer tests keep full unsuppressed TSan coverage.
 - Latency budget is preset-aware: the 5 ms product budget holds on plain
   builds (debug measures 1.2 ms); ASan slows the proxy ~6 ms, so sanitizer
   presets bound the delta at 25 ms via `SG_LAT_BUDGET_S` (set in

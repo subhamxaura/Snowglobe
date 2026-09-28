@@ -61,7 +61,7 @@ def main():
                     "--data-url", durl],
                    out, env_extra={"OPENAI_API_KEY": KEY}, timeout=180)
         if r.returncode != 0:
-            print("FAIL: agent run exited %d\n%s%s"
+            print("FAIL: snowglobe run exited %d\n%s%s"
                   % (r.returncode, r.stdout, r.stderr))
             return 1
         if "3 LLM turns" not in r.stderr:

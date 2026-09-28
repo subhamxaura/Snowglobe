@@ -52,7 +52,7 @@ def main():
                     "--base-env", "ANTHROPIC_BASE_URL"],
                    out, timeout=120)
         if r.returncode != 0:
-            print("FAIL: post_client exited %d\n%s%s"
+            print("FAIL: snowglobe run exited %d\n%s%s"
                   % (r.returncode, r.stdout, r.stderr))
             return 1
         with open(res_f) as f:

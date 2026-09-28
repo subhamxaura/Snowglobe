@@ -47,7 +47,7 @@ def main():
                     "--iters", str(ITERS)],
                    out, timeout=300)
         if r.returncode != 0:
-            print("FAIL: lat_client exited %d\n%s%s"
+            print("FAIL: snowglobe run exited %d\n%s%s"
                   % (r.returncode, r.stdout, r.stderr))
             return 1
         with open(res) as f:

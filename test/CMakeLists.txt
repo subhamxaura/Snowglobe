@@ -75,6 +75,15 @@ if(Python3_FOUND)
   set(SG_PROXY_TESTS
     toy_agent:180 latency:300 concurrent:180 disconnect:180 errors:120
     large:300 redact_argv:120 anthropic:120)
+  # Latency budget scales with instrumentation: the 5 ms product budget
+  # (AGENTS.md §5) holds on plain builds; ASan/TSan slow the proxy ~5x, so
+  # those presets bound the delta at 25 ms instead. Still a bound, still
+  # green — the product number is the debug one.
+  if(CMAKE_CXX_FLAGS MATCHES "sanitize=(address|thread)")
+    set(SG_LAT_BUDGET_S 0.025)
+  else()
+    set(SG_LAT_BUDGET_S 0.005)
+  endif()
   foreach(pair IN ITEMS ${SG_PROXY_TESTS})
     string(REPLACE ":" ";" parts "${pair}")
     list(GET parts 0 tname)
@@ -86,16 +95,17 @@ if(Python3_FOUND)
               ${CMAKE_SOURCE_DIR}/examples/toy-agent
     )
     set_tests_properties(proxy_${tname} PROPERTIES TIMEOUT ${ttimeout})
+    # Per-test environment: latency budget (always) + TSan suppressions
+    # (thread-sanitizer builds only — see test/tsan.supp).
+    set(_sgenv)
+    if(tname STREQUAL "latency")
+      list(APPEND _sgenv "SG_LAT_BUDGET_S=${SG_LAT_BUDGET_S}")
+    endif()
+    if(CMAKE_CXX_FLAGS MATCHES "sanitize=thread")
+      list(APPEND _sgenv "TSAN_OPTIONS=suppressions=${CMAKE_CURRENT_SOURCE_DIR}/tsan.supp")
+    endif()
+    if(_sgenv)
+      set_tests_properties(proxy_${tname} PROPERTIES ENVIRONMENT "${_sgenv}")
+    endif()
   endforeach()
-  # Latency budget scales with instrumentation: the 5 ms product budget
-  # (AGENTS.md §5) holds on plain builds; ASan/TSan slow the proxy ~5x, so
-  # those presets bound the delta at 25 ms instead. Still a bound, still
-  # green — the product number is the debug one.
-  if(CMAKE_CXX_FLAGS MATCHES "sanitize=(address|thread)")
-    set(SG_LAT_BUDGET_S 0.025)
-  else()
-    set(SG_LAT_BUDGET_S 0.005)
-  endif()
-  set_tests_properties(proxy_latency PROPERTIES
-    ENVIRONMENT "SG_LAT_BUDGET_S=${SG_LAT_BUDGET_S}")
 endif()

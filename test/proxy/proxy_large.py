@@ -53,7 +53,7 @@ def main():
                     "--jobs", jobs_f, "--results", res_f],
                    out, timeout=300)
         if r.returncode != 0:
-            print("FAIL: post_client exited %d\n%s%s"
+            print("FAIL: snowglobe run exited %d\n%s%s"
                   % (r.returncode, r.stdout, r.stderr))
             return 1
         with open(res_f) as f:

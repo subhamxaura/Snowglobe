@@ -122,9 +122,13 @@ Updated: 2026-09-28  ·  Phase: 1B Block 2 — DONE locally (34/34 debug + asan-
   (budget 25 ms, sanitizer-scaled — see test/CMakeLists).
 - New tests caught a real bug: tracer `run.meta` cmd unredacted (fixed in
   `ptrace_tracer.cpp`; goldens 8/8 still green, no golden change needed).
-- `tsan` preset compiles + links clean; execution impossible on WSL
-  (memory-mapping, incl. Catch discovery) — CI runs it. No C++ logic
-  changes in Block 2 except the one-line redaction fix.
+- `tsan` preset compiles + links clean; cannot execute on WSL
+  (memory-mapping, incl. Catch discovery). CI 22.04-tsan caught one real
+  finding: concurrent first-use compile of httplib's thread_local
+  response-line regex races in libstdc++-11 internals (full stacks in
+  CHANGELOG; our code has zero regex/locale use, 24.04 clean) —
+  `test/tsan.supp` suppresses exactly those three frames for proxy tests
+  in tsan builds only; all other tests keep full TSan coverage.
 - Bench regen (release, WSL2): strace column + median event counts;
   forkexec 12.65× (2116 ev), python-import 4.43× (137 ev), git-status
   12.86× (43 ev), find-usrlib 2.73× (24 ev). CI file regenerates on push.
