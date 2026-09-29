@@ -1,0 +1,8 @@
+# Created by `npm ci` / `next build`. Never commit.
+node_modules/
+.next/
+out/
+test-results/
+playwright-report/
+playwright/.cache/
+*.tsbuildinfo

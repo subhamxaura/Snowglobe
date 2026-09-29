@@ -61,6 +61,41 @@ set(HTTPLIB_INSTALL OFF)
 set(HTTPLIB_COMPILE OFF)
 FetchContent_MakeAvailable(httplib)
 
+# Viewer (Phase 1C): Next.js static export built with the project's Node,
+# then packed into the binary by cmake/embed_viewer.cmake (pure CMake, no
+# extra tools). ON by default; the aarch64 cross-check job sets OFF (its
+# container has no Node, and the check is compile-only anyway).
+option(SNOWGLOBE_VIEWER "Build + embed the Next.js viewer (needs Node 18+)" ON)
+if(SNOWGLOBE_VIEWER)
+  find_program(SNOWGLOBE_NPM npm REQUIRED)
+  find_program(SNOWGLOBE_NODE node REQUIRED)
+  set(SNOWGLOBE_VIEWER_OUT "${CMAKE_SOURCE_DIR}/viewer/out")
+  set(SNOWGLOBE_VIEWER_HPP "${CMAKE_BINARY_DIR}/generated/snowglobe_viewer_data.hpp")
+  file(GLOB_RECURSE SNOWGLOBE_VIEWER_SRCS CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/viewer/pages/*"
+    "${CMAKE_SOURCE_DIR}/viewer/lib/*"
+    "${CMAKE_SOURCE_DIR}/viewer/components/*"
+    "${CMAKE_SOURCE_DIR}/viewer/test/*"
+    "${CMAKE_SOURCE_DIR}/viewer/styles.css"
+    "${CMAKE_SOURCE_DIR}/viewer/package.json"
+    "${CMAKE_SOURCE_DIR}/viewer/package-lock.json"
+    "${CMAKE_SOURCE_DIR}/viewer/next.config.mjs"
+    "${CMAKE_SOURCE_DIR}/viewer/tsconfig.json")
+  add_custom_command(
+    OUTPUT "${SNOWGLOBE_VIEWER_HPP}"
+    COMMAND ${CMAKE_COMMAND} -E env "NEXT_TELEMETRY_DISABLED=1" "CI=true"
+      "${SNOWGLOBE_NPM}" ci --no-audit --no-fund
+    COMMAND ${CMAKE_COMMAND} -E env "NEXT_TELEMETRY_DISABLED=1" "CI=true"
+      "${SNOWGLOBE_NPM}" run build
+    COMMAND "${CMAKE_COMMAND}" "-DVIEWER_OUT_DIR=${SNOWGLOBE_VIEWER_OUT}"
+      "-DOUTPUT_HPP=${SNOWGLOBE_VIEWER_HPP}"
+      -P "${CMAKE_SOURCE_DIR}/cmake/embed_viewer.cmake"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/viewer"
+    DEPENDS ${SNOWGLOBE_VIEWER_SRCS}
+    COMMENT "Building + embedding snowglobe viewer")
+  add_custom_target(snowglobe_viewer_data DEPENDS "${SNOWGLOBE_VIEWER_HPP}")
+endif()
+
 add_subdirectory(core)
 
 if(BUILD_TESTING)

@@ -106,18 +106,18 @@
 {"create": false, "ev": "fs.open", "path": "/usr/lib/python3.V/__pycache__/stringprep.cpython-3V.pyc", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
 {"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
 {"bytes": 842, "ev": "llm.request", "id": 0, "method": "POST", "model": "mock-model-1", "path": "/openai/v1/chat/completions", "pid": "P2", "provider": "openai", "stream": false, "tid": "T2"}
-{"bytes": 301, "chunk_count": 1, "ev": "llm.response", "id": 0, "idx": "llm/0000.res.idx", "pid": "P2", "req": "llm/0000.req.json", "res": "llm/0000.res.json", "status": 200, "tid": "T2", "total_ms": 4, "truncated": false, "ttfb_ms": 3}
-{"create": true, "ev": "fs.open", "path": "$TMP/work/note.txt", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
+{"bytes": 258, "chunk_count": 1, "ev": "llm.response", "id": 0, "idx": "llm/0000.res.idx", "pid": "P2", "req": "llm/0000.req.json", "res": "llm/0000.res.json", "status": 200, "tid": "T2", "total_ms": 4, "truncated": false, "ttfb_ms": 3}
+{"ev": "proc.start", "pid": "P3", "ppid": "P1", "tid": "T3"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/sbin/sh", "pid": "P3", "tid": "T3"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/bin/sh", "pid": "P3", "tid": "T3"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/sbin/sh", "pid": "P3", "tid": "T3"}
+{"argv": ["sh", "-c", "echo tool-output-123"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P3", "tid": "T3"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P3", "tid": "T3", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P3", "signal": 0, "tid": "T3"}
 {"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
-{"bytes": 1182, "ev": "llm.request", "id": 1, "method": "POST", "model": "mock-model-1", "path": "/openai/v1/chat/completions", "pid": "P2", "provider": "openai", "stream": false, "tid": "T3"}
-{"bytes": 394, "chunk_count": 1, "ev": "llm.response", "id": 1, "idx": "llm/0001.res.idx", "pid": "P2", "req": "llm/0001.req.json", "res": "llm/0001.res.json", "status": 200, "tid": "T3", "total_ms": 2, "truncated": false, "ttfb_ms": 2}
-{"ev": "proc.start", "pid": "P3", "ppid": "P1", "tid": "T4"}
-{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/sbin/sh", "pid": "P3", "tid": "T4"}
-{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/bin/sh", "pid": "P3", "tid": "T4"}
-{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/sbin/sh", "pid": "P3", "tid": "T4"}
-{"argv": ["sh", "-c", "echo tool-output-123"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P3", "tid": "T4"}
-{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P3", "tid": "T4", "trunc": false, "write": false}
-{"code": 0, "ev": "proc.exit", "pid": "P3", "signal": 0, "tid": "T4"}
+{"bytes": 1135, "ev": "llm.request", "id": 1, "method": "POST", "model": "mock-model-1", "path": "/openai/v1/chat/completions", "pid": "P2", "provider": "openai", "stream": false, "tid": "T4"}
+{"bytes": 437, "chunk_count": 1, "ev": "llm.response", "id": 1, "idx": "llm/0001.res.idx", "pid": "P2", "req": "llm/0001.req.json", "res": "llm/0001.res.json", "status": 200, "tid": "T4", "total_ms": 2, "truncated": false, "ttfb_ms": 2}
+{"create": true, "ev": "fs.open", "path": "$TMP/work/note.txt", "pid": "P1", "tid": "T1", "trunc": true, "write": true}
 {"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
 {"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
 {"bytes": 1707, "ev": "llm.request", "id": 2, "method": "POST", "model": "mock-model-1", "path": "/openai/v1/chat/completions", "pid": "P2", "provider": "openai", "stream": false, "tid": "T5"}

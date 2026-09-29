@@ -109,3 +109,22 @@ if(Python3_FOUND)
     endif()
   endforeach()
 endif()
+
+# Phase 1C: viewer tests. vitest (parser units on fixtures) needs only node;
+# the Playwright suite (run-e2e.sh) skips cleanly without browsers.
+if(SNOWGLOBE_VIEWER)
+  add_test(
+    NAME viewer_unit
+    COMMAND "${SNOWGLOBE_NPM}" run test --silent
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/viewer"
+  )
+  set_tests_properties(viewer_unit PROPERTIES TIMEOUT 300)
+  add_test(
+    NAME viewer_e2e
+    COMMAND bash "${CMAKE_SOURCE_DIR}/viewer/e2e/run-e2e.sh"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/viewer"
+  )
+  set_tests_properties(viewer_e2e PROPERTIES
+    TIMEOUT 600
+    ENVIRONMENT "SNOWGLOBE_BIN=$<TARGET_FILE:snowglobe>;FIXTURE_DIR=${CMAKE_SOURCE_DIR}/test/fixtures/real/toy-agent-3turn")
+endif()

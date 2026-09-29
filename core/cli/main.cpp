@@ -1,4 +1,5 @@
-// snowglobe CLI — run (tracer + LLM proxy) + doctor + version + ls/rm stubs.
+// snowglobe CLI — run (tracer + LLM proxy) + view (embedded viewer) +
+// doctor + version + ls/rm stubs.
 // Human output → stderr; machine output (--json) → stdout (AGENTS.md §2).
 #include <algorithm>
 #include <chrono>
@@ -30,6 +31,7 @@
 #include "../util/sha256.hpp"
 #include "../util/string_util.hpp"
 #include "../version.hpp"
+#include "../view/view.hpp"
 
 namespace fs = std::filesystem;
 using snowglobe::util::jsonEscape;
@@ -52,7 +54,8 @@ void usage(std::ostream& os) {
      << "  snowglobe version [--json]\n"
      << "  snowglobe ls [--json]\n"
      << "  snowglobe rm <run>\n"
-     << "  snowglobe view|diff|apply|replay|compare|share <run> ... (not yet implemented)\n";
+     << "  snowglobe view <run> [--port=7777] [--open]\n"
+     << "  snowglobe diff|apply|replay|compare|share <run> ... (not yet implemented)\n";
 }
 
 std::string rfc3339Utc(std::time_t t) {
@@ -481,10 +484,11 @@ int main(int argc, char** argv) {
     }
     return cmdRun(o);
   }
-  if (sub == "view" || sub == "diff" || sub == "apply" || sub == "replay" || sub == "compare" ||
-      sub == "share") {
-    std::cerr << "snowglobe " << sub << ": not yet implemented (Phase "
-              << (sub == "view" ? "1C" : "2+") << ")\n";
+  if (sub == "view") {
+    return snowglobe::view::cmdView(args);
+  }
+  if (sub == "diff" || sub == "apply" || sub == "replay" || sub == "compare" || sub == "share") {
+    std::cerr << "snowglobe " << sub << ": not yet implemented (Phase 2+)\n";
     return kExUnavailable;
   }
   std::cerr << "unknown subcommand '" << sub << "'\n";

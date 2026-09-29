@@ -20,6 +20,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build cmake g++ python3
+      # The viewer embeds at build time (Next.js export via CMake), so every
+      # native leg needs Node. npm cache keeps the 6 legs cheap.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: viewer/package-lock.json
       # AGENTS.md mandates CMake >= 3.25 but Ubuntu 22.04 apt ships 3.22, so
       # 22.04 gets a Kitware cmake wheel via setup-python's modern pip. Never
       # use --break-system-packages here: 22.04 ships pip 22.0.2, which
@@ -50,6 +58,44 @@ jobs:
       - name: Test (${{ matrix.preset }})
         run: ctest --preset ${{ matrix.preset }} --output-on-failure
 
+  viewer:
+    # Vitest + Playwright on fixtures, with a real embedded binary. The
+    # matrix legs run viewer_unit too (node only); only this job has
+    # browsers, so viewer_e2e runs for real here and SKIP-prints elsewhere.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake g++ python3
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: viewer/package-lock.json
+      - name: Viewer unit (vitest)
+        working-directory: viewer
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          npm test
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          CI: "true"
+      - name: Install Playwright chromium
+        working-directory: viewer
+        run: |
+          npx playwright install chromium
+          sudo npx playwright install-deps chromium
+      - name: Configure (debug)
+        run: cmake --preset debug
+      - name: Build (debug)
+        run: cmake --build --preset debug
+      - name: Viewer e2e
+        run: ctest --preset debug -R viewer_e2e --output-on-failure
+
   lint:
     runs-on: ubuntu-24.04
     steps:
@@ -75,11 +121,14 @@ jobs:
           # aarch64 compiler cannot use it (openssl/opensslconf.h is arch-
           # specific, host headers + libs mismatch). The proxy still compiles
           # (httplib without TLS); native jobs cover HTTPS. This is build-only.
+          # VIEWER=OFF for the same reason (no Node here; the check is
+          # compile-only and the viewer is arch-independent JS anyway).
           cmake -S . -B build/aarch64 -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
             -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
             -DSNOWGLOBE_WITH_SSL=OFF \
+            -DSNOWGLOBE_VIEWER=OFF \
             -DBUILD_TESTING=OFF
       - name: Build (aarch64)
         run: cmake --build build/aarch64

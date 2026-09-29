@@ -1,1 +1,1 @@
-{"id": "chatcmpl-1", "model": "mock-model-1", "choices": [{"message": {"role": "assistant", "content": null, "tool_calls": [{"id": "call_1", "type": "function", "function": {"name": "write_file", "arguments": "{\"path\": \"$TMP/work/note.txt\", \"content\": \"hello snowglobe\"}"}}]}}]}
+{"id": "chatcmpl-1", "model": "mock-model-1", "choices": [{"message": {"role": "assistant", "content": null, "tool_calls": [{"id": "call_1", "type": "function", "function": {"name": "run_command", "arguments": "{\"command\": \"echo tool-output-123\"}"}}]}}]}

@@ -5,6 +5,25 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 1C — embedded viewer)
+- `viewer/` (Next.js 14 Pages-Router static export, system fonts, no CDN):
+  turns (OpenAI/Anthropic full + SSE-delta folding, tool calls, static
+  cost table), timeline, processes, files, network, search; 50 MB traces
+  stream-parse with a virtualized list.
+- `snowglobe view <run> [--port=7777] [--open]`: serves the embedded app
+  + `/trace/*` from the run dir on 127.0.0.1 (ephemeral fallback with a
+  note, traversal guard, `--open` via best-effort xdg-open). Embedding is
+  pure CMake (`cmake/embed_viewer.cmake`, build-time, `SNOWGLOBE_VIEWER=OFF`
+  escapes it); Node 18+ required otherwise.
+- Tests: Vitest parser units (SSE deltas + committed toy-agent blobs),
+  Playwright e2e (fixture renders 3 turns with the turn-2 file-write
+  linkage, zero non-localhost requests asserted, 50 MB open < 3 s).
+  New `viewer` CI job (vitest + chromium e2e); matrix legs run
+  `viewer_unit`, e2e SKIP-prints without browsers.
+- Measured: 80 KB first-load JS; 50 MB open ~1 s; toy-agent e2e green.
+  Local: debug 36/36 + asan-ubsan 36/36 (incl. `viewer_unit` 8/8 and
+  `viewer_e2e` live runs), cross-aarch64 11/11 with viewer/SSL off.
+
 ### Added (Phase 1B Block 1)
 - LLM recording proxy (`core/proxy/`): HTTP/1.1 on 127.0.0.1:ephemeral,
   routes /openai|/anthropic|/gemini + /u/<base64url> + --upstream overrides,

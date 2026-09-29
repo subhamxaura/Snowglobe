@@ -1,0 +1,28 @@
+{
+  "name": "snowglobe-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Snowglobe trace viewer (Next.js static export, embedded in the snowglobe binary)",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "test": "vitest run",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.55.0",
+    "@types/node": "20.14.0",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "typescript": "5.4.5",
+    "vitest": "2.1.8"
+  }
+}

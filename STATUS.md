@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-09-28  ·  Phase: 1B Block 3 — DONE locally, tag v0.1.0-alpha.2 (push + CI poll next; Phase 1C separate)  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-29  ·  Phase: 1C — DONE locally (viewer app + view cmd + vitest + e2e green as uid 1000; push + CI poll next, Phase 1D separate)  ·  Next launch: v0.1.0, week 9
 
 > Phase 1A gate closed: CI run
 > https://github.com/subhamxaura/Snowglobe/actions/runs/36311530345 — all 6
@@ -32,8 +32,9 @@ Updated: 2026-09-28  ·  Phase: 1B Block 3 — DONE locally, tag v0.1.0-alpha.2 
   CHANGELOG.md
 
 ## In progress
-- Block 3: push + tag v0.1.0-alpha.2 + CI poll, then close Phase 1B. Do not
-  start Phase 1C (viewer) here.
+- Phase 1C: push + CI poll (matrix + viewer job + lint + cross + bench),
+  then close. Do not start Phase 1D (causal linking, install, release)
+  here.
 - Note: OpenSSL links dynamically for now (static is a Phase 4 problem).
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)
@@ -145,6 +146,21 @@ Updated: 2026-09-28  ·  Phase: 1B Block 3 — DONE locally, tag v0.1.0-alpha.2 
 - Post-D1: `ctest --preset debug` 34/34, `asan-ubsan` 34/34, zero
   findings; `clang-format --dry-run --Werror` clean (proxy reindent
   accepted from the tool).
+
+## Phase 1C verification (all as uid 1000 in ~/src/snowglobe ext4 unless noted)
+- App: `npm ci` (75 pkgs, lockfile committed) + `next build` clean, 80 KB
+  first-load JS, 436 KB `out/`; output contains no runtime external refs
+  (only inert framework strings).
+- `vitest`: 8/8 (SSE framing/deltas, usage, cost, toy-agent blobs).
+- `snowglobe view`: embedded page + manifest/events/blobs served, 404s +
+  traversal guard + bad-run 64 verified by hand.
+- Playwright (chromium, local): toy-agent e2e (3 turns, turn-2 file-write
+  linkage, timeline/files/network tabs, zero non-localhost requests) and
+  50 MB perf e2e green.
+- Full suites include the new `viewer_unit`/`viewer_e2e` (e2e runs for
+  real where browsers exist, SKIP-prints otherwise): debug 36/36 + asan
+  36/36 as uid 1000, zero findings; cross-aarch64 11/11 with
+  `SNOWGLOBE_VIEWER=OFF`.
 
 ## Block 3 verification (all as uid 1000 in ~/src/snowglobe ext4 unless noted)
 - tcp_loopback (23 events): binds + blocking connects initiated:true;

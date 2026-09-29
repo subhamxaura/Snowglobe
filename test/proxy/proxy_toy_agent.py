@@ -39,15 +39,15 @@ def main():
                 "id": "chatcmpl-1", "model": "mock-model-1",
                 "choices": [{"message": {"role": "assistant", "content": None,
                                          "tool_calls": [tc(
-                                             1, "write_file",
-                                             {"path": wd + "/note.txt",
-                                              "content": "hello snowglobe"})]}}]}},
+                                             1, "run_command",
+                                             {"command": "echo tool-output-123"})]}}]}},
             {"status": 200, "stream": False, "body": {
                 "id": "chatcmpl-2", "model": "mock-model-1",
                 "choices": [{"message": {"role": "assistant", "content": None,
                                          "tool_calls": [
-                                             tc(2, "run_command", {"command":
-                                                                   "echo tool-output-123"}),
+                                             tc(2, "write_file",
+                                                {"path": wd + "/note.txt",
+                                                 "content": "hello snowglobe"}),
                                              tc(3, "http_get", {"url": durl})]}}]}},
             {"status": 200, "stream": False, "body": {
                 "id": "chatcmpl-3", "model": "mock-model-1", "choices": [

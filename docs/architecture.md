@@ -85,5 +85,19 @@ possibly-stuck connect). The event sink is called from handler threads
 and is mutex-guarded by the owner. Bounded queue, explicit abort,
 `stop(deadlineS)` drains ≤10 s then aborts stragglers and joins all.
 
+## Viewer (Phase 1C)
+
+Next.js static export (`viewer/`, Pages Router, no dependencies beyond
+next/react), built with the project's Node and packed into the binary by
+`cmake/embed_viewer.cmake` (pure CMake hex packing, build-time, no
+reconfigure needed). `snowglobe view <run>` serves the embedded files
+plus `/trace/*` straight from the run dir on 127.0.0.1 (default 7777,
+`--port=0` for ephemeral, `--open` via best-effort xdg-open). Same-origin
+fetches only — no CDN, fonts, telemetry, or external calls (asserted in
+Playwright by failing any non-localhost request). Provider parsing
+(OpenAI/Anthropic full + SSE-delta folding, static cost table) lives in
+`viewer/lib/providers.ts` with Vitest fixtures; 50 MB traces stream-parse
+with a virtualized list (< 3 s budget, Playwright-measured).
+
 Phase 2 adds core/sandbox (clone3 namespaces, overlayfs, seccomp-bpf,
 landlock, cgroup limits). See docs/PLAN.md.

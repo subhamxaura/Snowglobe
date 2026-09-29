@@ -7,7 +7,7 @@ open issue "record real-agent fixtures" (see `../real/README.md`) stays
 open — replace this directory with a real recording when keys are
 available; do not delete it silently (1C may already reference it).
 
-What it is: `examples/toy-agent/agent.py` (write_file → run_command +
+What it is: `examples/toy-agent/agent.py` (run_command → write_file +
 http_get → done) run under `snowglobe run --upstream=openai=<mock>`
 against `test/mockllm/server.py`. 125 normalised events, 3
 `llm.request`/`llm.response` pairs, 9 blobs.
