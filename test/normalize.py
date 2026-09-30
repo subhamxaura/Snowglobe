@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Normalize a snowglobe events.jsonl for golden comparison.
 
-Rules (Phase 1A Block 2):
+Rules (Phase 1A Block 2, extended Phase 1B):
 - pid/tid/ppid replaced by stable ids of first appearance (P1, P2, ... /
   T1, T2, ...). ppid maps through the pid namespace (the supervisor pid,
   which never has its own event, still gets a stable id).
 - stripped keys: seq, ts_us, t_ms, t_us, prev_hash, hash, fd.
+- numeric "port" fields (net.* endpoints) become "PORT" (ephemeral).
 - every string has the scenario temp dir replaced with $TMP, the repo path
   with $REPO, and interpreter-version path components normalised
   (python3.V, cpython-3V) so one golden serves 22.04 (3.10) and 24.04 (3.12).
@@ -71,6 +72,9 @@ def main():
                     r[k] = tid(v)
                 elif k == "ppid":
                     r[k] = pid(v)
+                elif k == "port" and isinstance(v, int):
+                    # Ephemeral ports are stable only as "a port was here".
+                    r[k] = "PORT"
                 else:
                     r[k] = fix(v)
             return r

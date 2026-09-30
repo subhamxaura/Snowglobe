@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-09-29  ·  Phase: 1C — DONE locally (viewer app + view cmd + vitest + e2e green as uid 1000; push + CI poll next, Phase 1D separate)  ·  Next launch: v0.1.0, week 9
+Updated: 2026-09-30  ·  Real-run fix batch DONE locally (4 bugs + tests, 43/43 debug+asan as uid 1000; error-path fixture BLOCKED — /tmp wiped on WSL reboot, needs re-supplied run) — push + CI poll next  ·  Next launch: v0.1.0, week 9
 
 > Phase 1A gate closed: CI run
 > https://github.com/subhamxaura/Snowglobe/actions/runs/36311530345 — all 6

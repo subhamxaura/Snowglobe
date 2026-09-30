@@ -1131,8 +1131,26 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
               emitDecodeError(pid, nr, std::string("sockaddr: ") + errnoText(errno));
               break;
             }
-            const std::string formatted =
-                util::formatSockaddr(sbuf, static_cast<unsigned long>(wantLen));
+            const util::SockaddrParts parts =
+                util::parseSockaddr(sbuf, static_cast<unsigned long>(wantLen));
+            // AF_UNSPEC connect() is the UDP-disconnect idiom (the resolver
+            // unconnecting): there is no peer, so this is not a connection —
+            // record net.disconnect with the outcome instead.
+            if (kind == Kind::Connect && parts.family == "unspec") {
+              emitEv("{" + ts + ",\"ev\":\"net.disconnect\",\"ok\":" + (!isErr ? "true" : "false") +
+                     "}");
+              break;
+            }
+            // Structured endpoint fields alongside the legacy addr string:
+            // family + addr always; ip/port for ipv4/ipv6, path for unix.
+            std::string endpoint =
+                "\"family\":" + jsonEscape(parts.family) + ",\"addr\":" + jsonEscape(parts.display);
+            if (parts.family == "ipv4" || parts.family == "ipv6") {
+              endpoint +=
+                  ",\"ip\":" + jsonEscape(parts.ip) + ",\"port\":" + std::to_string(parts.port);
+            } else if (parts.family == "unix") {
+              endpoint += ",\"path\":" + jsonEscape(parts.path);
+            }
             // initiated: the kernel took the connection attempt (success or
             // EINPROGRESS for non-blocking). Immediate failures (refused,
             // unreachable) never initiated.
@@ -1142,7 +1160,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
               initiated = true;
             }
 #endif
-            emitEv("{" + ts + ",\"ev\":\"" + evName + "\",\"addr\":" + jsonEscape(formatted) +
+            emitEv("{" + ts + ",\"ev\":\"" + evName + "\"," + endpoint +
                    ",\"ok\":" + (!isErr ? "true" : "false") +
                    (kind == Kind::Connect
                         ? (initiated ? ",\"initiated\":true" : ",\"initiated\":false")

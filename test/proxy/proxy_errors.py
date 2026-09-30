@@ -57,8 +57,8 @@ def main():
                 print("FAIL: client got %s, want status %d sha %s"
                       % (g, st, h))
                 return 1
-        if "0 LLM turns" not in r.stderr:
-            print("FAIL: epilogue should report 0 LLM turns:\n" + r.stderr)
+        if "2 LLM turns (2 errors)" not in r.stderr:
+            print("FAIL: epilogue should report '2 LLM turns (2 errors)':\n" + r.stderr)
             return 1
         evs = load_events(out)
         reqs, resps = llm_pairs(evs)
@@ -75,7 +75,7 @@ def main():
                                              ).hexdigest():
                 print("FAIL: stored error body %d not byte-exact" % i)
                 return 1
-        print("PASS errors: 429 + 500 passthrough byte-exact, 0 turns")
+        print("PASS errors: 429 + 500 passthrough byte-exact, 2 turns (2 errors)")
         return 0
     finally:
         if mock is not None:

@@ -8,6 +8,9 @@
 //   accepting another outcome would bake environment flakiness into goldens.
 // - bind 127.0.0.1:0, close it, connect to the freed port (ECONNREFUSED,
 //   recorded as initiated:false, ok:false). Asserts ECONNREFUSED likewise.
+// - UDP-disconnect idiom: connect a datagram socket, then connect it to
+//   AF_UNSPEC (the resolver's unconnect, always succeeds). Recorded as
+//   net.disconnect, never as a connect to nothing.
 // Exits nonzero with perror on any setup failure.
 #include <arpa/inet.h>
 #include <errno.h>
@@ -153,6 +156,26 @@ int main(int argc, char** argv) {
   }
   printf("closed-port connect: ECONNREFUSED as expected\n");
   close(cr);
+
+  // UDP-disconnect idiom (resolver unconnect): connect a datagram socket
+  // to the loopback listener, then connect the same fd to AF_UNSPEC.
+  // The first is an ordinary net.connect; the second has no peer and is
+  // recorded as net.disconnect (ok:true). Both assert loudly.
+  int dg = socket(AF_INET, SOCK_DGRAM, 0);
+  if (dg < 0) {
+    return fail("socket udp");
+  }
+  if (connect(dg, (struct sockaddr*)&dst4, sizeof(dst4)) != 0) {
+    return fail("udp connect");
+  }
+  struct sockaddr unspec;
+  memset(&unspec, 0, sizeof(unspec));
+  unspec.sa_family = AF_UNSPEC;
+  if (connect(dg, &unspec, sizeof(sa_family_t)) != 0) {
+    return fail("udp disconnect");
+  }
+  printf("udp disconnect: ok\n");
+  close(dg);
 
   close(srv4);
   close(srv6);

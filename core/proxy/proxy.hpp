@@ -57,9 +57,16 @@ public:
   int port() const {
     return port_;
   }
-  // Completed 2xx responses ("turns" for the run epilogue).
+  // Completed responses ("turns" for the run epilogue): EVERY recorded
+  // response counts, including non-2xx — a 402/429/500 round trip is still
+  // an LLM turn the agent acted on (a real Claude Code run with two error
+  // responses reported "0 LLM turns" before this fix). errors() counts the
+  // non-2xx subset for the "(N errors)" epilogue suffix.
   long turns() const {
     return turns_.load();
+  }
+  long errors() const {
+    return errors_.load();
   }
   const std::string& error() const {
     return error_;
@@ -67,9 +74,10 @@ public:
 
 private:
   // Per-request shared state. The handler thread creates it; the upstream
-  // worker and the chunked provider share it. The provider ALWAYS joins the
-  // worker before its final return, so no thread is ever detached and TSan
-  // sees only mutex/atomic synchronization.
+  // worker and the chunked provider share it. The provider joins the worker
+  // before its final return; the only detached thread is the
+  // shutdown-during-head-wait abandon (which cleans its own .tmps via
+  // abandonFlight). TSan sees only mutex/atomic synchronization.
   struct Flight {
     BlockingQueue respQ{1 << 20};
     std::mutex mu;
@@ -82,6 +90,9 @@ private:
     std::string resContentType;
     std::string resExt = ".bin";
     std::atomic<bool> abort{false};
+    // Set by the handler when it detaches the worker at shutdown: no
+    // provider will ever rename this flight's .tmps.
+    std::atomic<bool> detached{false};
     std::thread upThread;
     // Recording: upstream thread writes; server thread reads after join().
     std::string resPath, idxPath;
@@ -112,6 +123,13 @@ private:
                          const std::string& idxRel, uint64_t tsUs, pid_t tid);
   // t_ms since proxy start (≈ run start; see handleBody note).
   uint64_t tMs() const;
+  // Close a flight's .tmp blobs and remove them. Used exactly where no
+  // provider will ever rename them: the 502 headError branch and a detached
+  // worker's own thread end. Keeps the no-*.tmp invariant (Block 2 test).
+  // closeFiles=false unlinks only (for a thread that may still be writing
+  // its own streams — unlink is atomic w.r.t. writers; closing another
+  // thread's ofstream would race).
+  static void abandonFlight(Flight& flight, bool closeFiles);
 
   ProxyOptions opts_;
   httplib::Server svr_;
@@ -122,6 +140,7 @@ private:
   std::atomic<bool> shuttingDown_{false};
   std::atomic<long> nextId_{0};
   std::atomic<long> turns_{0};
+  std::atomic<long> errors_{0};
   uint64_t tEpochMonoMs_ = 0;
   // Live in-flight requests (for abort-on-deadline at stop()).
   std::mutex liveMu_;

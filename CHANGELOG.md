@@ -5,6 +5,31 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Fixed (real Claude Code run, `/tmp/claude-real.sgr`: 2 error turns, 0-byte tmps)
+- Epilogue counted only 2xx as turns, so two error responses (502
+  synthesized for a `HEAD` health check, 400 with 198 binary bytes)
+  reported "0 LLM turns". Every recorded response is now a turn;
+  `errors()` counts the non-2xx subset: `2 LLM turns (2 errors)`, `1 LLM
+  turn (1 error)`, bare `N LLM turns` when clean. `--json` gains additive
+  `"errors"`. Mock-402 test pins it (status + byte-exact blob).
+- Leftover `0000.res.tmp` + `0000.res.idx.tmp`: the 502 headError branch
+  opened `.tmps` then wrote finals directly. It now removes them, and the
+  shutdown-detach path marks the flight so the worker removes its own
+  (unlink-only from the handler side — closing another thread's streams
+  would race). New no-tmp test covers 429 + disconnect + unreachable-502
+  in one run and asserts zero `*.tmp` with all finals present.
+- `connect()` with an AF_UNSPEC sockaddr (the UDP-disconnect idiom, seen 3×
+  as `"addr": "family=0"`) is now `net.disconnect{ok}`, not a connect to
+  nothing. `tcp_loopback` grew a UDP connect/disconnect pair to pin it.
+- `net.connect`/`sendto`/`bind` carry structured endpoint fields —
+  `family` (ipv4|ipv6|unix|unspec|unknown), `ip` + numeric `port` for IP,
+  `path` for unix — with the legacy `addr` string kept verbatim.
+  Goldens regenerated (tcp_loopback, unix_sockets); numeric ports
+  normalise to `"PORT"`.
+- `proxy_concurrent` is now pairwise: 8 distinct stream bodies, asserting
+  stored<->sent and received<->stored bijections (identical bodies could
+  not catch cross-stream contamination).
+
 ### Added (Phase 1C — embedded viewer)
 - `viewer/` (Next.js 14 Pages-Router static export, system fonts, no CDN):
   turns (OpenAI/Anthropic full + SSE-delta folding, tool calls, static

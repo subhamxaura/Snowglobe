@@ -113,6 +113,15 @@ uint64_t LlmProxy::tMs() const {
   return base != 0 && now >= base ? now - base : 0;
 }
 
+void LlmProxy::abandonFlight(Flight& flight, bool closeFiles) {
+  if (closeFiles) {
+    flight.resFile.close();
+    flight.idxFile.close();
+  }
+  ::unlink((flight.resPath + ".tmp").c_str());
+  ::unlink((flight.idxPath + ".tmp").c_str());
+}
+
 void LlmProxy::emitRequestEvent(long id, const std::string& provider, const std::string& method,
                                 const std::string& path, const JsonTop& jt, uint64_t bytes,
                                 uint64_t tsUs, pid_t tid) {
@@ -137,8 +146,9 @@ void LlmProxy::emitResponseEvent(long id, int status, uint64_t bytes, bool hasTt
   if (!opts_.sink) {
     return;
   }
-  if (status >= 200 && status < 300) {
-    turns_.fetch_add(1);
+  turns_.fetch_add(1);
+  if (status < 200 || status >= 300) {
+    errors_.fetch_add(1);
   }
   opts_.sink("{\"ts_us\":" + std::to_string(tsUs) + ",\"t_ms\":" + std::to_string(tMs()) +
              ",\"pid\":" + std::to_string(::getpid()) + ",\"tid\":" + std::to_string(tid) +
@@ -497,6 +507,9 @@ void LlmProxy::handleBody(const httplib::Request& req, httplib::Response& res,
             flight->cv.notify_all();
           }
           flight->respQ.close();
+          if (flight->detached.load()) {
+            abandonFlight(*flight, true);
+          }
         } catch (...) {
           std::lock_guard<std::mutex> lk(flight->mu);
           if (!flight->headDone) {
@@ -506,6 +519,9 @@ void LlmProxy::handleBody(const httplib::Request& req, httplib::Response& res,
           }
           flight->cv.notify_all();
           flight->respQ.close();
+          if (flight->detached.load()) {
+            abandonFlight(*flight, true);
+          }
         }
       });
 
@@ -520,11 +536,16 @@ void LlmProxy::handleBody(const httplib::Request& req, httplib::Response& res,
       lk.unlock();
       flight->abort.store(true);
       flight->respQ.close();
-      // Detach: shared_ptr keeps Flight alive; the thread unwinds alone.
-      // Joins happen only on paths where the worker already finished.
+      // Detach: shared_ptr keeps Flight alive; the thread unwinds alone and
+      // removes its own .tmps on completion (abandonFlight). Joins happen
+      // only on paths where the worker already finished.
+      flight->detached.store(true);
       if (flight->upThread.joinable()) {
         flight->upThread.detach();
       }
+      // Unlink-only here (the worker may still be writing): the thread-end
+      // close+unlink is idempotent, so every interleaving ends tmp-free.
+      abandonFlight(*flight, false);
       unlive();
       return;
     }
@@ -532,7 +553,11 @@ void LlmProxy::handleBody(const httplib::Request& req, httplib::Response& res,
 
   if (flight->headError) {
     // Upstream unreachable: synthesized 502 carrying the error as its body.
+    // The .tmps were opened before dispatch but this path writes finals
+    // directly, so remove the orphans (a real Claude Code run left
+    // 0000.res.tmp + 0000.res.idx.tmp behind here).
     joinUp();
+    abandonFlight(*flight, true);
     const std::string errBody =
         "{\"error\":\"upstream failed\",\"detail\":" + util::jsonEscape(flight->headErrText) + "}";
     const std::string resRel = "llm/" + num + ".res.json";

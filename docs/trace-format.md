@@ -49,9 +49,10 @@ own tid. Threads that vanish in an exec without an exit stop get
 | `fs.mkdir` | `path` |
 | `fs.symlink` | `target, path, ok` |
 | `fs.chmod` | `path, mode, ok` (mode = octal string, e.g. `"0755"`) |
-| `net.connect` | `addr (formatted), ok, initiated` (initiated:false = refused/unreachable; true also on -EINPROGRESS) |
-| `net.sendto` | `addr, ok` (UDP/DNS visibility) |
-| `net.bind` | `addr, ok` |
+| `net.connect` | `family (ipv4\|ipv6\|unix\|unspec\|unknown, else family=N), addr (legacy formatted string, kept), ip + port (number) for ipv4/ipv6, path for unix, ok, initiated` (initiated:false = refused/unreachable; true also on -EINPROGRESS) |
+| `net.disconnect` | `ok` — a `connect()` whose sockaddr has family AF_UNSPEC (the UDP-disconnect idiom: the resolver unconnecting a datagram socket). No peer fields; there is no peer. |
+| `net.sendto` | same endpoint fields as `net.connect` (minus `initiated`) (UDP/DNS visibility) |
+| `net.bind` | same endpoint fields as `net.connect` (minus `initiated`) |
 | `llm.request` | `id, provider (openai\|anthropic\|gemini\|custom\|unknown), method, path, model (string or null), bytes, stream` — `pid` is the *supervisor* (the proxy lives there), `tid` the handler thread; the stored envelope is `llm/NNNN.req.json` by id convention |
 | `llm.response` | `id, status, bytes, ttfb_ms (first body byte; null when none), total_ms, chunk_count, truncated, req, res, idx` (last three are `llm/…` relative paths) |
 | `trace.decode_error` | `syscall, errno, reason` |

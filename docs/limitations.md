@@ -1,5 +1,4 @@
 # Known limitations (tracer + proxy capture + `--isolate` visibility)
-
 Snowglobe is *isolation and visibility*, never a security boundary for hostile
 code (see `docs/threat-model.md` in Phase 2). This page lists what the
 ptrace backend cannot see or cannot do, with the mechanism in each case.
@@ -91,3 +90,24 @@ as LLM traffic (it is still visible as `net.connect` from the tracer):
   (50 MB verified; a hostile gigabyte body would transiently allocate a
   gigabyte in the supervisor). Downloads stream with zero application
   buffering.
+
+## WSL interop + IPv6-failure patterns (from a real Claude Code run)
+
+Observed in `test/fixtures/real/claude-code-0-nocredit/`, recorded here so
+future traces with the same shapes are read correctly:
+
+- **`/run/WSL/<pid>_interop` unix connects (ok:true) are the WSL interop
+  channel** — the tracee spawning Windows-side processes (`claude.exe`
+  helpers, `node.exe`, `powershell.exe`). They are normal on WSL, carry no
+  agent payload, and must not be mistaken for exfiltration: the peer is the
+  local WSL service, not the network. Same for `unix:/var/run/nscd/socket`
+  (the resolver cache) and tool-private sockets such as
+  `unix:/run/user/1000/cc-socks/*.sock` (Claude Code's own sandbox
+  channel — interesting as behavior, opaque as bytes).
+- **IPv6 attempts failing on IPv4-only/NAT64 networks look like errors but
+  are normal**: happy-eyeballs racing emits `net.connect` to `[ipv6]:443`
+  (or `:0` probes) with `ok:false`, immediately followed by a working IPv4
+  connection. Read a lone failed IPv6 connect as connection-racing noise,
+  not as an outage — only a run with *no* successful follow-up is
+  suspicious. (The `AF_UNSPEC` disconnects nearby are the resolver
+  unconnecting UDP sockets after use — recorded as `net.disconnect`.)

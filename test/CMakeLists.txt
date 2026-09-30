@@ -13,6 +13,7 @@ add_executable(snowglobe_tests
   unit/test_open_flags.cpp
   unit/test_redact.cpp
   unit/test_proxy_util.cpp
+  unit/test_sockaddr.cpp
 )
 target_link_libraries(snowglobe_tests PRIVATE snowglobe_core Catch2::Catch2WithMain)
 target_include_directories(snowglobe_tests PRIVATE ${CMAKE_SOURCE_DIR}/core)
@@ -74,7 +75,7 @@ if(Python3_FOUND)
   # its own mock on a fixed localhost port (no API keys anywhere).
   set(SG_PROXY_TESTS
     toy_agent:180 latency:300 concurrent:180 disconnect:180 errors:120
-    large:300 redact_argv:120 anthropic:120)
+    large:300 redact_argv:120 anthropic:120 error_turn:120 no_tmp:180)
   # Latency budget scales with instrumentation: the 5 ms product budget
   # (AGENTS.md §5) holds on plain builds; ASan/TSan slow the proxy ~5x, so
   # those presets bound the delta at 25 ms instead. Still a bound, still

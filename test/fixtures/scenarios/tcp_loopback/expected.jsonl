@@ -12,12 +12,14 @@
 {"ev": "proc.start", "pid": "P4", "ppid": "P1", "tid": "T3"}
 {"argv": ["$HELPERS/sg_tcp", "$TMP"], "cwd": "$REPO/test/fixtures/scenarios/tcp_loopback", "ev": "proc.exec", "path": "$HELPERS/sg_tcp", "pid": "P4", "tid": "T3"}
 {"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
-{"addr": "127.0.0.1:PORT", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "[::1]:PORT", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "[::1]:PORT", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "192.0.2.1:80", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P4", "tid": "T3"}
-{"addr": "127.0.0.1:PORT", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P4", "tid": "T3"}
+{"addr": "127.0.0.1:PORT", "ev": "net.bind", "family": "ipv4", "ip": "127.0.0.1", "ok": true, "pid": "P4", "port": "PORT", "tid": "T3"}
+{"addr": "[::1]:PORT", "ev": "net.bind", "family": "ipv6", "ip": "::1", "ok": true, "pid": "P4", "port": "PORT", "tid": "T3"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "family": "ipv4", "initiated": true, "ip": "127.0.0.1", "ok": true, "pid": "P4", "port": "PORT", "tid": "T3"}
+{"addr": "[::1]:PORT", "ev": "net.connect", "family": "ipv6", "initiated": true, "ip": "::1", "ok": true, "pid": "P4", "port": "PORT", "tid": "T3"}
+{"addr": "192.0.2.1:80", "ev": "net.connect", "family": "ipv4", "initiated": true, "ip": "192.0.2.1", "ok": false, "pid": "P4", "port": "PORT", "tid": "T3"}
+{"addr": "127.0.0.1:PORT", "ev": "net.bind", "family": "ipv4", "ip": "127.0.0.1", "ok": true, "pid": "P4", "port": "PORT", "tid": "T3"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "family": "ipv4", "initiated": false, "ip": "127.0.0.1", "ok": false, "pid": "P4", "port": "PORT", "tid": "T3"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "family": "ipv4", "initiated": true, "ip": "127.0.0.1", "ok": true, "pid": "P4", "port": "PORT", "tid": "T3"}
+{"ev": "net.disconnect", "ok": true, "pid": "P4", "tid": "T3"}
 {"code": 0, "ev": "proc.exit", "pid": "P4", "signal": 0, "tid": "T3"}
 {"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T1"}

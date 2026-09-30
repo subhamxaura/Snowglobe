@@ -38,26 +38,39 @@ std::string jsonEscape(const std::string& s) {
 }
 
 std::string formatSockaddr(const void* addr, unsigned long addrLen) {
+  return parseSockaddr(addr, addrLen).display;
+}
+
+SockaddrParts parseSockaddr(const void* addr, unsigned long addrLen) {
 #ifdef __linux__
+  SockaddrParts out;
   if (addr == nullptr || addrLen < sizeof(sa_family_t)) {
-    return "unknown";
+    return out;
   }
   const auto* sa = static_cast<const struct sockaddr*>(addr);
   if (sa->sa_family == AF_INET && addrLen >= sizeof(struct sockaddr_in)) {
     const auto* in = static_cast<const struct sockaddr_in*>(addr);
     char ip[INET_ADDRSTRLEN] = {};
     if (inet_ntop(AF_INET, &in->sin_addr, ip, sizeof(ip)) == nullptr) {
-      return "unknown";
+      return out;
     }
-    return std::string(ip) + ":" + std::to_string(ntohs(in->sin_port));
+    out.family = "ipv4";
+    out.ip = ip;
+    out.port = static_cast<long>(ntohs(in->sin_port));
+    out.display = out.ip + ":" + std::to_string(out.port);
+    return out;
   }
   if (sa->sa_family == AF_INET6 && addrLen >= sizeof(struct sockaddr_in6)) {
     const auto* in6 = static_cast<const struct sockaddr_in6*>(addr);
     char ip[INET6_ADDRSTRLEN] = {};
     if (inet_ntop(AF_INET6, &in6->sin6_addr, ip, sizeof(ip)) == nullptr) {
-      return "unknown";
+      return out;
     }
-    return std::string("[") + ip + "]:" + std::to_string(ntohs(in6->sin6_port));
+    out.family = "ipv6";
+    out.ip = ip;
+    out.port = static_cast<long>(ntohs(in6->sin6_port));
+    out.display = std::string("[") + out.ip + "]:" + std::to_string(out.port);
+    return out;
   }
   if (sa->sa_family == AF_UNIX) {
     const auto* un = static_cast<const struct sockaddr_un*>(addr);
@@ -71,13 +84,24 @@ std::string formatSockaddr(const void* addr, unsigned long addrLen) {
     if (nul != std::string::npos) {
       path.resize(nul);
     }
-    return "unix:" + path;
+    out.family = "unix";
+    out.path = path;
+    out.display = "unix:" + path;
+    return out;
   }
-  return "family=" + std::to_string(static_cast<int>(sa->sa_family));
+  if (sa->sa_family == AF_UNSPEC) {
+    // UDP-disconnect idiom (resolver unconnect): no peer at all.
+    out.family = "unspec";
+    out.display = "family=0";
+    return out;
+  }
+  out.family = "family=" + std::to_string(static_cast<int>(sa->sa_family));
+  out.display = out.family;
+  return out;
 #else
   (void)addr;
   (void)addrLen;
-  return "unknown";
+  return SockaddrParts{};
 #endif
 }
 

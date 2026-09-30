@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""9(c): 8 concurrent streams — every stored response body must be
-byte-exact (multiset of sha256 over llm/*.res.sse equals the multiset over
-what the mock sent), all status 200, proxy healthy throughout.
+"""9(c): 8 concurrent streams with pairwise-distinct bodies — every
+stored response body must equal, byte for byte, the body the mock sent AND
+the body its own client thread received (multiset bijections over 8
+distinct sha256: cross-stream contamination cannot hide, unlike with
+identical bodies). All status 200.
 """
 import collections
 import glob
@@ -26,10 +28,14 @@ def main():
     mock = None
     try:
         port = free_port()
-        one = {"status": 200, "stream": True,
-               "chunks": ["data: {\"k\":%d}\n\n" % i for i in range(10)]}
-        scenario = {"responses": [json.loads(json.dumps(one))
-                                  for _ in range(N)]}
+        # Pairwise-distinct bodies (stream index embedded): with identical
+        # bodies a cross-stream mix-up is invisible; distinct shas force a
+        # 1:1 correspondence stored<->sent and stored<->received.
+        scenario = {"responses": [
+            {"status": 200, "stream": True,
+             "chunks": ["data: {\"s\":%d,\"k\":%d}\n\n" % (j, i)
+                        for i in range(10)]}
+            for j in range(N)]}
         mock = Mock(os.path.join(MOCKLLM, "server.py"), port, scenario)
         res = os.path.join(work, "conc.json")
         r = run_sg(SNOWGLOBE,
@@ -61,10 +67,15 @@ def main():
         sent_hashes = collections.Counter()
         for p in glob.glob(os.path.join(mock.sent, "res-*.bin")):
             sent_hashes[sha_file(p)] += 1
-        if stored != sent_hashes:
-            print("FAIL: stored %s != sent %s" % (stored, sent_hashes))
+        if stored != sent_hashes or any(v != 1 for v in stored.values()):
+            print("FAIL: stored %s != sent %s (want 8 distinct 1:1)"
+                  % (stored, sent_hashes))
             return 1
-        print("PASS concurrent: %d streams byte-exact" % N)
+        received = collections.Counter(g["body_sha256"] for g in got)
+        if received != stored:
+            print("FAIL: per-thread received %s != stored %s" % (received, stored))
+            return 1
+        print("PASS concurrent: %d streams pairwise byte-exact" % N)
         return 0
     finally:
         if mock is not None:

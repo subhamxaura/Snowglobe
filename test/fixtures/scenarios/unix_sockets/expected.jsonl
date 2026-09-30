@@ -12,12 +12,12 @@
 {"ev": "proc.start", "pid": "P4", "ppid": "P1", "tid": "T3"}
 {"argv": ["$HELPERS/sg_sockets", "$TMP"], "cwd": "$REPO/test/fixtures/scenarios/unix_sockets", "ev": "proc.exec", "path": "$HELPERS/sg_sockets", "pid": "P4", "tid": "T3"}
 {"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
-{"addr": "unix:$TMP/sock", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "unix:$TMP/sock", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "unix:", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "unix:", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "unix:$TMP/dg-a", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "unix:$TMP/dg-b", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T3"}
-{"addr": "unix:$TMP/dg-b", "ev": "net.sendto", "ok": true, "pid": "P4", "tid": "T3"}
+{"addr": "unix:$TMP/sock", "ev": "net.bind", "family": "unix", "ok": true, "path": "$TMP/sock", "pid": "P4", "tid": "T3"}
+{"addr": "unix:$TMP/sock", "ev": "net.connect", "family": "unix", "initiated": true, "ok": true, "path": "$TMP/sock", "pid": "P4", "tid": "T3"}
+{"addr": "unix:", "ev": "net.bind", "family": "unix", "ok": true, "path": "", "pid": "P4", "tid": "T3"}
+{"addr": "unix:", "ev": "net.connect", "family": "unix", "initiated": true, "ok": true, "path": "", "pid": "P4", "tid": "T3"}
+{"addr": "unix:$TMP/dg-a", "ev": "net.bind", "family": "unix", "ok": true, "path": "$TMP/dg-a", "pid": "P4", "tid": "T3"}
+{"addr": "unix:$TMP/dg-b", "ev": "net.bind", "family": "unix", "ok": true, "path": "$TMP/dg-b", "pid": "P4", "tid": "T3"}
+{"addr": "unix:$TMP/dg-b", "ev": "net.sendto", "family": "unix", "ok": true, "path": "$TMP/dg-b", "pid": "P4", "tid": "T3"}
 {"code": 0, "ev": "proc.exit", "pid": "P4", "signal": 0, "tid": "T3"}
 {"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T1"}

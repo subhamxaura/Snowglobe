@@ -328,10 +328,11 @@ int cmdRun(const RunOptions& o) {
   const int code = tracer->run(o.cmd, topts);
   // Drain in-flight LLM streams (<= 10 s) before finalising: their events
   // belong in this trace's counts.
-  long turns = 0;
+  long turns = 0, errors = 0;
   if (proxy) {
     proxy->stop(10);
     turns = proxy->turns();
+    errors = proxy->errors();
   }
   if (code < 0) {
     if (code == -kExUnavailable) {
@@ -347,11 +348,16 @@ int cmdRun(const RunOptions& o) {
 
   if (o.json) {
     std::cout << "{\"run\":" << jsonEscape(runDir.string()) << ",\"exit_code\":" << code
-              << ",\"events\":" << writer.count() << ",\"turns\":" << turns << "}\n";
+              << ",\"events\":" << writer.count() << ",\"turns\":" << turns
+              << ",\"errors\":" << errors << "}\n";
   } else {
     std::cerr << "run: " << runDir.string() << "\n";
     std::cerr << "exit: " << code << " | events: " << writer.count() << " | " << turns
-              << " LLM turns\n";
+              << " LLM turn" << (turns == 1 ? "" : "s");
+    if (errors > 0) {
+      std::cerr << " (" << errors << " error" << (errors == 1 ? "" : "s") << ")";
+    }
+    std::cerr << "\n";
     std::cerr << "next: snowglobe diff " << runDir.string() << " | snowglobe view "
               << runDir.string() << " | snowglobe replay " << runDir.string() << "\n";
   }
