@@ -1,4 +1,13 @@
-# Snowglobe — flight recorder and dry-run sandbox for AI agents
+# ❄️ Snowglobe
+
+![Snowglobe — AI Agent Execution Observatory](docs/assets/snowglobe-hero.png)
+
+<p align="center">
+  <strong>Record. Inspect. Diff. Replay.</strong>
+</p>
+
+> A Linux-first systems platform for observing, tracing, isolating,
+> diffing, and deterministically replaying AI agent execution.
 
 > **Status: pre-alpha, not yet usable.** Phases 0–1B done: `run` (ptrace
 > process/file/network tracing + LLM recording proxy with mock-tested
