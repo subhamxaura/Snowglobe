@@ -93,8 +93,11 @@ as LLM traffic (it is still visible as `net.connect` from the tracer):
 
 ## WSL interop + IPv6-failure patterns (from a real Claude Code run)
 
-Observed in `test/fixtures/real/claude-code-0-nocredit/`, recorded here so
-future traces with the same shapes are read correctly:
+Observed in a real Claude Code run on WSL (error-path fixture lost to a
+`/tmp` wipe before it could be committed — see STATUS.md; it will be
+regenerated via an invalid-key run producing a real 401 through the proxy
+and committed as `test/fixtures/real/claude-code-1-error/`), recorded here
+so future traces with the same shapes are read correctly:
 
 - **`/run/WSL/<pid>_interop` unix connects (ok:true) are the WSL interop
   channel** — the tracee spawning Windows-side processes (`claude.exe`
