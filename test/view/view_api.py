@@ -125,6 +125,8 @@ def main():
         ok &= check(s == 400, "bad from must 400, got %d" % s)
         s, _, _ = get(u + "/api/events?from=999999999&to=1000000000")
         ok &= check(s == 416, "from past end must 416, got %d" % s)
+        s, _, _ = get(u + "/api/events?from=5&to=3")
+        ok &= check(s == 400, "to < from must 400, got %d" % s)
 
         s, h, _ = get(u + "/api/events?from=0&to=1")
         etag = h.get("ETag") or h.get("Etag")
@@ -184,6 +186,26 @@ def main():
         if etag:
             s, _, _ = get(u + "/", {"If-None-Match": etag})
             ok &= check(s == 304, "embedded revalidate 304, got %d" % s)
+        srv.stop()
+        srv = None
+
+        # Probe mirror (model.ts isProbeRequest): a bodyless POST whose
+        # events omit the model key entirely is still a probe — it must
+        # never count as a turn in /api/summary.
+        probe_path = os.path.join(work, "probe.jsonl")
+        with open(probe_path, "w") as f:
+            f.write(json.dumps({"ev": "llm.request", "id": 9, "method": "POST",
+                                "path": "/v1/messages", "provider": "anthropic",
+                                "bytes": 0, "stream": False}) + "\n")
+            f.write(json.dumps({"ev": "llm.response", "id": 9, "status": 200,
+                                "bytes": 0}) + "\n")
+        srv = Server(probe_path)
+        u = srv.url
+        s, _, b = get(u + "/api/summary")
+        sm = json.loads(b)
+        ok &= check(s == 200 and sm["turns"] == 0 and sm["probe_requests"] == 1
+                    and sm["events"] == 2,
+                    "absent-model bodyless POST is a probe: %s" % b[:200])
         srv.stop()
         srv = None
 

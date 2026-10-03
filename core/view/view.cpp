@@ -209,10 +209,6 @@ bool trueField(const std::string& line, const std::string& key) {
   return wordField(line, key, "true");
 }
 
-bool nullField(const std::string& line, const std::string& key) {
-  return wordField(line, key, "null");
-}
-
 // ---- run source: a .sgr directory, or a bare events.jsonl file ----
 
 struct RunSource {
@@ -414,7 +410,11 @@ std::string buildSummary(const RunSource& rs) {
     if (*ev == "llm.request") {
       if (auto id = intField(ln, "id")) {
         reqMethod[*id] = strField(ln, "method").value_or("");
-        reqHasModel[*id] = !nullField(ln, "model");
+        // No model == no model: strField returns nullopt both for
+        // "model":null and for an absent key — matching model.ts
+        // (str(e["model"]) ?? null). An absent key used to read as
+        // "has model", splitting probes from the TS turn layer.
+        reqHasModel[*id] = strField(ln, "model").has_value();
         reqBytes[*id] = intField(ln, "bytes").value_or(0);
       }
     } else if (*ev == "proc.start" || *ev == "proc.exec" || *ev == "proc.exit") {
@@ -644,6 +644,10 @@ int cmdView(const std::vector<std::string>& args) {
         return;
       }
       const auto total = static_cast<long>(rs.offsets.size());
+      if (to < from) {
+        jsonError(res, 400, "bad from/to (non-negative integers, to > from)");
+        return;
+      }
       if (to - from > kMaxPage) {
         jsonError(res, 400, "page too large (max 5000 events)");
         return;
