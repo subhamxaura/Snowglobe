@@ -1,7 +1,7 @@
 // Schema-0 typed event model + causal (turn) layer.
 //
 // Everything here is format-agnostic transport shape: no provider parsing,
-// no pricing (those live in providers.ts / pricing.json, Block 2). Unknown
+// no pricing (those live in lib/providers/ + pricing.json). Unknown
 // fields are ignored by readers — every accessor below tolerates their
 // absence (forward compatibility, AGENTS.md §3).
 //
