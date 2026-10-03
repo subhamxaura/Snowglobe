@@ -1,0 +1,735 @@
+{"cmd": ["claude", "-p", "hi"], "cwd": "$REPO", "ev": "run.meta", "pid": "P1", "tid": "T1"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P2", "root": true, "tid": "T1"}
+{"errno": 2, "ev": "proc.exec_failed", "path": "/usr/local/sbin/claude", "pid": "P1", "tid": "T1"}
+{"argv": ["claude", "-p", "hi"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/local/bin/claude", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/librt.so.1", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpthread.so.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libdl.so.2", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libm.so.6", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/localtime", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T2"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P3", "thread": true, "tid": "T3"}
+{"ev": "proc.start", "pid": "P4", "ppid": "P1", "tid": "T4"}
+{"argv": ["/mnt/c/Windows/System32/reg.exe", "query", "HKLM\\SOFTWARE\\Policies\\ClaudeCode", "/v", "Settings"], "cwd": "$REPO", "ev": "proc.exec", "path": "/mnt/c/Windows/System32/reg.exe", "pid": "P4", "tid": "T4"}
+{"ev": "proc.start", "pid": "P5", "ppid": "P1", "tid": "T5"}
+{"addr": "family=40", "ev": "net.bind", "ok": true, "pid": "P4", "tid": "T4"}
+{"addr": "unix:/run/WSL/294_interop", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P4", "tid": "T4"}
+{"argv": ["/mnt/c/Windows/System32/reg.exe", "query", "HKCU\\SOFTWARE\\Policies\\ClaudeCode", "/v", "Settings"], "cwd": "$REPO", "ev": "proc.exec", "path": "/mnt/c/Windows/System32/reg.exe", "pid": "P5", "tid": "T5"}
+{"addr": "family=40", "ev": "net.bind", "ok": true, "pid": "P5", "tid": "T5"}
+{"addr": "unix:/run/WSL/294_interop", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P5", "tid": "T5"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T6"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T7"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P6", "thread": true, "tid": "T8"}
+{"code": 1, "ev": "proc.exit", "pid": "P4", "signal": 0, "tid": "T4"}
+{"code": 1, "ev": "proc.exit", "pid": "P5", "signal": 0, "tid": "T5"}
+{"create": false, "ev": "fs.open", "path": "$HOME/.claude.json", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P1", "ppid": "P6", "thread": true, "tid": "T9"}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/ca-certificates.crt", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/002c0b4f.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/0179095f.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/062cdee6.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/064e0aa9.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/06dc52d5.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/09789157.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/0a775a30.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/0b1b94ef.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/0b9bc432.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/0bf05006.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/0f5dc4f3.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/0f6fa695.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/1001acf7.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/14bc7599.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/1cef98f5.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/1d3472b9.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/1e08bfd1.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/1e09d511.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/2923b3f9.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/2ae6433e.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/2ccbdda3.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/30e1580d.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/32888f65.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/3bde41ac.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/3e359ba6.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/3fb36b73.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/40193066.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/4042bcee.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/406c9bb1.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/48bec511.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/4b718d9b.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/4bfab552.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/5443e9e3.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/54657681.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/5860aaa6.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/5931b5bc.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/5f15c80c.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/5f618aec.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/607986c7.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/616816f6.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/6805c744.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/68dd7389.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/6a9bdba3.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/6b99d060.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/6d41d539.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/6fa5da56.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/749e9e03.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/75d1b2ed.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/7719f463.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/773e07ad.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/7a3adc42.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/7a780d93.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/7f3d5d1d.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/7fa05551.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/8160b96c.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/8508e720.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/865fbdf9.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/878d9bca.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/8cb5ee0f.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/8d89cda1.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/8f103249.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/9046744a.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/90c5a3c8.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/930ac5d2.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/9482e63a.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/9846683b.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/988a38cb.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/9b46e03d.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/9bf03295.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/9d04f354.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/9e654b62.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/9ef4a08a.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/9f727ac7.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/ACCVRAIZ1.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/AC_RAIZ_FNMT-RCM.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/AC_RAIZ_FNMT-RCM_SERVIDORES_SEGUROS.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/ANF_Secure_Server_Root_CA.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Amazon_Root_CA_1.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Amazon_Root_CA_4.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Atos_TrustedRoot_2011.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Atos_TrustedRoot_Root_CA_ECC_TLS_2021.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Buypass_Class_3_Root_CA.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/COMODO_ECC_Certification_Authority.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/COMODO_RSA_Certification_Authority.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Certigna_Root_CA.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Certum_Trusted_Root_CA.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/D-TRUST_BR_Root_CA_2_2023.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/D-TRUST_EV_Root_CA_2_2023.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/D-TRUST_Root_Class_3_CA_2_2009.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/D-TRUST_Root_Class_3_CA_2_EV_2009.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/DigiCert_Global_Root_G3.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/DigiCert_TLS_RSA4096_Root_G5.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/GTS_Root_R4.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/GlobalSign_ECC_Root_CA_-_R4.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/GlobalSign_Root_CA_-_R6.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/GlobalSign_Root_E46.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Go_Daddy_Root_Certificate_Authority_-_G2.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/HARICA_TLS_ECC_Root_CA_2021.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/IdenTrust_Commercial_Root_CA_1.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Izenpe.com.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Microsoft_RSA_Root_Certificate_Authority_2017.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/OISTE_WISeKey_Global_Root_GB_CA.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/QuoVadis_Root_CA_3_G3.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/SSL.com_EV_Root_Certification_Authority_ECC.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/SSL.com_TLS_RSA_Root_CA_2022.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/SZAFIR_ROOT_CA2.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Sectigo_Public_Server_Authentication_Root_E46.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Security_Communication_RootCA2.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/TUBITAK_Kamu_SM_SSL_Kok_Sertifikasi_-_Surum_1.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/TWCA_CYBER_Root_CA.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/TWCA_Root_Certification_Authority.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/Telekom_Security_TLS_ECC_Root_2020.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/TrustAsia_TLS_RSA_Root_CA.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/TunTrust_Root_CA.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/UCA_Global_G2_Root.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/USERTrust_ECC_Certification_Authority.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/USERTrust_RSA_Certification_Authority.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/ca6e4ad9.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/e-Szigno_Root_CA_2017.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/e-Szigno_TLS_Root_CA_2023.pem", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/ssl/certs/ed858448.0", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T10"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 0, "ev": "llm.request", "id": 0, "method": "HEAD", "model": null, "path": "/anthropic/api/hello", "pid": "P2", "provider": "anthropic", "stream": false, "tid": "T11"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P7", "ppid": "P1", "tid": "T12"}
+{"argv": ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "-C", "$REPO", "ls-files", "--error-unmatch", "--", ":(icase).claude/settings.local.json"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/git", "pid": "P7", "tid": "T12"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpcre2-8.so.0", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libz.so.1", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/dev/null", "pid": "P7", "tid": "T12", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/index", "pid": "P7", "tid": "T12", "trunc": false, "write": false}
+{"code": 1, "ev": "proc.exit", "pid": "P7", "signal": 0, "tid": "T12"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P8", "ppid": "P1", "tid": "T13"}
+{"argv": ["/usr/bin/git", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "remote", "get-url", "origin"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/git", "pid": "P8", "tid": "T13"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpcre2-8.so.0", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libz.so.1", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/tmp/claude-1000", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/dev/null", "pid": "P8", "tid": "T13", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/machine-id", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P8", "tid": "T13", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P8", "signal": 0, "tid": "T13"}
+{"create": false, "ev": "fs.open", "path": "/etc/os-release", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P1", "ppid": "P6", "thread": true, "tid": "T14"}
+{"addr": "family=16", "ev": "net.bind", "ok": true, "pid": "P1", "tid": "T9"}
+{"addr": "family=16", "ev": "net.sendto", "ok": true, "pid": "P1", "tid": "T9"}
+{"addr": "unix:/var/run/nscd/socket", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T9"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"addr": "unix:/var/run/nscd/socket", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T9"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/host.conf", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/resolv.conf", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/hosts", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"addr": "10.255.255.254:53", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T9"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P1", "ppid": "P6", "thread": true, "tid": "T15"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gai.conf", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P1", "ppid": "P9", "thread": true, "tid": "T16"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P10", "thread": true, "tid": "T17"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"addr": "[2607:6bc0::10]:443", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T9"}
+{"addr": "family=0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T9"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"addr": "160.79.104.10:443", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T9"}
+{"addr": "160.79.104.10:443", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"addr": "[2607:6bc0::10]:443", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T10"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "/run/user/1000/cc-socks", "pid": "P1", "tid": "T16"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T18"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T19"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T20"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T21"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T22"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T23"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T24"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"addr": "unix:/run/user/1000/cc-socks/416.sock", "ev": "net.bind", "ok": true, "pid": "P1", "tid": "T1"}
+{"ev": "fs.chmod", "mode": "0600", "ok": true, "path": "/run/user/1000/cc-socks/416.sock", "pid": "P1", "tid": "T14"}
+{"ev": "fs.mkdir", "path": "$HOME/.claude/sessions", "pid": "P1", "tid": "T14"}
+{"ev": "fs.unlink", "ok": false, "path": "$HOME/.claude/sessions/416.30ccf783ec41d84784e396a3efb5edb7f0101bfef59ee5776f08d873f308dacd.key", "pid": "P1", "tid": "T9"}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/sessions/416.30ccf783ec41d84784e396a3efb5edb7f0101bfef59ee5776f08d873f308dacd.key.tmp.1506bfdd", "pid": "P1", "tid": "T16", "trunc": false, "write": true}
+{"ev": "fs.rename", "from": "$HOME/.claude/sessions/416.30ccf783ec41d84784e396a3efb5edb7f0101bfef59ee5776f08d873f308dacd.key.tmp.1506bfdd", "ok": true, "pid": "P1", "tid": "T16", "to": "$HOME/.claude/sessions/416.30ccf783ec41d84784e396a3efb5edb7f0101bfef59ee5776f08d873f308dacd.key"}
+{"ev": "proc.start", "pid": "P11", "ppid": "P1", "tid": "T25"}
+{"argv": ["/usr/bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "--no-optional-locks", "status", "--short", "--ignore-submodules=dirty"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/git", "pid": "P11", "tid": "T25"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpcre2-8.so.0", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libz.so.1", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P12", "ppid": "P1", "tid": "T26"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/dev/null", "pid": "P11", "tid": "T25", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"argv": ["/usr/bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "--no-optional-locks", "log", "--oneline", "-n", "5"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/git", "pid": "P12", "tid": "T26"}
+{"bytes": 62, "chunk_count": 0, "ev": "llm.response", "id": 0, "idx": "llm/0000.res.idx", "pid": "P2", "req": "llm/0000.req.json", "res": "llm/0000.res.json", "status": 502, "tid": "T11", "total_ms": 675, "truncated": false, "ttfb_ms": null}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpcre2-8.so.0", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libz.so.1", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P13", "ppid": "P1", "tid": "T27"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/dev/null", "pid": "P12", "tid": "T26", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"argv": ["/usr/bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "config", "user.name"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/git", "pid": "P13", "tid": "T27"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpcre2-8.so.0", "pid": "P13", "tid": "T27", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libz.so.1", "pid": "P13", "tid": "T27", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P13", "tid": "T27", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/dev/null", "pid": "P13", "tid": "T27", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P13", "tid": "T27", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P13", "tid": "T27", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P13", "tid": "T27", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P13", "tid": "T27", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/packed-refs", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P13", "tid": "T27", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P13", "tid": "T27", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P13", "signal": 0, "tid": "T27"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/packed-refs", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/index", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/objects/pack/pack-18a21bc62d1c73a7b355aa136dfe87b83bc86c3d.idx", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/objects/pack/pack-18a21bc62d1c73a7b355aa136dfe87b83bc86c3d.pack", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/objects/81/5ebdfb9f7a9201d53f97f215fbcb22162d5165", "pid": "P12", "tid": "T26", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P12", "signal": 0, "tid": "T26"}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/real/toy-agent-3turn/README.md", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/real/toy-agent-3turn/events.jsonl", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/real/toy-agent-3turn/llm/0000.res.idx", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/real/toy-agent-3turn/llm/0001.res.idx", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/real/toy-agent-3turn/llm/0002.req.json", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"addr": "family=16", "ev": "net.bind", "ok": true, "pid": "P1", "tid": "T8"}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/real/toy-agent-3turn/llm/0002.res.idx", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"addr": "family=16", "ev": "net.sendto", "ok": true, "pid": "P1", "tid": "T8"}
+{"create": false, "ev": "fs.open", "path": "/etc/hosts", "pid": "P1", "tid": "T8", "trunc": false, "write": false}
+{"addr": "10.255.255.254:53", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T8"}
+{"ev": "fs.mkdir", "path": "$HOME/.claude/sessions", "pid": "P1", "tid": "T16"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P14", "ppid": "P1", "tid": "T28"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/objects/pack/pack-18a21bc62d1c73a7b355aa136dfe87b83bc86c3d.idx", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/objects/pack/pack-18a21bc62d1c73a7b355aa136dfe87b83bc86c3d.pack", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P14", "tid": "T28", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/info/exclude", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"argv": ["rg", "--version"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/local/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe", "pid": "P14", "tid": "T28"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/info/exclude", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/librt.so.1", "pid": "P14", "tid": "T28", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.gitignore", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P14", "tid": "T28", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P15", "ppid": "P1", "tid": "T29"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpthread.so.0", "pid": "P14", "tid": "T28", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libdl.so.2", "pid": "P14", "tid": "T28", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libm.so.6", "pid": "P14", "tid": "T28", "trunc": false, "write": false}
+{"argv": ["rg", "--no-config", "--files", "--hidden", "--no-ignore", "--max-depth", "4", "--glob", ".orphaned_at", "$HOME/.claude/plugins/cache"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/local/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe", "pid": "P15", "tid": "T29"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/librt.so.1", "pid": "P15", "tid": "T29", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P15", "tid": "T29", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpthread.so.0", "pid": "P15", "tid": "T29", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libdl.so.2", "pid": "P15", "tid": "T29", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libm.so.6", "pid": "P15", "tid": "T29", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P16", "ppid": "P1", "tid": "T30"}
+{"code": 0, "ev": "proc.exit", "pid": "P14", "signal": 0, "tid": "T28"}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P16", "tid": "T30", "trunc": false, "write": true}
+{"argv": ["rg", "--no-config", "--files", "--hidden", "$REPO"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/local/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe", "pid": "P16", "tid": "T30"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/librt.so.1", "pid": "P16", "tid": "T30", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P16", "tid": "T30", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpthread.so.0", "pid": "P16", "tid": "T30", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/viewer/.gitignore", "pid": "P11", "tid": "T25", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libdl.so.2", "pid": "P16", "tid": "T30", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libm.so.6", "pid": "P16", "tid": "T30", "trunc": false, "write": false}
+{"code": 2, "ev": "proc.exit", "pid": "P15", "signal": 0, "tid": "T29"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T31"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P17", "thread": true, "tid": "T32"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T33"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T34"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T35"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T36"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T37"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T38"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.gitignore", "pid": "P16", "tid": "T33", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T39"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/info/exclude", "pid": "P16", "tid": "T33", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T40"}
+{"create": false, "ev": "fs.open", "path": "$REPO/viewer/.gitignore", "pid": "P16", "tid": "T37", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T41"}
+{"code": 0, "ev": "proc.exit", "pid": "P11", "signal": 0, "tid": "T25"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T42"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/machine-id", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T43"}
+{"ev": "proc.start", "pid": "P16", "ppid": "P16", "thread": true, "tid": "T44"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T44"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T42"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T39"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T37"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T36"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T35"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T41"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T40"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T43"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T34"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T38"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T33"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/remotes/origin/HEAD", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T31"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T32"}
+{"code": 0, "ev": "proc.exit", "pid": "P16", "signal": 0, "tid": "T30"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "fs.chmod", "mode": "0700", "ok": true, "path": "$HOME/.claude/sessions", "pid": "P1", "tid": "T16"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/remotes/origin/main", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/sessions/416.json", "pid": "P1", "tid": "T7", "trunc": false, "write": true}
+{"ev": "fs.mkdir", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/memory", "pid": "P1", "tid": "T17"}
+{"create": false, "ev": "fs.open", "path": "$HOME/.claude/sessions/416.json", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/CMakeLists.txt", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T14", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/CMakeLists.txt", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/sessions/416.json", "pid": "P1", "tid": "T7", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "$HOME/.claude/sessions/416.json", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/sessions/416.json", "pid": "P1", "tid": "T16", "trunc": false, "write": true}
+{"ev": "proc.start", "pid": "P1", "ppid": "P18", "thread": true, "tid": "T45"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T46"}
+{"ev": "fs.mkdir", "path": "/tmp/claude-1000/fswatch-probe-qjF2OR", "pid": "P1", "tid": "T7"}
+{"ev": "fs.mkdir", "path": "$HOME", "pid": "P1", "tid": "T16"}
+{"create": false, "ev": "fs.open", "path": "$HOME/.claude.json", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P19", "ppid": "P1", "tid": "T47"}
+{"argv": ["sh", "-c", "uname -s\nuname -r\nuname -m\nfor c in npm yarn pnpm; do command -v \"$c\" >/dev/null 2>&1 && printf \"%s,\" \"$c\"; done; echo\nfor c in bun deno node; do command -v \"$c\" >/dev/null 2>&1 && printf \"%s,\" \"$c\"; done; echo"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P19", "tid": "T47"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P19", "tid": "T47", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "/tmp/claude-1000/fswatch-probe-qjF2OR/probe", "pid": "P1", "tid": "T9", "trunc": true, "write": true}
+{"ev": "proc.start", "pid": "P20", "ppid": "P19", "tid": "T48"}
+{"argv": ["uname", "-s"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/uname", "pid": "P20", "tid": "T48"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P20", "tid": "T48", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "$HOME/.claude.json.lock", "pid": "P1", "tid": "T45"}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P20", "tid": "T48", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/tmp/claude-1000/fswatch-probe-qjF2OR/probe", "pid": "P1", "tid": "T45", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "$HOME/.claude.json", "pid": "P1", "tid": "T45", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P20", "signal": 0, "tid": "T48"}
+{"ev": "proc.start", "pid": "P21", "ppid": "P19", "tid": "T49"}
+{"argv": ["uname", "-r"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/uname", "pid": "P21", "tid": "T49"}
+{"ev": "fs.mkdir", "path": "$HOME/.claude/backups", "pid": "P1", "tid": "T17"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P21", "tid": "T49", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$HOME/.claude.json", "pid": "P1", "tid": "T16", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/backups/.claude.json.backup.1790964434864", "pid": "P1", "tid": "T16", "trunc": false, "write": true}
+{"ev": "fs.chmod", "mode": "0100600", "ok": true, "path": "$HOME/.claude/backups/.claude.json.backup.1790964434864", "pid": "P1", "tid": "T16"}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P21", "tid": "T49", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/AGENTS.md", "pid": "P1", "tid": "T45", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude.json.tmp.416.b71d2ee25a48", "pid": "P1", "tid": "T14", "trunc": false, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P21", "signal": 0, "tid": "T49"}
+{"ev": "proc.start", "pid": "P22", "ppid": "P19", "tid": "T50"}
+{"argv": ["uname", "-m"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/uname", "pid": "P22", "tid": "T50"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P22", "tid": "T50", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P22", "tid": "T50", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P22", "signal": 0, "tid": "T50"}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P19", "tid": "T47", "trunc": true, "write": true}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P19", "tid": "T47", "trunc": true, "write": true}
+{"ev": "fs.chmod", "mode": "0100600", "ok": true, "path": "$HOME/.claude.json.tmp.416.b71d2ee25a48", "pid": "P1", "tid": "T16"}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P19", "tid": "T47", "trunc": true, "write": true}
+{"ev": "fs.rename", "from": "$HOME/.claude.json.tmp.416.b71d2ee25a48", "ok": true, "pid": "P1", "tid": "T9", "to": "$HOME/.claude.json"}
+{"ev": "fs.rmdir", "ok": true, "path": "$HOME/.claude.json.lock", "pid": "P1", "tid": "T14"}
+{"bytes": 96854, "ev": "llm.request", "id": 1, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T11"}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T15", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T9", "trunc": false, "write": true}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P19", "tid": "T47", "trunc": true, "write": true}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P19", "tid": "T47", "trunc": true, "write": true}
+{"ev": "fs.unlink", "ok": false, "path": "/tmp/claude-1000/fswatch-probe-qjF2OR", "pid": "P1", "tid": "T15"}
+{"ev": "fs.unlink", "ok": true, "path": "/tmp/claude-1000/fswatch-probe-qjF2OR/probe", "pid": "P1", "tid": "T15"}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P19", "tid": "T47", "trunc": true, "write": true}
+{"ev": "fs.rmdir", "ok": true, "path": "/tmp/claude-1000/fswatch-probe-qjF2OR", "pid": "P1", "tid": "T15"}
+{"code": 0, "ev": "proc.exit", "pid": "P19", "signal": 0, "tid": "T47"}
+{"create": false, "ev": "fs.open", "path": "/etc/os-release", "pid": "P1", "tid": "T7", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/resolv.conf", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"addr": "160.79.104.10:0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T8"}
+{"addr": "[2607:6bc0::10]:0", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T8"}
+{"addr": "160.79.104.10:443", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
+{"addr": "160.79.104.10:443", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
+{"addr": "160.79.104.10:443", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 1, "idx": "llm/0001.res.idx", "pid": "P2", "req": "llm/0001.req.json", "res": "llm/0001.res.json", "status": 401, "tid": "T11", "total_ms": 1604, "truncated": false, "ttfb_ms": 1603}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T15", "trunc": false, "write": true}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 2, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T51"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 2, "idx": "llm/0002.res.idx", "pid": "P2", "req": "llm/0002.req.json", "res": "llm/0002.res.json", "status": 401, "tid": "T51", "total_ms": 456, "truncated": false, "ttfb_ms": 455}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T14", "trunc": false, "write": true}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 3, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T52"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 3, "idx": "llm/0003.res.idx", "pid": "P2", "req": "llm/0003.req.json", "res": "llm/0003.res.json", "status": 401, "tid": "T52", "total_ms": 455, "truncated": false, "ttfb_ms": 454}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T15", "trunc": false, "write": true}
+{"ev": "fs.rmdir", "ok": false, "path": "$HOME/.claude/projects/-home-tester-src-snowglobe", "pid": "P1", "tid": "T8"}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/jobs/pins.json.tmp.c7a2fbd6", "pid": "P1", "tid": "T7", "trunc": false, "write": true}
+{"ev": "fs.unlink", "ok": false, "path": "$HOME/.claude/jobs/pins.json.tmp.c7a2fbd6", "pid": "P1", "tid": "T9"}
+{"ev": "fs.unlink", "ok": false, "path": "$HOME/.claude/state/settings-review.json", "pid": "P1", "tid": "T7"}
+{"ev": "proc.start", "pid": "P23", "ppid": "P1", "tid": "T53"}
+{"argv": ["/usr/bin/git", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "--version"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/git", "pid": "P23", "tid": "T53"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpcre2-8.so.0", "pid": "P23", "tid": "T53", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libz.so.1", "pid": "P23", "tid": "T53", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P23", "tid": "T53", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/dev/null", "pid": "P23", "tid": "T53", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P23", "tid": "T53", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P23", "tid": "T53", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P23", "signal": 0, "tid": "T53"}
+{"ev": "proc.start", "pid": "P24", "ppid": "P1", "tid": "T54"}
+{"argv": ["/usr/bin/git", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "-C", "$REPO", "worktree", "list", "--porcelain", "-z"], "cwd": "$REPO", "ev": "proc.exec", "path": "/usr/bin/git", "pid": "P24", "tid": "T54"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpcre2-8.so.0", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libz.so.1", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/dev/null", "pid": "P24", "tid": "T54", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/etc/gitconfig", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/HEAD", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/refs/heads/main", "pid": "P24", "tid": "T54", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P24", "signal": 0, "tid": "T54"}
+{"create": false, "ev": "fs.open", "path": "$REPO/.git/config", "pid": "P1", "tid": "T17", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/.last-cleanup", "pid": "P1", "tid": "T15", "trunc": false, "write": true}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 4, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T55"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 4, "idx": "llm/0004.res.idx", "pid": "P2", "req": "llm/0004.req.json", "res": "llm/0004.res.json", "status": 401, "tid": "T55", "total_ms": 1288, "truncated": false, "ttfb_ms": 1286}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T8", "trunc": false, "write": true}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T56"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 5, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T57"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 5, "idx": "llm/0005.res.idx", "pid": "P2", "req": "llm/0005.req.json", "res": "llm/0005.res.json", "status": 401, "tid": "T57", "total_ms": 630, "truncated": false, "ttfb_ms": 629}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T17", "trunc": false, "write": true}
+{"addr": "family=16", "ev": "net.bind", "ok": true, "pid": "P1", "tid": "T9"}
+{"addr": "family=16", "ev": "net.sendto", "ok": true, "pid": "P1", "tid": "T9"}
+{"create": false, "ev": "fs.open", "path": "/etc/hosts", "pid": "P1", "tid": "T9", "trunc": false, "write": false}
+{"addr": "10.255.255.254:53", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T9"}
+{"addr": "34.149.66.165:0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T9"}
+{"addr": "[2600:1901:0:9e23::]:0", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T9"}
+{"addr": "34.149.66.165:443", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 6, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T58"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T56"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 6, "idx": "llm/0006.res.idx", "pid": "P2", "req": "llm/0006.req.json", "res": "llm/0006.res.json", "status": 401, "tid": "T58", "total_ms": 469, "truncated": false, "ttfb_ms": 468}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T8", "trunc": false, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T6"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T59"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 7, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T60"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 7, "idx": "llm/0007.res.idx", "pid": "P2", "req": "llm/0007.req.json", "res": "llm/0007.res.json", "status": 401, "tid": "T60", "total_ms": 520, "truncated": false, "ttfb_ms": 519}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T45", "trunc": false, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T23"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T19"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T21"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T20"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T22"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T18"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T24"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T59"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T2"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T61"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T62"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T63"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T64"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T65"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T66"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T67"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T68"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T69"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T63"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T62"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T65"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T61"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T66"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T67"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T64"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 8, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T70"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 8, "idx": "llm/0008.res.idx", "pid": "P2", "req": "llm/0008.req.json", "res": "llm/0008.res.json", "status": 401, "tid": "T70", "total_ms": 464, "truncated": false, "ttfb_ms": 18446744073708927}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T17", "trunc": false, "write": true}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T71"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T72"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T73"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T74"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T75"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T76"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T77"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T74"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T75"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T72"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T73"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T77"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T71"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T76"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T69"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T78"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 9, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T79"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 9, "idx": "llm/0009.res.idx", "pid": "P2", "req": "llm/0009.req.json", "res": "llm/0009.res.json", "status": 401, "tid": "T79", "total_ms": 453, "truncated": false, "ttfb_ms": 452}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T9", "trunc": false, "write": true}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T78"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T80"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T81"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T82"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T83"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T84"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T85"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T86"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T87"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T68"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T86"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T83"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T80"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T84"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T82"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T81"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T85"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T87"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T88"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T89"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 10, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T90"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 10, "idx": "llm/0010.res.idx", "pid": "P2", "req": "llm/0010.req.json", "res": "llm/0010.res.json", "status": 401, "tid": "T90", "total_ms": 602, "truncated": false, "ttfb_ms": 601}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T14", "trunc": false, "write": true}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T91"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T92"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T93"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T94"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T95"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T96"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T97"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T88"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T89"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T96"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T91"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T93"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T95"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T94"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T92"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T97"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T98"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T99"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T100"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T101"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T102"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T103"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T104"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T105"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P1", "thread": true, "tid": "T106"}
+{"addr": "127.0.0.1:PORT", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T10"}
+{"bytes": 96854, "ev": "llm.request", "id": 11, "method": "POST", "model": "claude-opus-5-5", "path": "/anthropic/v1/messages", "pid": "P2", "provider": "anthropic", "stream": true, "tid": "T107"}
+{"bytes": 106, "chunk_count": 1, "ev": "llm.response", "id": 11, "idx": "llm/0011.res.idx", "pid": "P2", "req": "llm/0011.req.json", "res": "llm/0011.res.json", "status": 401, "tid": "T107", "total_ms": 566, "truncated": false, "ttfb_ms": 565}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T8", "trunc": false, "write": true}
+{"create": false, "ev": "fs.open", "path": "$HOME/.claude/sessions/416.json", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"ev": "fs.unlink", "ok": true, "path": "/run/user/1000/cc-socks/416.sock", "pid": "P1", "tid": "T1"}
+{"ev": "fs.unlink", "ok": true, "path": "$HOME/.claude/sessions/416.json", "pid": "P1", "tid": "T17"}
+{"ev": "fs.unlink", "ok": false, "path": "/run/user/1000/cc-socks/416.sock", "pid": "P1", "tid": "T14"}
+{"create": false, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/projects/-home-tester-src-snowglobe/cf89c755-8bfa-4f20-8129-a48ac200e90d.jsonl", "pid": "P1", "tid": "T1", "trunc": false, "write": true}
+{"create": true, "ev": "fs.open", "path": "$HOME/.claude/sessions/416.json", "pid": "P1", "tid": "T16", "trunc": false, "write": true}
+{"ev": "fs.unlink", "ok": true, "path": "$HOME/.claude/sessions/416.30ccf783ec41d84784e396a3efb5edb7f0101bfef59ee5776f08d873f308dacd.key", "pid": "P1", "tid": "T8"}
+{"addr": "family=16", "ev": "net.bind", "ok": true, "pid": "P1", "tid": "T15"}
+{"addr": "family=16", "ev": "net.sendto", "ok": true, "pid": "P1", "tid": "T15"}
+{"create": false, "ev": "fs.open", "path": "/etc/hosts", "pid": "P1", "tid": "T15", "trunc": false, "write": false}
+{"addr": "10.255.255.254:53", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T15"}
+{"addr": "34.149.66.165:0", "ev": "net.connect", "initiated": true, "ok": true, "pid": "P1", "tid": "T15"}
+{"addr": "[2600:1901:0:9e23::]:0", "ev": "net.connect", "initiated": false, "ok": false, "pid": "P1", "tid": "T15"}
+{"addr": "34.149.66.165:443", "ev": "net.connect", "initiated": true, "ok": false, "pid": "P1", "tid": "T1"}
+{"ev": "fs.unlink", "ok": true, "path": "$HOME/.claude/sessions/416.json", "pid": "P1", "tid": "T1"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T106"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T105"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T104"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T103"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T102"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T101"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T100"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T99"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T98"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T46"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T17"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T16"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T45"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T15"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T14"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T10"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T8"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T9"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T7"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T3"}
+{"code": 1, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T1"}

@@ -19,3 +19,10 @@ Key-safety: verified with `grep -c -i -e sk-ant -e x-api-key` → 0.
 The tracer records syscalls only; TLS payloads (including any
 Authorization header) travel encrypted and are never stored. Never commit
 a fixture without re-running that check.
+
+`claude-code-1-error/` — REAL Claude Code recording (the real-data
+gate): `claude -p hi` against the real Anthropic API with an invalid
+key. 735 normalised events, 0 decode_error, 1 probe + 11 turns all
+HTTP 401 with real Anthropic error envelopes, 36 blobs. Full provenance
++ secret-audit recipe in its README. Success-path real fixture is
+deferred — issue #2.
