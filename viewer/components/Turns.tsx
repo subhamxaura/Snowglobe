@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { foldBody, costUsd } from "../lib/providers";
+import { foldBody, costUsd, errorInfo } from "../lib/providers";
+import { buildTurns, isErrorStatus } from "../lib/model";
 import { loadText } from "../lib/load";
 import { fmtBytes, fmtCost, fmtMs } from "../lib/format";
 import type { LlmTurn, TraceEvent } from "../lib/types";
@@ -11,6 +12,7 @@ export interface TurnVM extends LlmTurn {
   tools: { id: string; name: string; args: string }[];
   usage: { input: number; output: number } | null;
   cost: number | null;
+  err: { type: string; message: string } | null;
   linked: TraceEvent[];
 }
 
@@ -30,10 +32,12 @@ export function useTurns(events: TraceEvent[]): {
       if (e.ev === "llm.request") reqs.set(Number(e["id"]), e);
       else if (e.ev === "llm.response") resps.set(Number(e["id"]), e);
     }
-    return [...reqs.keys()]
-      .filter((id) => resps.has(id))
-      .sort((a, b) => a - b)
-      .map((id) => ({ id, req: reqs.get(id)!, res: resps.get(id)! }));
+    // buildTurns owns the turn rules (every non-probe llm.response is a
+    // turn, HEAD/model-less probes never are) — the view must agree with
+    // /api/summary and model.ts, never re-derive its own pairing.
+    return buildTurns(events)
+      .filter((t) => reqs.has(t.id) && resps.has(t.id))
+      .map((t) => ({ id: t.id, req: reqs.get(t.id)!, res: resps.get(t.id)! }));
   }, [events]);
   useEffect(() => {
     let live = true;
@@ -72,14 +76,16 @@ export function useTurns(events: TraceEvent[]): {
         const stream = req["stream"] === true;
         const reqBody = blobs[String(res["req"] ?? "")] ?? "";
         const resBody = blobs[String(res["res"] ?? "")] ?? "";
+        const status = Number(res["status"] ?? 0);
         const folded = foldBody(provider, resBody, stream || looksStreamed(resBody));
+        const err = isErrorStatus(status) ? errorInfo(provider, resBody) : null;
         const linked = linkSideEffects(events, folded.toolCalls.map((t) => t.args).join("\n"));
         return {
           id,
           provider,
           model,
           stream,
-          status: Number(res["status"] ?? 0),
+          status,
           bytes: Number(res["bytes"] ?? 0),
           ttfb_ms: typeof res["ttfb_ms"] === "number" ? (res["ttfb_ms"] as number) : null,
           total_ms: Number(res["total_ms"] ?? 0),
@@ -93,6 +99,7 @@ export function useTurns(events: TraceEvent[]): {
           tools: folded.toolCalls,
           usage: folded.usage,
           cost: costUsd(model, folded.usage),
+          err,
           linked,
         };
       }),
@@ -127,14 +134,14 @@ export default function Turns({ events }: { events: TraceEvent[] }) {
   return (
     <div data-testid="turns">
       {loading && <p className="muted">loading blobs…</p>}
-      {turns.map((t) => (
+      {turns.map((t, i) => (
         <section
           key={t.id}
           data-testid={`turn-${t.id}`}
           style={{ border: "1px solid var(--border)", margin: "12px 0", padding: 12 }}
         >
           <h3>
-            turn {t.id + 1} <span className="muted">· {t.provider}</span>
+            turn {i + 1} <span className="muted">· {t.provider}</span>
           </h3>
           <p className="muted">
             model {t.model ?? "—"} · status {t.status} ·{" "}
@@ -142,10 +149,20 @@ export default function Turns({ events }: { events: TraceEvent[] }) {
             {fmtMs(t.total_ms)} · {t.chunks} chunks · cost {fmtCost(t.cost)}
             {t.truncated ? " · TRUNCATED" : ""}
           </p>
+          {isErrorStatus(t.status) && (
+            <p className="error" data-testid={`turn-error-${t.id}`}>
+              <b>HTTP {t.status}</b>
+              {t.err ? ` · ${t.err.type}: ${t.err.message}` : ""}
+            </p>
+          )}
           {t.text && <pre data-testid={`turn-text-${t.id}`}>{t.text}</pre>}
           <details>
             <summary className="muted">request body</summary>
             <pre>{t.reqBody.slice(0, 2000)}</pre>
+          </details>
+          <details data-testid={`raw-body-${t.id}`}>
+            <summary className="muted">response body</summary>
+            <pre>{t.resBody.slice(0, 50000)}</pre>
           </details>
           {t.tools.map((c, i) => (
             <div key={i} data-testid={`tool-${t.id}-${i}`}>

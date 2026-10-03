@@ -27,3 +27,4 @@ th { color: var(--muted); font-weight: 600; }
 .tabs button[aria-selected="true"] { border-color: var(--accent); color: var(--accent); }
 .vlist { overflow-y: auto; border: 1px solid var(--border); }
 .muted { color: var(--muted); }
+.error { color: #f85149; }
