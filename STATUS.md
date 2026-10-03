@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-10-03  ·  Phase 1C Block 1 pushed (4d8a19c, CI green) + un-gated slice pushed (32668d3, CI green)  ·  REAL error fixture committed: test/fixtures/real/claude-code-1-error/ (a0e7301 — 735 events, 0 decode_error, 1 probe + 11 turns all HTTP 401, secret audit 0; audit recipe in its README)  ·  Success-path real fixture DEFERRED (needs API credits) → issue #2 (referenced in docs/viewer.md; not forgotten)  ·  Block 2 remainder + Block 3 now work the error fixture + in-tree mocks (providers/ split, provider views, real-fixture tests, error smoke, screenshots, D1, alpha.3)  ·  Next launch: v0.1.0, week 9
+Updated: 2026-10-03  ·  Phase 1C Block 2+3 DONE (skip-credits adjudication): real error fixture claude-code-1-error/ (a0e7301; 735 ev, 0 decode_error, 1 probe + 11×401, secret audit 0), providers/ split + errorInfo, error views (status banner + raw-body toggle), real-fixture Playwright smoke, screenshots, D1 (builder==reviewer)  ·  Gates: ctest debug 44/44 + asan 44/44, vitest 20/20, playwright 3/3, tsc, clang-format  ·  Success-path real fixture DEFERRED → issue #2 (needs API credits; docs/viewer.md says so)  ·  CI + tag v0.1.0-alpha.3 follow this push  ·  Next launch: v0.1.0, week 9
 
 ## Block 1 DONE (server /api + model.ts + gzip embed + ADR-0005)
 - [x] `view`: /api/manifest|events(paged ≤5000: 400/416)|blob(confined: `..` + symlink escape → 404)|summary; bare .jsonl (synthesized manifest); ETag/304 everywhere, immutable hashed assets; --open never fails w/o xdg-open
@@ -7,7 +7,8 @@ Updated: 2026-10-03  ·  Phase 1C Block 1 pushed (4d8a19c, CI green) + un-gated 
 - [x] `viewer/lib/model.ts`: schema-0 types + TurnIndex.getTurnForEvent stable; error turns count; probes (HEAD or model-less+bodyless) excluded; disconnect + structured net fields + legacy addr fallback; `load.ts` pages /api/events at 5000 (legacy /trace fallback)
 - [x] ADR-0005; architecture updated; `view_api` CTest green; lint clean (`git ls-files '*.cpp' '*.hpp' '*.h' '*.c' | xargs clang-format --dry-run --Werror`)
 - Verification (WSL2, uid 1000, ext4): debug 44/44 + asan-ubsan 44/44 (zero findings); vitest 14/14 (6 model + 8 providers); e2e 2/2 (incl. 50 MB < 3 s after 5000-page fix; one 3021 ms flake at 1000/page motivated it)
-- Block 2 (gates re-adjudicated 2026-10-03 — skip-credits): Anthropic parser tests run against claude-code-1-error/ (real envelope/headers/status path) PLUS the in-tree mock Anthropic scenarios (success content blocks + streaming); OpenAI parser stays on toy-agent + mock. Success-path real fixture → issue #2; docs/viewer.md says so explicitly (no overclaiming). Un-gated slice DONE: viewer/lib/pricing.json ($/1M with per-model verified dates, sources in-file; n/a is absence, never 0; mock-model-1 unpriced on purpose), providers.ts reads it + priceVerified(); tests 15/15.
+- Block 2 DONE (skip-credits): `providers/` split (openai/anthropic/sse/pricing/types + facade) + `errorInfo()`; Anthropic error parsing tested against claude-code-1-error/ (real envelope/headers/status) PLUS in-tree mock scenarios for success content blocks + streaming; OpenAI parser stays on toy-agent + mock; docs/viewer.md carries the explicit no-overclaim note (success fixture pending issue #2). Un-gated slice (pricing.json, n/a≠0) as before; vitest 20/20.
+- Block 3 DONE: error views (HTTP status + envelope banner, raw response-body toggle; Turns single-sources buildTurns so the HEAD probe never renders as a turn — caught by the real fixture), Playwright error smoke `error.spec.ts` (735 events, 401+envelope, toggle opens, no blank screen, offline) + toy-agent success flow + 50 MB perf, screenshots in docs/screenshots/ (SG_SCREENSHOT_DIR opt-in), D1 over core/view + viewer/lib (builder==reviewer: 0 High, 1 Medium + 2 Low all fixed, rest Info documented), CHANGELOG updated.
 - Block 3 (later): Playwright smoke on real fixtures, screenshots, v0.1.0-alpha.3. DONE early: offline assert (watchExternal fails on any non-localhost request), docs/viewer.md.
 - Binary size vs embed (spec item, debug, WSL2 24.04): SNOWGLOBE_BUILD_VIEWER=OFF 10,469,168 B -> ON 11,420,896 B (+951,728 B = gzip table of 12 files, 392,988 -> 127,376 B stored, -67.6%; decimal-escaped arrays cost ~7.5x the stored bytes).
 - ADR-0002: slot never used in any history; stub 0002-unused-slot-see-note.md added so numbering is not dangling.
@@ -29,6 +30,24 @@ Updated: 2026-10-03  ·  Phase 1C Block 1 pushed (4d8a19c, CI green) + un-gated 
 > session did Phase 1A Block 1 only (process-tree correctness); Blocks 2
 > (goldens + kill test) and 3 (bench + docs + real recordings) are separate
 > sessions. Schema stays 0 (all trace changes are additive optional fields).
+
+## Block 2/3 verification (2026-10-03, WSL2 uid 1000, all real output)
+- Fixture: 735 events (0 decode_error), 12 llm.request/response, 1 HEAD
+  probe (502 "upstream failed") + 11 turns status 401 (real
+  authentication_error envelope), 36 blobs, 11×100 KB identical system
+  prompts (git dedupes to one); audits: sk-ant/Bearer 0, x-api-key
+  REDACTED ×11, /home/tester 0, only noreply@anthropic.com (prompt text).
+- Gates: `ctest --preset debug` 44/44 (37.2 s), `asan-ubsan` 44/44
+  (47.2 s, zero findings), vitest 20/20, Playwright 3/3 (view + error +
+  perf, <10 s), `tsc --noEmit` clean, `clang-format --dry-run --Werror`
+  clean.
+- D1 (builder==reviewer, core/view + viewer/lib): [M] absent-model key
+  read as "has model" in summary probe rule → fixed + view_api check;
+  [L] `to < from` unenforced → fixed + check; [L] prototype-key pricing
+  → $NaN fixed + tests; Info: summary holds trace in memory once
+  (fine ≤50 MB), valueAt first-match scanning scope documented,
+  shared weak ETag mitigated by no-store, torn trace loud-errors in
+  paged loader (legacy path skips), types overstate required fields.
 
 ## Done (this phase)
 - Repo skeleton: CMake ≥3.25 + Ninja, presets (debug/release/asan-ubsan/tsan),
