@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-10-02  ·  Phase 1C Block 1 IN PROGRESS (server /api + model.ts + embed + ADR-0005; providers/pricing/views stay Block 2, gated on claude-code-1/)  ·  Error-path fixture lost to /tmp wipe; regenerating via an invalid-key run (real 401 through proxy) → `test/fixtures/real/claude-code-1-error/` when the human supplies keys  ·  Next launch: v0.1.0, week 9
+Updated: 2026-10-03  ·  Phase 1C Block 1 COMMITTED + PUSHED (4d8a19c, CI pending)  ·  Block 2 un-gated slice done: pricing.json (verified 2026-10-03, n/a≠0, mock-model-1 unpriced) + ADR-0002 stub + docs/viewer.md  ·  Block 2 remainder + Block 3 GATED on claude-code-1/ + claude-code-1-error/ (human supplying sgr files) (server /api + model.ts + embed + ADR-0005; providers/pricing/views stay Block 2, gated on claude-code-1/)  ·  Error-path fixture lost to /tmp wipe; regenerating via an invalid-key run (real 401 through proxy) → `test/fixtures/real/claude-code-1-error/` when the human supplies keys  ·  Next launch: v0.1.0, week 9
 
 ## Block 1 DONE (server /api + model.ts + gzip embed + ADR-0005)
 - [x] `view`: /api/manifest|events(paged ≤5000: 400/416)|blob(confined: `..` + symlink escape → 404)|summary; bare .jsonl (synthesized manifest); ETag/304 everywhere, immutable hashed assets; --open never fails w/o xdg-open
@@ -7,8 +7,10 @@ Updated: 2026-10-02  ·  Phase 1C Block 1 IN PROGRESS (server /api + model.ts + 
 - [x] `viewer/lib/model.ts`: schema-0 types + TurnIndex.getTurnForEvent stable; error turns count; probes (HEAD or model-less+bodyless) excluded; disconnect + structured net fields + legacy addr fallback; `load.ts` pages /api/events at 5000 (legacy /trace fallback)
 - [x] ADR-0005; architecture updated; `view_api` CTest green; lint clean (`git ls-files '*.cpp' '*.hpp' '*.h' '*.c' | xargs clang-format --dry-run --Werror`)
 - Verification (WSL2, uid 1000, ext4): debug 44/44 + asan-ubsan 44/44 (zero findings); vitest 14/14 (6 model + 8 providers); e2e 2/2 (incl. 50 MB < 3 s after 5000-page fix; one 3021 ms flake at 1000/page motivated it)
-- Block 2 (GATED on claude-code-1/): providers/ split, pricing.json (verified dates, n/a≠0), views, 50 MB numbers — STOP at first test if fixture still absent
-- Block 3 (later): Playwright smoke on real fixtures, offline assert, docs/viewer.md, screenshots, v0.1.0-alpha.3
+- Block 2 (GATED on claude-code-1/ for the remainder): provider views + real-fixture tests — STOP at first test if fixture still absent. Un-gated slice DONE: viewer/lib/pricing.json ($/1M with per-model verified dates, sources in-file; n/a is absence, never 0; mock-model-1 unpriced on purpose), providers.ts reads it + priceVerified(); tests 15/15.
+- Block 3 (later): Playwright smoke on real fixtures, screenshots, v0.1.0-alpha.3. DONE early: offline assert (watchExternal fails on any non-localhost request), docs/viewer.md.
+- Binary size vs embed (spec item, debug, WSL2 24.04): SNOWGLOBE_BUILD_VIEWER=OFF 10,469,168 B -> ON 11,420,896 B (+951,728 B = gzip table of 12 files, 392,988 -> 127,376 B stored, -67.6%; decimal-escaped arrays cost ~7.5x the stored bytes).
+- ADR-0002: slot never used in any history; stub 0002-unused-slot-see-note.md added so numbering is not dangling.
 
 > Phase 1A gate closed: CI run
 > https://github.com/subhamxaura/Snowglobe/actions/runs/36311530345 — all 6

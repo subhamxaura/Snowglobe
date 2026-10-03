@@ -9,7 +9,9 @@ import {
   foldBody,
   foldOpenAi,
   parseSseFrames,
+  priceVerified,
 } from "../lib/providers";
+import pricing from "../lib/pricing.json";
 
 const FIX = join(__dirname, "..", "..", "test", "fixtures", "real", "toy-agent-3turn", "llm");
 const blob = (n: string) => readFileSync(join(FIX, n), "utf8");
@@ -87,11 +89,22 @@ describe("Anthropic folding", () => {
 });
 
 describe("cost", () => {
-  it("prices known models, nulls the rest", () => {
+  it("prices known models, nulls the rest (n/a is absence, never 0)", () => {
     expect(costUsd("gpt-4o-mini", { input: 1e6, output: 1e6 })).toBeCloseTo(0.75, 9);
-    expect(costUsd("mock-model-1", { input: 5, output: 5 })).toBe(0);
+    expect(costUsd("gpt-4o", { input: 1e6, output: 1e6 })).toBeCloseTo(12.5, 9);
+    expect(costUsd("mock-model-1", { input: 5, output: 5 })).toBeNull();
     expect(costUsd("mystery-9", { input: 5, output: 5 })).toBeNull();
     expect(costUsd("gpt-4o", null)).toBeNull();
+  });
+
+  it("every pricing entry carries a verify date and strictly positive prices", () => {
+    for (const [model, p] of Object.entries(pricing.models)) {
+      expect(p.verified, model).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(p.input, model).toBeGreaterThan(0);
+      expect(p.output, model).toBeGreaterThan(0);
+      expect(priceVerified(model), model).toBe(p.verified);
+    }
+    expect(priceVerified("mock-model-1")).toBeNull(); // unpriced mock: absent, not $0
   });
 
   it("dispatches on provider", () => {

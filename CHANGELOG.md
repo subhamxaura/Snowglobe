@@ -5,6 +5,21 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 1C Block 2 un-gated slice — pricing + docs)
+- `viewer/lib/pricing.json`: single price table ($/1M tokens) with a
+  `verified` date per model (checked against the providers' official
+  pages on 2026-10-03; sources listed in-file) and current-gen Claude
+  entries (fable-5-1, opus-5-5, sonnet-5-5, haiku-4-5). n/a is absence,
+  never 0: unpriced models (e.g. the mock LLM's `mock-model-1`) render
+  as no cost, never $0. `providers.ts` reads the table; new
+  `priceVerified()` exposes the date. Vitest pins the table shape
+  (15/15).
+- `docs/viewer.md`: viewer architecture doc (serving model, turn rules,
+  providers/pricing, build/embed, testing).
+- Binary size vs embed recorded in STATUS.md: debug binary 10,469,168 B
+  (viewer off) vs 11,420,896 B (embedded, 12-file gzip table
+  392,988 -> 127,376 B stored).
+
 ### Added (Phase 1C Block 1 — view server + model + embed)
 - `snowglobe view <run|events.jsonl>`: `/api/manifest` (synthesized for
   bare `.jsonl`), seq-indexed `/api/events?from=&to=` (≤5000/page: 400

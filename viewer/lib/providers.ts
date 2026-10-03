@@ -2,23 +2,23 @@
 // OpenAI Chat Completions + Anthropic Messages: full bodies and SSE
 // streams fold into {text, toolCalls, usage, cost}. Unknown shapes yield
 // empty text and null usage/cost — never throw on agent traffic.
+import pricing from "./pricing.json";
 
 export interface FoldedUsage {
   input: number;
   output: number;
 }
 
-// Static $/1M-token table (approximate — verify with the provider).
-// Unknown models cost null, never a guessed number.
-const PRICE: Record<string, [number, number]> = {
-  "gpt-4o": [2.5, 10],
-  "gpt-4o-mini": [0.15, 0.6],
-  "gpt-4-turbo": [10, 30],
-  "claude-opus-4": [15, 75],
-  "claude-sonnet-4": [3, 15],
-  "claude-haiku-3-5": [0.8, 4],
-  "mock-model-1": [0, 0],
-};
+// Static $/1M-token table from lib/pricing.json — every entry carries the
+// date its price was verified against the provider's official page, and
+// each price value is a positive number (n/a is absence, never 0; the
+// test suite asserts the shape). Unknown models cost null, never a
+// guessed number. The mock LLM's "mock-model-1" has no entry on purpose:
+// viewer-wide, synthetic costs would be a lie.
+const PRICE = pricing.models as Record<
+  string,
+  { input: number; output: number; verified: string }
+>;
 
 export function costUsd(
   model: string | null,
@@ -27,7 +27,11 @@ export function costUsd(
   if (!model || !usage) return null;
   const p = PRICE[model];
   if (!p) return null;
-  return (usage.input * p[0] + usage.output * p[1]) / 1e6;
+  return (usage.input * p.input + usage.output * p.output) / 1e6;
+}
+
+export function priceVerified(model: string): string | null {
+  return PRICE[model]?.verified ?? null;
 }
 
 function safeJson(s: string): unknown {
