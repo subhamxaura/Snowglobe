@@ -5,6 +5,52 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 1C Block 2/3 — real fixture, providers split, error views)
+- `test/fixtures/real/claude-code-1-error/`: REAL Claude Code recording —
+  735 events, 0 `trace.decode_error`, HEAD probe + 11 turns all HTTP 401
+  with real Anthropic error envelopes; proxy-redacted headers
+  (`x-api-key: REDACTED`, no Authorization stored), normalised paths
+  (`$REPO`/`$HOME`/`PORT`), re-runnable secret audit in the fixture
+  README. Success-path real recording deferred → issue #2 (needs API
+  credits); docs/viewer.md states the coverage split explicitly.
+- `viewer/lib/providers/` split (`openai.ts`, `anthropic.ts`, `sse.ts`,
+  `pricing.ts`, `types.ts`; `providers.ts` stays the public facade) and
+  a new `errorInfo(provider, body)` that extracts Anthropic
+  `{"type":"error","error":{type,message}}` / OpenAI `{"error":{...}}`
+  envelopes without ever throwing.
+- Turns view: error turns render `HTTP <status> · <type>: <message>` +
+  a **response body** raw toggle; pair building now single-sources
+  `buildTurns`, so the HEAD pre-flight no longer renders as a phantom
+  first turn on real traces (caught by the real fixture).
+- Playwright `error.spec.ts` real-fixture smoke: 735 events, status +
+  envelope assertions, raw-body toggle opens, probe never a turn, no
+  blank screen, zero non-localhost requests. Screenshots
+  `docs/screenshots/turns-{toy-agent,error-401}.png` refresh via the
+  opt-in `SG_SCREENSHOT_DIR` (CI never writes into the repo).
+- `viewer/test/real-error.test.ts`: turn layer + Anthropic error
+  parsing against the real recording (vitest 20/20).
+
+### Fixed
+- view `/api/summary`: an `llm.request` whose `model` key is *absent*
+  read as "has model", counting bodyless model-less POSTs as turns and
+  diverging from `model.ts` `isProbeRequest` — an absent key now reads
+  as no model (`view_api` regression check added).
+- view `/api/events`: `to < from` now returns 400, matching the error
+  message the API always printed.
+- `costUsd()`: own-property lookup — hostile trace model ids
+  (`"constructor"`, `"toString"`) can no longer resolve through
+  `Object.prototype` and render `$NaN`.
+
+### Security / hardening
+- D1 self-review (**builder == reviewer**, re-run with a second model
+  per Part E) over `core/view/` + `viewer/lib/`: 0 High; 1 Medium
+  (probe-rule mirror divergence, fixed above); 2 Low (bounds check +
+  prototype-key pricing, both fixed); remaining findings Info and
+  documented (summary memory footprint, first-match field scanning
+  scope, shared weak ETag mitigated by `no-store`, torn-trace load
+  erroring loudly rather than truncating silently).
+
+
 ### Added (Phase 1C Block 2 un-gated slice — pricing + docs)
 - `viewer/lib/pricing.json`: single price table ($/1M tokens) with a
   `verified` date per model (checked against the providers' official
