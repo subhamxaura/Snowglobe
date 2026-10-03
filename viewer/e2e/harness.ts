@@ -9,14 +9,15 @@ import type { Page } from "@playwright/test";
 
 export const BIN = process.env.SNOWGLOBE_BIN ?? "";
 export const FIXTURE = process.env.FIXTURE_DIR ?? "";
+export const ERROR_FIXTURE = process.env.ERROR_FIXTURE_DIR ?? "";
 
-export function stageFixture(): string {
+export function stageFixtureDir(fixture: string): string {
   const dir = join(
     tmpdir(),
     `sg-view-${process.pid}-${Math.floor(Math.random() * 1e6)}`,
   );
   mkdirSync(dir, { recursive: true });
-  cpSync(FIXTURE, dir, { recursive: true });
+  cpSync(fixture, dir, { recursive: true });
   const lines = readFileSync(join(dir, "events.jsonl"), "utf8")
     .split("\n")
     .filter((l) => l.trim()).length;
@@ -32,6 +33,20 @@ export function stageFixture(): string {
     }),
   );
   return dir;
+}
+
+export function stageFixture(): string {
+  return stageFixtureDir(FIXTURE);
+}
+
+// Docs screenshots are opt-in (SG_SCREENSHOT_DIR): CI runs never write
+// into the repo; a manual run with the env set refreshes
+// docs/screenshots/*.png.
+export async function maybeScreenshot(page: Page, name: string): Promise<void> {
+  const dir = process.env.SG_SCREENSHOT_DIR ?? "";
+  if (!dir) return;
+  mkdirSync(dir, { recursive: true });
+  await page.screenshot({ path: join(dir, name), fullPage: true });
 }
 
 export interface Served {

@@ -135,5 +135,5 @@ if(SNOWGLOBE_BUILD_VIEWER)
   )
   set_tests_properties(viewer_e2e PROPERTIES
     TIMEOUT 600
-    ENVIRONMENT "SNOWGLOBE_BIN=$<TARGET_FILE:snowglobe>;FIXTURE_DIR=${CMAKE_SOURCE_DIR}/test/fixtures/real/toy-agent-3turn")
+    ENVIRONMENT "SNOWGLOBE_BIN=$<TARGET_FILE:snowglobe>;FIXTURE_DIR=${CMAKE_SOURCE_DIR}/test/fixtures/real/toy-agent-3turn;ERROR_FIXTURE_DIR=${CMAKE_SOURCE_DIR}/test/fixtures/real/claude-code-1-error")
 endif()

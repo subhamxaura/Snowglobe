@@ -29,7 +29,11 @@ viewer does today and how it is built, tested, and extended.
 - **Turns** — one section per LLM turn (request → response): folded text,
   tool calls with arguments, usage/cost when known, timing (ttfb/total,
   chunk count), truncation and error flags. Turns come from
-  `TurnIndex.getTurnForEvent` (see below).
+  `buildTurns` (see below) — the view never re-derives its own pairing,
+  so a HEAD probe never renders as a turn. Error turns additionally show
+  an `HTTP <status> · <type>: <message>` banner (the parsed provider
+  envelope) plus a **response body** raw-toggle next to the request
+  body toggle, so non-2xx traces are inspectable, never a blank card.
 - **Processes / Files / Network** — process tree, write/delete/rename events,
   endpoints bucketed tcp/unix/other (structured `family/ip/port/path` fields
   with legacy formatted-addr fallback, `net.disconnect` handled).
@@ -49,10 +53,22 @@ viewer does today and how it is built, tested, and extended.
 
 ## Providers and pricing (TypeScript only — locked, never C++)
 
-- `viewer/lib/providers.ts` folds OpenAI Chat Completions and Anthropic
-  Messages bodies (full or SSE delta streams) into `{text, toolCalls,
-  usage, cost}`. Unknown shapes yield empty text and null usage/cost;
-  parsers never throw on agent traffic.
+- `viewer/lib/providers.ts` is the facade over the `providers/` split
+  (`openai.ts`, `anthropic.ts`, `sse.ts`, `pricing.ts`, `types.ts`): it
+  folds OpenAI Chat Completions and Anthropic Messages bodies (full or
+  SSE delta streams) into `{text, toolCalls, usage}` plus `costUsd()`.
+  Unknown shapes yield empty text and null usage/cost; parsers never
+  throw on agent traffic. `errorInfo(provider, body)` additionally
+  extracts the provider error envelope (Anthropic
+  `{"type":"error","error":{type,message}}`, OpenAI `{"error":{...}}`)
+  for error-turn rendering; unrecognisable bodies yield null, never a
+  guessed message.
+- **Fixture coverage honesty (no overclaiming):** success-path parsing
+  is verified against mock + documented format; real Anthropic success
+  fixture pending issue #2. Error-path parsing and rendering are
+  verified against the real recording
+  `test/fixtures/real/claude-code-1-error/` (real 401 envelope, real
+  headers, real status path).
 - `viewer/lib/pricing.json` is the single price table: $/1M tokens with a
   `verified` date per model (the date the price was checked against the
   provider's official page — sources listed in the file). **n/a is absence,
@@ -79,10 +95,21 @@ viewer does today and how it is built, tested, and extended.
 - **Vitest** (`viewer/test/`): `model.test.ts` (turn building on the
   toy-agent fixture + synthetic error/probe/disconnect shapes),
   `providers.test.ts` (SSE framing, OpenAI/Anthropic folding on committed
-  fixture blobs, pricing table shape).
+  fixture blobs, pricing table shape, prototype-key hardening),
+  `real-error.test.ts` (the real `claude-code-1-error/` recording: 735
+  events, 11 401 turns, probe excluded, every real envelope parsed).
 - **Playwright** (`viewer/e2e/`, chromium): real `snowglobe view` against
-  the committed fixture — tab rendering, turn linkage, and the perf test
-  (50 MB trace < 3 s). `run-e2e.sh` skips with a printed reason when node,
-  browsers, or the binary are absent (never fails silently).
+  the committed fixtures — `view.spec.ts` (toy-agent success flow: tab
+  rendering, turn linkage), `error.spec.ts` (error recording: status +
+  envelope banner, raw-body toggle, no blank screen, probe not a turn),
+  and the perf test (50 MB trace < 3 s). `run-e2e.sh` skips with a
+  printed reason when node, browsers, or the binary are absent (never
+  fails silently).
+- **Screenshots**: `docs/screenshots/turns-toy-agent.png` (success flow)
+  and `docs/screenshots/turns-error-401.png` (real 401 error turn with
+  the raw envelope open) are captured by the e2e runs; set
+  `SG_SCREENSHOT_DIR=<path>` when running Playwright to refresh them
+  (CI never writes into the repo). Both refresh when issue #2's
+  success-path recording lands.
 - Both run inside CTest as `viewer_unit` / `viewer_e2e`; the e2e leg runs
   for real in the CI `viewer` job and skip-prints elsewhere.
