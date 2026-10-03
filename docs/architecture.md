@@ -85,18 +85,35 @@ possibly-stuck connect). The event sink is called from handler threads
 and is mutex-guarded by the owner. Bounded queue, explicit abort,
 `stop(deadlineS)` drains ≤10 s then aborts stragglers and joins all.
 
-## Viewer (Phase 1C)
+## Viewer (Phase 1C, ADR-0005)
 
 Next.js static export (`viewer/`, Pages Router, no dependencies beyond
-next/react), built with the project's Node and packed into the binary by
-`cmake/embed_viewer.cmake` (pure CMake hex packing, build-time, no
-reconfigure needed). `snowglobe view <run>` serves the embedded files
-plus `/trace/*` straight from the run dir on 127.0.0.1 (default 7777,
-`--port=0` for ephemeral, `--open` via best-effort xdg-open). Same-origin
-fetches only — no CDN, fonts, telemetry, or external calls (asserted in
-Playwright by failing any non-localhost request). Provider parsing
+next/react), built with the project's Node (`npm ci && npm run build`)
+and gzip-packed into the binary by `cmake/embed_viewer.py` via
+`cmake/embed_viewer.cmake` (build-time, no reconfigure needed; strong
+ETags, MIME, immutable bit for hashed assets).
+`snowglobe view <run|events.jsonl>` serves the embedded files plus trace
+APIs on 127.0.0.1 only (default 7777, `--port=0` for ephemeral, `--open`
+via best-effort xdg-open that never fails without it):
+
+- `GET /api/manifest` — raw manifest.json (synthesized for bare `.jsonl`)
+- `GET /api/events?from=&to=` — seq-indexed slice, ≤5000/page (400
+  beyond, 416 past the end); server slices lines, never re-parses
+- `GET /api/blob/<path>` — blobs confined to the run dir (lexical `..`
+  reject + canonical symlink containment; escapes and missing files are
+  both 404); `/trace/*` stays as a compat alias
+- `GET /api/summary` — counts by kind, turns (probes excluded, errors
+  included), error turns, processes, tcp/unix hosts + disconnects, files
+  written/deleted/renamed, duration; computed once at startup
+
+Same-origin fetches only — no CDN, fonts, telemetry, or external calls
+(asserted in Playwright by failing any non-localhost request).
+`viewer/lib/model.ts` owns the schema-0 types + turn layer
+(`getTurnForEvent(seq)` is the stable causal interface; probes with no
+model and no body never form turns). Provider parsing
 (OpenAI/Anthropic full + SSE-delta folding, static cost table) lives in
-`viewer/lib/providers.ts` with Vitest fixtures; 50 MB traces stream-parse
+`viewer/lib/providers.ts` with Vitest fixtures (Block 2 adds the
+providers/ split + pricing.json); 50 MB traces page through `/api/events`
 with a virtualized list (< 3 s budget, Playwright-measured).
 
 Phase 2 adds core/sandbox (clone3 namespaces, overlayfs, seccomp-bpf,

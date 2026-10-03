@@ -56,10 +56,10 @@ export async function serve(dir: string): Promise<Served> {
     });
     proc.on("exit", (c) => reject(new Error(`view exited ${c}: ${err}`)));
   });
-  // Readiness: poll /trace/manifest.json (server binds before first poll).
+  // Readiness: poll /api/manifest (server binds before first poll).
   for (let i = 0; i < 100; i++) {
     try {
-      execFileSync("curl", ["-sf", `${url}/trace/manifest.json`], { timeout: 2000 });
+      execFileSync("curl", ["-sf", `${url}/api/manifest`], { timeout: 2000 });
       break;
     } catch {
       await sleep(100);

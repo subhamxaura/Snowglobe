@@ -121,14 +121,14 @@ jobs:
           # aarch64 compiler cannot use it (openssl/opensslconf.h is arch-
           # specific, host headers + libs mismatch). The proxy still compiles
           # (httplib without TLS); native jobs cover HTTPS. This is build-only.
-          # VIEWER=OFF for the same reason (no Node here; the check is
-          # compile-only and the viewer is arch-independent JS anyway).
+          # BUILD_VIEWER=OFF for the same reason (no Node here; the check
+          # is compile-only and the viewer is arch-independent JS anyway).
           cmake -S . -B build/aarch64 -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
             -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
             -DSNOWGLOBE_WITH_SSL=OFF \
-            -DSNOWGLOBE_VIEWER=OFF \
+            -DSNOWGLOBE_BUILD_VIEWER=OFF \
             -DBUILD_TESTING=OFF
       - name: Build (aarch64)
         run: cmake --build build/aarch64

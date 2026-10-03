@@ -10,7 +10,7 @@ add_library(snowglobe_core STATIC
 )
 target_include_directories(snowglobe_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(snowglobe_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
-if(SNOWGLOBE_VIEWER)
+if(SNOWGLOBE_BUILD_VIEWER)
   # Generated header with the packed viewer (built at build time, no reconfigure).
   target_include_directories(snowglobe_core PRIVATE "${CMAKE_BINARY_DIR}/generated")
   target_compile_definitions(snowglobe_core PRIVATE SNOWGLOBE_HAS_VIEWER)

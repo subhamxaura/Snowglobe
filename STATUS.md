@@ -1,5 +1,14 @@
 # STATUS — Snowglobe
-Updated: 2026-09-30  ·  Real-run fix batch DONE locally (4 bugs + tests, 43/43 debug+asan as uid 1000; error-path fixture BLOCKED — /tmp wiped on WSL reboot, needs re-supplied run) — push + CI poll next  ·  Next launch: v0.1.0, week 9
+Updated: 2026-10-02  ·  Phase 1C Block 1 IN PROGRESS (server /api + model.ts + embed + ADR-0005; providers/pricing/views stay Block 2, gated on claude-code-1/)  ·  Error-path fixture lost to /tmp wipe; regenerating via an invalid-key run (real 401 through proxy) → `test/fixtures/real/claude-code-1-error/` when the human supplies keys  ·  Next launch: v0.1.0, week 9
+
+## Block 1 DONE (server /api + model.ts + gzip embed + ADR-0005)
+- [x] `view`: /api/manifest|events(paged ≤5000: 400/416)|blob(confined: `..` + symlink escape → 404)|summary; bare .jsonl (synthesized manifest); ETag/304 everywhere, immutable hashed assets; --open never fails w/o xdg-open
+- [x] embed: `cmake/embed_viewer.py` gzip table (12 files, 392461 → 127292 B stored, −68%), MIME/ETag/immutable; SNOWGLOBE_BUILD_VIEWER=ON (VIEWER=OFF alias kept); binary debug 11494584 → 11420808 B (−74 KB), viewer/out 448K → 452K
+- [x] `viewer/lib/model.ts`: schema-0 types + TurnIndex.getTurnForEvent stable; error turns count; probes (HEAD or model-less+bodyless) excluded; disconnect + structured net fields + legacy addr fallback; `load.ts` pages /api/events at 5000 (legacy /trace fallback)
+- [x] ADR-0005; architecture updated; `view_api` CTest green; lint clean (`git ls-files '*.cpp' '*.hpp' '*.h' '*.c' | xargs clang-format --dry-run --Werror`)
+- Verification (WSL2, uid 1000, ext4): debug 44/44 + asan-ubsan 44/44 (zero findings); vitest 14/14 (6 model + 8 providers); e2e 2/2 (incl. 50 MB < 3 s after 5000-page fix; one 3021 ms flake at 1000/page motivated it)
+- Block 2 (GATED on claude-code-1/): providers/ split, pricing.json (verified dates, n/a≠0), views, 50 MB numbers — STOP at first test if fixture still absent
+- Block 3 (later): Playwright smoke on real fixtures, offline assert, docs/viewer.md, screenshots, v0.1.0-alpha.3
 
 > Phase 1A gate closed: CI run
 > https://github.com/subhamxaura/Snowglobe/actions/runs/36311530345 — all 6

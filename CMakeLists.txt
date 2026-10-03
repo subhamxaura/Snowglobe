@@ -61,14 +61,25 @@ set(HTTPLIB_INSTALL OFF)
 set(HTTPLIB_COMPILE OFF)
 FetchContent_MakeAvailable(httplib)
 
-# Viewer (Phase 1C): Next.js static export built with the project's Node,
-# then packed into the binary by cmake/embed_viewer.cmake (pure CMake, no
-# extra tools). ON by default; the aarch64 cross-check job sets OFF (its
-# container has no Node, and the check is compile-only anyway).
-option(SNOWGLOBE_VIEWER "Build + embed the Next.js viewer (needs Node 18+)" ON)
-if(SNOWGLOBE_VIEWER)
-  find_program(SNOWGLOBE_NPM npm REQUIRED)
-  find_program(SNOWGLOBE_NODE node REQUIRED)
+# Viewer (Phase 1C, ADR-0005): Next.js static export built with the
+# project's Node, then gzip-packed into the binary by
+# cmake/embed_viewer.py (stdlib only) via cmake/embed_viewer.cmake.
+# SNOWGLOBE_BUILD_VIEWER=ON by default (CI installs Node 20); the aarch64
+# cross-check job sets OFF (no Node there; compile-only anyway).
+# SNOWGLOBE_VIEWER is a back-compat alias (OFF maps onto OFF).
+option(SNOWGLOBE_BUILD_VIEWER "Build + embed the Next.js viewer (needs Node 18+)" ON)
+if(DEFINED SNOWGLOBE_VIEWER AND NOT SNOWGLOBE_VIEWER)
+  set(SNOWGLOBE_BUILD_VIEWER OFF)
+endif()
+if(SNOWGLOBE_BUILD_VIEWER)
+  find_program(SNOWGLOBE_NPM npm)
+  find_program(SNOWGLOBE_NODE node)
+  if(NOT SNOWGLOBE_NPM OR NOT SNOWGLOBE_NODE)
+    message(WARNING "SNOWGLOBE_BUILD_VIEWER=ON but node/npm missing: building WITHOUT the viewer")
+    set(SNOWGLOBE_BUILD_VIEWER OFF)
+  endif()
+endif()
+if(SNOWGLOBE_BUILD_VIEWER)
   set(SNOWGLOBE_VIEWER_OUT "${CMAKE_SOURCE_DIR}/viewer/out")
   set(SNOWGLOBE_VIEWER_HPP "${CMAKE_BINARY_DIR}/generated/snowglobe_viewer_data.hpp")
   file(GLOB_RECURSE SNOWGLOBE_VIEWER_SRCS CONFIGURE_DEPENDS

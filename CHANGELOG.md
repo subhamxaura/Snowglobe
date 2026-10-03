@@ -5,6 +5,28 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 1C Block 1 — view server + model + embed)
+- `snowglobe view <run|events.jsonl>`: `/api/manifest` (synthesized for
+  bare `.jsonl`), seq-indexed `/api/events?from=&to=` (≤5000/page: 400
+  beyond, 416 past end), `/api/blob/<path>` confined to the run dir
+  (lexical `..` reject + canonical symlink containment; escapes read as
+  404), `/api/summary` (kinds, turns with probes excluded and errors
+  included, processes, tcp/unix hosts + disconnects, files, duration);
+  `/trace/*` stays as a blob compat alias. ETags + 304 on APIs and
+  embedded assets; immutable cache for hashed assets; `--open` never
+  fails without xdg-open (prints a note, keeps serving).
+- Embedding is gzip: `cmake/embed_viewer.py` (stdlib only) compresses
+  each file (`mtime=0`), records sha256 ETag + MIME + immutable bit;
+  `SNOWGLOBE_BUILD_VIEWER=ON` (default ON, `SNOWGLOBE_VIEWER=OFF` still
+  honoured) with a loud degrade-to-OFF when node/npm are absent.
+- `viewer/lib/model.ts`: schema-0 types + turn layer (`getTurnForEvent`
+  stable; error turns count; HEAD/model-less-bodyless probes excluded;
+  `net.disconnect` + structured family/ip/port/path with legacy addr
+  fallback); `viewer/lib/load.ts` pages `/api/events` (legacy
+  `/trace/events.jsonl` fallback); ADR-0005; `view_api` CTest.
+- `docs/limitations.md`: WSL interop section no longer names the lost
+  error-path fixture (regeneration via an invalid-key 401 run noted).
+
 ### Fixed (real Claude Code run, `/tmp/claude-real.sgr`: 2 error turns, 0-byte tmps)
 - Epilogue counted only 2xx as turns, so two error responses (502
   synthesized for a `HEAD` health check, 400 with 198 binary bytes)
