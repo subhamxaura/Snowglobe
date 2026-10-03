@@ -95,6 +95,9 @@ describe("cost", () => {
     expect(costUsd("mock-model-1", { input: 5, output: 5 })).toBeNull();
     expect(costUsd("mystery-9", { input: 5, output: 5 })).toBeNull();
     expect(costUsd("gpt-4o", null)).toBeNull();
+    // prototype keys never price (hostile trace model ids)
+    expect(costUsd("constructor", { input: 5, output: 5 })).toBeNull();
+    expect(costUsd("toString", { input: 5, output: 5 })).toBeNull();
   });
 
   it("every pricing entry carries a verify date and strictly positive prices", () => {
