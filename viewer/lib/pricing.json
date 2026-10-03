@@ -1,0 +1,24 @@
+{
+  "currency": "usd",
+  "unit": "per-1m-tokens",
+  "sources": [
+    "https://developers.openai.com/api/docs/pricing",
+    "https://developers.openai.com/api/docs/models/gpt-4o",
+    "https://developers.openai.com/api/docs/models/gpt-4-turbo-preview",
+    "https://www.anthropic.com/news/claude-4",
+    "https://platform.claude.com/docs/en/models/overview",
+    "https://platform.claude.com/docs/en/about-claude/pricing"
+  ],
+  "models": {
+    "gpt-4o": { "input": 2.5, "output": 10, "verified": "2026-10-03" },
+    "gpt-4o-mini": { "input": 0.15, "output": 0.6, "verified": "2026-10-03" },
+    "gpt-4-turbo": { "input": 10, "output": 30, "verified": "2026-10-03" },
+    "claude-opus-4": { "input": 15, "output": 75, "verified": "2026-10-03" },
+    "claude-sonnet-4": { "input": 3, "output": 15, "verified": "2026-10-03" },
+    "claude-haiku-3-5": { "input": 0.8, "output": 4, "verified": "2026-10-03" },
+    "claude-fable-5-1": { "input": 10, "output": 50, "verified": "2026-10-03" },
+    "claude-opus-5-5": { "input": 4, "output": 20, "verified": "2026-10-03" },
+    "claude-sonnet-5-5": { "input": 2, "output": 10, "verified": "2026-10-03" },
+    "claude-haiku-4-5": { "input": 1, "output": 5, "verified": "2026-10-03" }
+  }
+}
