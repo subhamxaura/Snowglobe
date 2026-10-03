@@ -1,6 +1,8 @@
-// Trace loading: streams events.jsonl in chunks (keeps the UI alive on
-// 50 MB traces), parses incrementally, reports progress. Blobs fetch
-// on demand per turn (small count, never the whole llm/ dir).
+// Trace loading over the view server's /api (paged, seq-indexed):
+// manifest, then events in ≤5000/page slices, then blobs on demand per
+// turn. Falls back to the early-Phase-1C /trace/* paths when talking to an
+// older binary. No full-file JSON.parse: each page parses small.
+import { MAX_PAGE } from "./model";
 import type { Manifest, TraceEvent } from "./types";
 
 export interface LoadProgress {
@@ -9,15 +11,63 @@ export interface LoadProgress {
   done: boolean;
 }
 
+interface EventsPage {
+  from: number;
+  to: number;
+  total: number;
+  events: TraceEvent[];
+}
+
+async function getJson(path: string): Promise<{ status: number; body: string }> {
+  const r = await fetch(path);
+  return { status: r.status, body: r.status === 304 ? "" : await r.text() };
+}
+
 export async function loadManifest(): Promise<Manifest> {
+  const api = await getJson("/api/manifest");
+  if (api.status === 200) return JSON.parse(api.body) as Manifest;
+  // Compat: pre-/api binaries served the raw file.
   const r = await fetch("/trace/manifest.json");
   if (!r.ok) throw new Error(`manifest: HTTP ${r.status}`);
   return (await r.json()) as Manifest;
 }
 
-// Reads the full stream but yields progress per 1 MiB so the status line
-// stays live; returns all events. A 50 MB file parses in ~1-2 s.
+async function loadPage(from: number, to: number): Promise<EventsPage | null> {
+  const { status, body } = await getJson(`/api/events?from=${from}&to=${to}`);
+  if (status !== 200) return null;
+  return JSON.parse(body) as EventsPage;
+}
+
+// Streams pages (progress per page so the status line stays live on
+// 50 MB traces). Returns all events; tolerates a torn line per page.
 export async function loadEvents(
+  onProgress?: (p: LoadProgress) => void,
+): Promise<TraceEvent[]> {
+  // Full pages (5000): a 50 MB trace loads in ~70 requests instead of
+  // ~350 — same paging discipline, far less round-trip overhead.
+  const step = MAX_PAGE;
+  let from = 0;
+  const events: TraceEvent[] = [];
+  let bytes = 0;
+  for (;;) {
+    const page = await loadPage(from, from + step);
+    if (!page) break; // old binary: fall through to legacy below
+    bytes += JSON.stringify(page.events).length;
+    events.push(...page.events);
+    onProgress?.({ bytes, events: events.length, done: false });
+    if (page.events.length === 0 || events.length >= page.total) break;
+    from = events.length;
+    if (from >= page.total) break;
+  }
+  if (events.length > 0) {
+    onProgress?.({ bytes, events: events.length, done: true });
+    return events;
+  }
+  return loadEventsLegacy(onProgress);
+}
+
+// Compat: pre-/api binaries served the whole file at /trace/events.jsonl.
+async function loadEventsLegacy(
   onProgress?: (p: LoadProgress) => void,
 ): Promise<TraceEvent[]> {
   const r = await fetch("/trace/events.jsonl");
@@ -77,7 +127,11 @@ function parseLines(text: string): TraceEvent[] {
 }
 
 export async function loadText(rel: string): Promise<string> {
-  const r = await fetch(`/trace/${rel}`);
+  const clean = rel.replace(/^\/+/, "");
+  const api = await fetch(`/api/blob/${clean}`);
+  if (api.ok) return api.text();
+  // Compat: pre-/api binaries served blobs at /trace/<rel>.
+  const r = await fetch(`/trace/${clean}`);
   if (!r.ok) throw new Error(`${rel}: HTTP ${r.status}`);
   return r.text();
 }

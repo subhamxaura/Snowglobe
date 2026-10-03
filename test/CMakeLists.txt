@@ -109,11 +109,19 @@ if(Python3_FOUND)
       set_tests_properties(proxy_${tname} PROPERTIES ENVIRONMENT "${_sgenv}")
     endif()
   endforeach()
+
+  # Phase 1C Block 1: view server API (stdlib only, fixture copied to temp).
+  add_test(
+    NAME view_api
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/view/view_api.py
+            $<TARGET_FILE:snowglobe> ${CMAKE_SOURCE_DIR}/test/fixtures/real/toy-agent-3turn
+  )
+  set_tests_properties(view_api PROPERTIES TIMEOUT 180)
 endif()
 
-# Phase 1C: viewer tests. vitest (parser units on fixtures) needs only node;
-# the Playwright suite (run-e2e.sh) skips cleanly without browsers.
-if(SNOWGLOBE_VIEWER)
+# Phase 1C: viewer tests. vitest (parser + model units on fixtures) needs
+# only node; the Playwright suite (run-e2e.sh) skips cleanly without browsers.
+if(SNOWGLOBE_BUILD_VIEWER)
   add_test(
     NAME viewer_unit
     COMMAND "${SNOWGLOBE_NPM}" run test --silent
