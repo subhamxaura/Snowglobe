@@ -1,0 +1,1 @@
+{"method":"HEAD","path":"/anthropic/api/hello","provider":"anthropic","headers":{"Accept-Encoding":"gzip, deflate, br, zstd","Accept":"*/*","User-Agent":"Bun/1.4.3"},"body":"","body_encoding":"utf8"}

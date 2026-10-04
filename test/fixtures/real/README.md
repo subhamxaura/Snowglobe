@@ -24,5 +24,13 @@ a fixture without re-running that check.
 gate): `claude -p hi` against the real Anthropic API with an invalid
 key. 735 normalised events, 0 decode_error, 1 probe + 11 turns all
 HTTP 401 with real Anthropic error envelopes, 36 blobs. Full provenance
-+ secret-audit recipe in its README. Success-path real fixture is
-deferred — issue #2.
++ secret-audit recipe in its README.
+
+`claude-code-1-nocredit/` — REAL Claude Code no-credit capture
+(salvaged 2026-10-04 from `~/claude-real.sgr`, the regenerated capture
+from after the /tmp wipe): 566 normalised events, 0 decode_error,
+1 probe (502) + 1 real turn HTTP 400 with a 193-byte BINARY (non-JSON)
+body stored verbatim — the proxy format-agnosticism proof, 6 blobs.
+Full provenance + secret-audit recipe in its README.
+
+Success-path real fixture is still missing — issue #2 stays open.

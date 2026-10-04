@@ -29,6 +29,15 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   opt-in `SG_SCREENSHOT_DIR` (CI never writes into the repo).
 - `viewer/test/real-error.test.ts`: turn layer + Anthropic error
   parsing against the real recording (vitest 20/20).
+- `test/fixtures/real/claude-code-1-nocredit/`: second REAL Claude Code
+  recording, salvaged from the regenerated no-credit capture
+  (`~/claude-real.sgr`, post-/tmp-wipe): 566 events, 0
+  `trace.decode_error`, HEAD probe (502) + 1 real turn HTTP 400 with a
+  193-byte BINARY body stored verbatim — the proxy
+  format-agnosticism proof. `real-error.test.ts` pins it (1 error
+  turn, probe excluded, binary fold empty / `errorInfo` null, redacted
+  headers; vitest 25/25). Issue #2 stays open — only the success path
+  is still missing.
 
 ### Fixed
 - view `/api/summary`: an `llm.request` whose `model` key is *absent*
