@@ -43,3 +43,7 @@ Thumbs.db
 dist/
 *.tar.gz
 SHA256SUMS
+
+# Agent scratch (tool working state — never commit)
+.freebuff/
+viewer/next-env.d.ts

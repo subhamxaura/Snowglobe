@@ -187,6 +187,9 @@ STATUS.md    living state of the project (see §6)
 7. **Ask the human only for:** new dependencies, changing a locked decision, anything irreversible
    (publishing, deleting user data, force-push), spending money, or genuinely ambiguous criteria.
    Everything else: decide, document the decision, proceed.
+8. **Session coordination.** Never `git push --force` to main. One session per working tree;
+   no shared-tree parallel sessions (parallel work uses a branch + merge). History rewrites
+   require explicit human approval and both checkouts refetch afterward.
 
 ## 7. Definition of done (per feature)
 
