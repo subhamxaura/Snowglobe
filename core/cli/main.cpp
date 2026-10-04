@@ -23,6 +23,7 @@
 #endif
 
 #include "../doctor/doctor.hpp"
+#include "../link/cli.hpp"
 #include "../proxy/proxy.hpp"
 #include "../redact/redact.hpp"
 #include "../trace/jsonl_writer.hpp"
@@ -55,6 +56,7 @@ void usage(std::ostream& os) {
      << "  snowglobe ls [--json]\n"
      << "  snowglobe rm <run>\n"
      << "  snowglobe view <run> [--port=7777] [--open]\n"
+     << "  snowglobe link <run> [--check]\n"
      << "  snowglobe diff|apply|replay|compare|share <run> ... (not yet implemented)\n";
 }
 
@@ -492,6 +494,9 @@ int main(int argc, char** argv) {
   }
   if (sub == "view") {
     return snowglobe::view::cmdView(args);
+  }
+  if (sub == "link") {
+    return snowglobe::link::cmdLink(args);
   }
   if (sub == "diff" || sub == "apply" || sub == "replay" || sub == "compare" || sub == "share") {
     std::cerr << "snowglobe " << sub << ": not yet implemented (Phase 2+)\n";

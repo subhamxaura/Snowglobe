@@ -5,6 +5,18 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 1D Block 1 — linker core)
+- `core/link/` + `snowglobe link <run> [--check]`: causal attribution
+  as a derived `links.json` sidecar (ADR-0006; events never rewritten).
+  Rules window/lineage/argv-match with basis + confidence, explicit
+  `unattributed` reasons, probes excluded; deterministic output,
+  `--check` exits 3 when stale.
+- Catch2 `test_link_scan`/`test_link` (field scanner, OpenAI/Anthropic
+  tool extraction, per-rule synthetic attribution incl. cross-boundary
+  lineage) + `link_determinism` CTest (double-run byte-compare on
+  toy-agent-3turn and claude-code-1-error copies).
+- ADR-0006 (derived link sidecar + `link` CLI amendment).
+
 ### Added (Phase 1C Block 2/3 — real fixture, providers split, error views)
 - `test/fixtures/real/claude-code-1-error/`: REAL Claude Code recording —
   735 events, 0 `trace.decode_error`, HEAD probe + 11 turns all HTTP 401

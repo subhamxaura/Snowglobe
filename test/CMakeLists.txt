@@ -14,6 +14,8 @@ add_executable(snowglobe_tests
   unit/test_redact.cpp
   unit/test_proxy_util.cpp
   unit/test_sockaddr.cpp
+  unit/test_link_scan.cpp
+  unit/test_link.cpp
 )
 target_link_libraries(snowglobe_tests PRIVATE snowglobe_core Catch2::Catch2WithMain)
 target_include_directories(snowglobe_tests PRIVATE ${CMAKE_SOURCE_DIR}/core)
@@ -117,6 +119,15 @@ if(Python3_FOUND)
             $<TARGET_FILE:snowglobe> ${CMAKE_SOURCE_DIR}/test/fixtures/real/toy-agent-3turn
   )
   set_tests_properties(view_api PROPERTIES TIMEOUT 180)
+
+  # Phase 1D Block 1: linker determinism (double-run byte-compare on
+  # fixture copies — link writes links.json, never into the repo tree).
+  add_test(
+    NAME link_determinism
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/link/link_determinism.py
+            $<TARGET_FILE:snowglobe> ${CMAKE_SOURCE_DIR}/test/fixtures/real
+  )
+  set_tests_properties(link_determinism PROPERTIES TIMEOUT 180)
 endif()
 
 # Phase 1C: viewer tests. vitest (parser + model units on fixtures) needs
