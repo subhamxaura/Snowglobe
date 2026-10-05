@@ -678,6 +678,21 @@ int cmdView(const std::vector<std::string>& args) {
       res.set_content(summaryText, "application/json");
       return;
     }
+    if (p == "/api/links") {
+      // links.json is derived (ADR-0006) and may appear or be regenerated
+      // while serving, so it is read per request with no ETag; absent →
+      // 404 and the viewer falls back to the seq heuristic visibly.
+      std::string links;
+      const std::string linksPath = rs.isFile ? "" : (fs::path(rs.runDir) / "links.json").string();
+      if (!linksPath.empty() && readFile(linksPath, links)) {
+        res.set_header("Cache-Control", "no-store");
+        res.set_content(links, "application/json");
+        return;
+      }
+      res.status = 404;
+      res.set_content("no links.json (run snowglobe link <run>)", "text/plain");
+      return;
+    }
     if (startsWith(p, "/api/blob/")) {
       const std::string rel = p.substr(10);
       std::string abs;

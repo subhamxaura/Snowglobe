@@ -105,6 +105,9 @@ via best-effort xdg-open that never fails without it):
 - `GET /api/summary` — counts by kind, turns (probes excluded, errors
   included), error turns, processes, tcp/unix hosts + disconnects, files
   written/deleted/renamed, duration; computed once at startup
+- `GET /api/links` — `links.json` when the run has one (read per
+  request, no ETag: the sidecar may appear while serving), else 404 and
+  the viewer falls back to the seq heuristic visibly
 
 Same-origin fetches only — no CDN, fonts, telemetry, or external calls
 (asserted in Playwright by failing any non-localhost request).
@@ -115,6 +118,19 @@ model and no body never form turns). Provider parsing
 `viewer/lib/providers.ts` with Vitest fixtures (Block 2 adds the
 providers/ split + pricing.json); 50 MB traces page through `/api/events`
 with a virtualized list (< 3 s budget, Playwright-measured).
+
+## Linker (Phase 1D, ADR-0006)
+
+`core/link/` attributes traced side effects to LLM turns without
+touching the hash-chained events: `snowglobe link <run>` writes the
+derived `links.json` sidecar (`--check` verifies it is current, exit 3
+when stale). Rules — window (response-anchored span), lineage
+(background children keep their birth turn), argv-match (tool command
+in exec argv, upgrading the other two) — each emit basis + confidence;
+probes stay out and anything unclassifiable lands in an explicit
+`unattributed` bucket with a reason. Same-input runs are
+byte-identical (golden-tested); the viewer consumes the sidecar when
+present and labels the seq-heuristic fallback.
 
 Phase 2 adds core/sandbox (clone3 namespaces, overlayfs, seccomp-bpf,
 landlock, cgroup limits). See docs/PLAN.md.

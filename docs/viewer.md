@@ -34,6 +34,12 @@ viewer does today and how it is built, tested, and extended.
   an `HTTP <status> · <type>: <message>` banner (the parsed provider
   envelope) plus a **response body** raw-toggle next to the request
   body toggle, so non-2xx traces are inspectable, never a blank card.
+  Side-effect membership comes from `links.json` when the run has one
+  (`/api/links`): each turn shows basis badges (`window` / `lineage` /
+  `argv-match`) on its linked events plus an **unattributed** section
+  with reasons. Without a sidecar the old path-substring heuristic
+  applies and the header reads `linkage: heuristic` instead of
+  `linkage: sidecar` — the fallback is always labelled, never silent.
 - **Processes / Files / Network** — process tree, write/delete/rename events,
   endpoints bucketed tcp/unix/other (structured `family/ip/port/path` fields
   with legacy formatted-addr fallback, `net.disconnect` handled).

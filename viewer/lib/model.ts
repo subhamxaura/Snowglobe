@@ -226,18 +226,81 @@ export function buildTurns(events: TraceEvent[]): Turn[] {
 // Stable causal interface: which turn owns event seq? Binary search over
 // turn spans; null before the first turn. The 1D linker replaces the
 // inside later — this signature stays.
+export interface LinksAttrib {
+  seq: number;
+  basis: string;
+  confidence: string;
+}
+
+export interface LinksUnattr {
+  seq: number;
+  reason: string;
+}
+
+export interface LinksTurn {
+  turn: number; // llm id (mirrors Turn.id)
+  llm: { req: number; res: number; tools: string[] };
+  attributed: LinksAttrib[];
+  unattributed: LinksUnattr[];
+}
+
+// links.json as served by /api/links (core/link, ADR-0006). Unknown
+// basis/reason/confidence values must be tolerated (forward compat).
+export interface LinksDoc {
+  version: number;
+  turns: LinksTurn[];
+}
+
+export type LinkSource = "sidecar" | "heuristic";
+
+export interface LinkHit {
+  turn: Turn;
+  basis: string;
+  confidence: string;
+}
+
 export class TurnIndex {
   private turns: Turn[];
+  private exact = new Map<number, { turn: number; basis: string; confidence: string }>();
+  private reasons = new Map<number, string>(); // seq → unattributed reason
+  readonly source: LinkSource;
 
-  constructor(events: TraceEvent[]) {
+  constructor(events: TraceEvent[], links?: LinksDoc | null) {
     this.turns = buildTurns(events);
+    if (links && links.version === 1) {
+      for (const lt of links.turns) {
+        for (const a of lt.attributed) {
+          this.exact.set(a.seq, {
+            turn: lt.turn,
+            basis: typeof a.basis === "string" ? a.basis : "window",
+            confidence: typeof a.confidence === "string" ? a.confidence : "high",
+          });
+        }
+        for (const u of lt.unattributed) {
+          if (typeof u.reason === "string") this.reasons.set(u.seq, u.reason);
+        }
+      }
+      this.source = "sidecar";
+    } else {
+      this.source = "heuristic";
+    }
   }
 
   get list(): Turn[] {
     return this.turns;
   }
 
+  // Sidecar hit wins (response-anchored links.json is truth where it
+  // speaks); otherwise the request-anchored span heuristic. The two
+  // anchorings differ by design (docs/limitations.md) — unlisted seqs
+  // keep the old answer, never null-by-surprise.
   getTurnForEvent(seq: number): Turn | null {
+    const hit = this.exact.get(seq);
+    if (hit !== undefined) {
+      const turn = this.turns.find((t) => t.id === hit.turn) ?? null;
+      if (turn) return turn;
+      // Stale sidecar (turn id with no Turn here): fall through.
+    }
     let lo = 0;
     let hi = this.turns.length;
     while (lo < hi) {
@@ -246,6 +309,20 @@ export class TurnIndex {
       else hi = mid;
     }
     return lo === 0 ? null : this.turns[lo - 1];
+  }
+
+  // Evidence for one seq: linked (turn + basis + confidence), explicitly
+  // unattributed (reason), or null (heuristic territory).
+  linkOf(seq: number): LinkHit | { unattributed: string } | null {
+    const hit = this.exact.get(seq);
+    if (hit !== undefined) {
+      const turn = this.turns.find((t) => t.id === hit.turn) ?? null;
+      if (!turn) return null;
+      return { turn, basis: hit.basis, confidence: hit.confidence };
+    }
+    const reason = this.reasons.get(seq);
+    if (reason !== undefined) return { unattributed: reason };
+    return null;
   }
 }
 

@@ -12,6 +12,7 @@ import {
   isProbeRequest,
   isWriteOpen,
 } from "../lib/model";
+import type { LinksDoc } from "../lib/model";
 import type { TraceEvent } from "../lib/types";
 
 const FIX = join(__dirname, "..", "..", "test", "fixtures", "real", "toy-agent-3turn");
@@ -90,5 +91,55 @@ describe("file helpers", () => {
   it("spots write opens", () => {
     expect(isWriteOpen(E({ ev: "fs.open", path: "/a", write: true }))).toBe(true);
     expect(isWriteOpen(E({ ev: "fs.open", path: "/a", write: false }))).toBe(false);
+  });
+});
+
+describe("links.json sidecar (TurnIndex source)", () => {
+  const synth: TraceEvent[] = [
+    E({ ev: "llm.request", id: 0, provider: "m", method: "POST", model: "m", bytes: 10, seq: 10 }),
+    E({ ev: "llm.response", id: 0, status: 200, bytes: 5, seq: 11 }),
+    E({ ev: "fs.open", path: "/tmp/a", write: true, seq: 12 }),
+    E({ ev: "fs.open", path: "/tmp/b", write: true, seq: 13 }),
+    E({ ev: "llm.request", id: 1, provider: "m", method: "POST", model: "m", bytes: 9, seq: 14 }),
+    E({ ev: "llm.response", id: 1, status: 200, bytes: 5, seq: 15 }),
+  ];
+  const links = (turns: LinksDoc["turns"]): LinksDoc => ({ version: 1, turns });
+  it("reports heuristic source without links", () => {
+    const idx = new TurnIndex(synth);
+    expect(idx.source).toBe("heuristic");
+    // span heuristic: everything from req 10 belongs to turn 0
+    expect(idx.getTurnForEvent(12)?.id).toBe(0);
+    expect(idx.linkOf(12)).toBeNull();
+  });
+  it("sidecar wins where it speaks, heuristic elsewhere", () => {
+    const idx = new TurnIndex(
+      synth,
+      links([
+        {
+          turn: 1,
+          llm: { req: 14, res: 15, tools: [] },
+          attributed: [{ seq: 13, basis: "lineage", confidence: "high" }],
+          unattributed: [{ seq: 12, reason: "pre-turn" }],
+        },
+      ]),
+    );
+    expect(idx.source).toBe("sidecar");
+    // exact hit overrides the span (13 would heuristically be turn 0)
+    expect(idx.getTurnForEvent(13)?.id).toBe(1);
+    expect(idx.linkOf(13)).toEqual({
+      turn: expect.objectContaining({ id: 1 }),
+      basis: "lineage",
+      confidence: "high",
+    });
+    // explicitly unattributed stays visible with its reason
+    expect(idx.linkOf(12)).toEqual({ unattributed: "pre-turn" });
+    // unlisted seqs keep the old span answer
+    expect(idx.getTurnForEvent(11)?.id).toBe(0);
+    expect(idx.linkOf(11)).toBeNull();
+  });
+  it("ignores non-v1 sidecars (forward compat falls back)", () => {
+    const idx = new TurnIndex(synth, { version: 99, turns: [] });
+    expect(idx.source).toBe("heuristic");
+    expect(idx.getTurnForEvent(13)?.id).toBe(0);
   });
 });

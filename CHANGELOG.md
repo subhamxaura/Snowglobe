@@ -5,6 +5,28 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 1D Block 2 — ground truth + viewer single-sourcing)
+- `GET /api/links`: serves `links.json` when the run has one (read per
+  request, no ETag), else 404 and the viewer falls back visibly
+  (`view_api.py` covers both).
+- Viewer single-sourcing (`TurnIndex` + `links.json`): sidecar exact
+  membership wins where it speaks, span heuristic elsewhere; turn
+  detail shows basis badges + unattributed reasons, header reads
+  `linkage: sidecar|heuristic`. Playwright covers both paths
+  (sidecar: argv-match badge + note.txt[window]; fallback labelled).
+- Ground-truth pins: toy-agent-3turn EXACT sets/bases/tools in
+  `test_link_fixtures.cpp` (curated-small rationale); claude-code-1-error
+  exact ids + sizes + small-turn sets + partition/reason/vocab invariants
+  (190/521 split, all pre-turn). `model.test.ts` sidecar unit tests.
+- `scripts/check-format.sh` (C/C++ only — clang-format mangled a `.py`
+  in Block 1) now owns the gate; CI lint calls it.
+- Docs: `trace-format.md` links.json section, `architecture.md` linker
+  paragraph + `/api/links`, `viewer.md` badges/fallback,
+  `limitations.md` anchoring difference.
+- D1 over `core/link/` (builder==reviewer): 0 High, 1 Medium (duplicate
+  React keys on seq-less fixtures) + 1 Low (stale-sidecar null) fixed;
+  second-model review of `linker.cpp` requested separately, not blocking.
+
 ### Added (Phase 1D Block 1 — linker core)
 - `core/link/` + `snowglobe link <run> [--check]`: causal attribution
   as a derived `links.json` sidecar (ADR-0006; events never rewritten).

@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { foldBody, costUsd, errorInfo } from "../lib/providers";
-import { buildTurns, isErrorStatus } from "../lib/model";
-import { loadText } from "../lib/load";
+import { TurnIndex, buildTurns, isErrorStatus, seqOf } from "../lib/model";
+import type { LinksDoc } from "../lib/model";
+import { loadLinks, loadText } from "../lib/load";
 import { fmtBytes, fmtCost, fmtMs } from "../lib/format";
 import type { LlmTurn, TraceEvent } from "../lib/types";
+
+export interface LinkedEvent {
+  event: TraceEvent;
+  basis: string; // window | lineage | argv-match (sidecar) or heuristic
+  seq: number; // sidecar order key (fixtures have no per-event seq)
+}
 
 export interface TurnVM extends LlmTurn {
   reqBody: string;
@@ -13,17 +20,22 @@ export interface TurnVM extends LlmTurn {
   usage: { input: number; output: number } | null;
   cost: number | null;
   err: { type: string; message: string } | null;
-  linked: TraceEvent[];
+  linked: LinkedEvent[];
+  unattributed: { seq: number; reason: string }[];
+  linkSource: "sidecar" | "heuristic";
 }
 
 // Turns join llm.request/response by id, fold bodies through the provider
-// parsers, and link side effects: any fs.open(write) whose path appears in
-// a tool-call's arguments (e.g. write_file under turn 2).
+// parsers, and attribute side effects through the links.json sidecar when
+// present (TurnIndex: sidecar truth, seq heuristic only where silent).
+// Without links.json the old path-substring heuristic applies and the UI
+// says so — never a guess presented as fact.
 export function useTurns(events: TraceEvent[]): {
   turns: TurnVM[];
   loading: boolean;
 } {
   const [blobs, setBlobs] = useState<Record<string, string>>({});
+  const [links, setLinks] = useState<LinksDoc | null>(null);
   const [loading, setLoading] = useState(false);
   const pairs = useMemo(() => {
     const reqs = new Map<number, TraceEvent>();
@@ -67,6 +79,23 @@ export function useTurns(events: TraceEvent[]): {
       live = false;
     };
   }, [pairs]);
+  useEffect(() => {
+    let live = true;
+    loadLinks().then((d) => {
+      if (live) setLinks(d);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+  const index = useMemo(() => new TurnIndex(events, links), [events, links]);
+  const bySeq = useMemo(() => {
+    const m = new Map<number, TraceEvent>();
+    events.forEach((e, i) => {
+      if (!m.has(seqOf(e, i))) m.set(seqOf(e, i), e);
+    });
+    return m;
+  }, [events]);
   const turns = useMemo<TurnVM[]>(
     () =>
       pairs.map(({ id, req, res }) => {
@@ -79,7 +108,18 @@ export function useTurns(events: TraceEvent[]): {
         const status = Number(res["status"] ?? 0);
         const folded = foldBody(provider, resBody, stream || looksStreamed(resBody));
         const err = isErrorStatus(status) ? errorInfo(provider, resBody) : null;
-        const linked = linkSideEffects(events, folded.toolCalls.map((t) => t.args).join("\n"));
+        const sidecar = links?.turns.find((lt) => lt.turn === id) ?? null;
+        let linked: LinkedEvent[];
+        let unattributed: { seq: number; reason: string }[] = [];
+        if (sidecar) {
+          linked = sidecar.attributed.flatMap((a) => {
+            const event = bySeq.get(a.seq);
+            return event ? [{ event, basis: a.basis, seq: a.seq }] : [];
+          });
+          unattributed = sidecar.unattributed.map((u) => ({ seq: u.seq, reason: u.reason }));
+        } else {
+          linked = linkSideEffects(events, folded.toolCalls.map((t) => t.args).join("\n"));
+        }
         return {
           id,
           provider,
@@ -101,9 +141,11 @@ export function useTurns(events: TraceEvent[]): {
           cost: costUsd(model, folded.usage),
           err,
           linked,
+          unattributed,
+          linkSource: index.source,
         };
       }),
-    [pairs, blobs, events],
+    [pairs, blobs, events, links, index, bySeq],
   );
   return { turns, loading };
 }
@@ -112,18 +154,23 @@ function looksStreamed(body: string): boolean {
   return body.includes("data:");
 }
 
-// Side-effect linkage: fs.open(write) events whose path is named inside
-// tool arguments, plus proc.exec events sharing the turn window is out of
-// scope — path linkage is exact and explainable.
-function linkSideEffects(events: TraceEvent[], haystack: string): TraceEvent[] {
+// Side-effect linkage fallback (no links.json): fs.open(write) events
+// whose path is named inside tool arguments. Exact and explainable, but
+// a heuristic — the UI labels it as such.
+function linkSideEffects(events: TraceEvent[], haystack: string): LinkedEvent[] {
   if (!haystack) return [];
-  return events.filter(
-    (e) =>
-      e.ev === "fs.open" &&
-      e["write"] === true &&
-      typeof e["path"] === "string" &&
-      haystack.includes(e["path"] as string),
-  );
+  const out: LinkedEvent[] = [];
+  events.forEach((event, i) => {
+    if (
+      event.ev === "fs.open" &&
+      event["write"] === true &&
+      typeof event["path"] === "string" &&
+      haystack.includes(event["path"] as string)
+    ) {
+      out.push({ event, basis: "heuristic", seq: seqOf(event, i) });
+    }
+  });
+  return out;
 }
 
 export default function Turns({ events }: { events: TraceEvent[] }) {
@@ -133,6 +180,11 @@ export default function Turns({ events }: { events: TraceEvent[] }) {
   }
   return (
     <div data-testid="turns">
+      {turns.length > 0 && (
+        <p className="muted" data-testid="link-source">
+          linkage: {turns[0].linkSource}
+        </p>
+      )}
       {loading && <p className="muted">loading blobs…</p>}
       {turns.map((t, i) => (
         <section
@@ -174,11 +226,28 @@ export default function Turns({ events }: { events: TraceEvent[] }) {
           ))}
           {t.linked.length > 0 && (
             <div data-testid={`linked-${t.id}`}>
-              <b>linked side effects</b>
+              <b>linked side effects</b>{" "}
+              {[...new Set(t.linked.map((l) => l.basis))].map((b) => (
+                <span key={b} data-testid={`basis-${t.id}-${b}`}>
+                  [{b}]
+                </span>
+              ))}
               <ul>
-                {t.linked.map((e) => (
-                  <li key={e.seq}>
-                    {e.ev} {String(e["path"] ?? "")}
+                {t.linked.map((l) => (
+                  <li key={l.seq} data-testid={`linked-ev-${t.id}-${l.seq}`}>
+                    {l.event.ev} {String(l.event["path"] ?? "")} [{l.basis}]
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {t.unattributed.length > 0 && (
+            <div data-testid={`unattributed-${t.id}`}>
+              <b>unattributed</b>
+              <ul>
+                {t.unattributed.map((u) => (
+                  <li key={u.seq}>
+                    seq {u.seq} · {u.reason}
                   </li>
                 ))}
               </ul>

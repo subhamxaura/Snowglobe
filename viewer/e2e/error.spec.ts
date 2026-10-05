@@ -41,6 +41,8 @@ test("claude-code-1-error: error turns render status, envelope, raw body", async
     // 11 error turns: ids 1..11, nothing after.
     await expect(page.getByTestId("turn-11")).toBeVisible();
     await expect(page.getByTestId("turn-12")).toHaveCount(0);
+    // Staged without links.json: the heuristic fallback applies and says so.
+    await expect(page.getByTestId("link-source")).toContainText("heuristic");
     // Raw body toggle opens on the real envelope JSON.
     await page.getByTestId("raw-body-1").locator("summary").click();
     await expect(page.getByTestId("raw-body-1")).toContainText('"type":"error"');

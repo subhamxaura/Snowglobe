@@ -152,6 +152,19 @@ def main():
                     "summary turns/errors: %s" % b[:200])
         ok &= check("llm.request" in sm["kinds"] and sm["files"]["written"] >= 1,
                     "summary kinds/files: %s" % b[:200])
+
+        # /api/links: 404 without links.json (client falls back), 200
+        # after `snowglobe link` — read per request, no restart needed.
+        s, _, _ = get(u + "/api/links")
+        ok &= check(s == 404, "links absent must 404, got %d" % s)
+        r = subprocess.run([SNOWGLOBE, "link", run],
+                           capture_output=True, text=True, timeout=60)
+        ok &= check(r.returncode == 0, "link run: %s" % r.stderr[-200:])
+        s, _, b = get(u + "/api/links")
+        lm = json.loads(b) if s == 200 else {}
+        ok &= check(s == 200 and lm.get("version") == 1
+                    and len(lm.get("turns", [])) == 3,
+                    "links 3 turns: %s" % b[:200])
         srv.stop()
         srv = None
 

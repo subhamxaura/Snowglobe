@@ -3,6 +3,7 @@
 // turn. Falls back to the early-Phase-1C /trace/* paths when talking to an
 // older binary. No full-file JSON.parse: each page parses small.
 import { MAX_PAGE } from "./model";
+import type { LinksDoc } from "./model";
 import type { Manifest, TraceEvent } from "./types";
 
 export interface LoadProgress {
@@ -134,4 +135,19 @@ export async function loadText(rel: string): Promise<string> {
   const r = await fetch(`/trace/${clean}`);
   if (!r.ok) throw new Error(`${rel}: HTTP ${r.status}`);
   return r.text();
+}
+
+// Causal sidecar (core/link, ADR-0006): null when the run has no
+// links.json (404) or it is unreadable — the viewer then falls back to
+// the seq heuristic and says so. Non-v1 versions also fall back.
+export async function loadLinks(): Promise<LinksDoc | null> {
+  const r = await fetch("/api/links");
+  if (!r.ok) return null;
+  try {
+    const d = (await r.json()) as LinksDoc;
+    if (d && d.version === 1 && Array.isArray(d.turns)) return d;
+    return null;
+  } catch {
+    return null;
+  }
 }

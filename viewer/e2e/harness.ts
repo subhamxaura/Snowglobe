@@ -39,6 +39,12 @@ export function stageFixture(): string {
   return stageFixtureDir(FIXTURE);
 }
 
+// Materialise links.json in a staged dir (sidecar path). Throws when
+// `snowglobe link` fails — call only in tests that need the sidecar.
+export function linkRun(dir: string): void {
+  execFileSync(BIN, ["link", dir], { timeout: 60000 });
+}
+
 // Docs screenshots are opt-in (SG_SCREENSHOT_DIR): CI runs never write
 // into the repo; a manual run with the env set refreshes
 // docs/screenshots/*.png.

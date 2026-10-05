@@ -3,6 +3,25 @@ Snowglobe is *isolation and visibility*, never a security boundary for hostile
 code (see `docs/threat-model.md` in Phase 2). This page lists what the
 ptrace backend cannot see or cannot do, with the mechanism in each case.
 
+## Causal attribution anchoring (links.json vs viewer heuristic)
+
+Two attribution rules coexist by design and differ in anchoring:
+
+- `links.json` (`core/link/`, ADR-0006) is **response-anchored**: turn N
+  owns side effects in `[response N, request N+1)` (plus lineage
+  retention for background children). Anything before the first
+  response is explicitly `unattributed` (`pre-turn`), never guessed.
+- The viewer fallback (`TurnIndex` without a sidecar) is
+  **request-anchored**: `[request N, request N+1)`. Where links.json
+  speaks it wins; unlisted seqs keep the old span answer. The UI labels
+  which source is active (`linkage: sidecar` vs `linkage: heuristic`).
+
+What attribution cannot know either way: in-memory-only effects (no
+syscall, no event), which async worker inside one process acted (threads
+share the pid, so lineage is process-grained), and anything the tracer
+never saw (e.g. the io_uring blind spot above — absent events attribute
+to nothing).
+
 ## Setuid binaries lose privileges under ptrace
 
 A ptraced process cannot gain privileges via setuid/setgid exec (the kernel

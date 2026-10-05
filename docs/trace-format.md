@@ -20,6 +20,37 @@ Phase 0 writes `isolate:{}`, `file_hashes:{}` (populated in Phase 2),
 `finished:null` until the run completes. Partial traces (crash/kill) keep
 `finished:null` and remain readable.
 
+## links.json — derived causal sidecar (Phase 1D, ADR-0006)
+
+`links.json` sits next to `events.jsonl` (`<run>.sgr/links.json`) and is
+**derived, not evidence**: it is explicitly outside the event hash chain,
+carries no hashes, and is regenerable at any time via
+`snowglobe link <run>` (deterministic: same input → byte-identical
+output). Its own `version` starts at 1; link-format changes never bump
+trace `schema`.
+
+Shape (all keys fixed order, compact):
+
+```json
+{"version":1,"turns":[{"turn":0,"llm":{"req":107,"res":108,"tools":["call_1"]},
+"attributed":[{"seq":113,"basis":"argv-match","confidence":"high"}],
+"unattributed":[{"seq":0,"reason":"pre-turn"}]}]}
+```
+
+- `turn` is the llm id (mirrors the viewer's turn id). `llm.req/res`
+  are order keys (seq; file index for seq-less normalised fixtures) of
+  the request/response events; `tools` are tool_call ids parsed from the
+  response body (empty for error/binary bodies).
+- `basis` is one of `window` (side effect inside the turn span),
+  `lineage` (process born in the turn, acting later), `argv-match`
+  (exec argv carries the turn's tool command — upgrades the other two).
+  `confidence` is `high` for all three today (schema room for more).
+- `unattributed` entries carry a `reason` (`pre-turn`: before the first
+  response). Probes and `llm.*` skeleton events never appear in either
+  list. Readers must ignore unknown basis/reason/confidence values.
+- Traces with no turns yield `"turns":[]` (nothing is attributable;
+  `snowglobe link` still exits 0 and says so).
+
 ## Common fields
 
 `seq, ts_us (CLOCK_REALTIME), t_ms (monotonic ms since run start), ev, pid,

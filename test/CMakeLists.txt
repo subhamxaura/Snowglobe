@@ -16,9 +16,13 @@ add_executable(snowglobe_tests
   unit/test_sockaddr.cpp
   unit/test_link_scan.cpp
   unit/test_link.cpp
+  unit/test_link_fixtures.cpp
 )
 target_link_libraries(snowglobe_tests PRIVATE snowglobe_core Catch2::Catch2WithMain)
 target_include_directories(snowglobe_tests PRIVATE ${CMAKE_SOURCE_DIR}/core)
+# Ground-truth linker tests read committed fixtures (already normalised).
+target_compile_definitions(snowglobe_tests PRIVATE
+  SNOWGLOBE_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/test/fixtures/real")
 
 include(CTest)
 include(Catch)

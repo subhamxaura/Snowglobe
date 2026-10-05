@@ -105,7 +105,7 @@ jobs:
       - name: Format check
         run: |
           clang-format --version
-          git ls-files '*.cpp' '*.hpp' '*.h' '*.c' | xargs clang-format --dry-run --Werror
+          bash scripts/check-format.sh
 
   cross-aarch64:
     runs-on: ubuntu-24.04
