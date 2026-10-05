@@ -38,7 +38,9 @@ std::vector<std::string> readLines(const std::string& path) {
   return out;
 }
 
-std::string fixDir() { return SNOWGLOBE_FIXTURES_DIR; }
+std::string fixDir() {
+  return SNOWGLOBE_FIXTURES_DIR;
+}
 
 snowglobe::link::BlobReader fixBlobs(const std::string& name) {
   return [name](const std::string& rel, std::string& out) {
@@ -57,8 +59,8 @@ snowglobe::link::BlobReader fixBlobs(const std::string& name) {
 }
 
 struct TurnSets {
-  std::map<long long, std::map<long long, std::string>> attr; // turn → seq → basis
-  std::map<long long, std::vector<std::string>> tools;        // turn → tool ids
+  std::map<long long, std::map<long long, std::string>> attr;   // turn → seq → basis
+  std::map<long long, std::vector<std::string>> tools;          // turn → tool ids
   std::map<long long, std::map<long long, std::string>> unattr; // turn → seq → reason
 };
 
@@ -153,23 +155,22 @@ TEST_CASE("toy-agent-3turn exact turn membership", "[link][fixture]") {
   // Turn 0 ran run_command: the sh -c exec upgrades to argv-match;
   // the child's own start/exec/exit stay lineage.
   CHECK(sets.attr.at(0) == std::map<long long, std::string>{
-                                {109, "lineage"},
-                                {110, "lineage"},
-                                {111, "lineage"},
-                                {112, "lineage"},
-                                {113, "argv-match"},
-                                {114, "lineage"},
-                                {115, "lineage"},
-                                {116, "window"},
-                            });
+                               {109, "lineage"},
+                               {110, "lineage"},
+                               {111, "lineage"},
+                               {112, "lineage"},
+                               {113, "argv-match"},
+                               {114, "lineage"},
+                               {115, "lineage"},
+                               {116, "window"},
+                           });
   CHECK(sets.tools.at(0) == std::vector<std::string>{"call_1"});
   // Turn 1 ran write_file + http_get: the note.txt write lands here.
-  CHECK(sets.attr.at(1) == std::map<long long, std::string>{
-                                {119, "window"}, {120, "window"}, {121, "window"}});
+  CHECK(sets.attr.at(1) ==
+        std::map<long long, std::string>{{119, "window"}, {120, "window"}, {121, "window"}});
   CHECK(sets.tools.at(1) == std::vector<std::string>{"call_2", "call_3"});
   // Turn 2 ("done") owns only the tail.
-  CHECK(sets.attr.at(2) ==
-        std::map<long long, std::string>{{124, "window"}});
+  CHECK(sets.attr.at(2) == std::map<long long, std::string>{{124, "window"}});
   CHECK(sets.tools.at(2).empty());
   // Loader noise before the first response is explicit pre-turn.
   CHECK(doc.unattributed == 107);
@@ -197,7 +198,7 @@ TEST_CASE("claude-code-1-error turn sizes and reasons", "[link][fixture]") {
   CHECK(ids == std::vector<long long>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
   // Exact per-turn sizes (sum 190); error envelopes carry no tools.
   const std::map<long long, size_t> wantSizes = {
-      {1, 2}, {2, 2}, {3, 34}, {4, 3}, {5, 10}, {6, 4},
+      {1, 2},  {2, 2},  {3, 34}, {4, 3},   {5, 10},  {6, 4},
       {7, 27}, {8, 18}, {9, 22}, {10, 27}, {11, 41},
   };
   for (const auto& kv : wantSizes) {
@@ -205,18 +206,16 @@ TEST_CASE("claude-code-1-error turn sizes and reasons", "[link][fixture]") {
     CHECK(sets.tools.at(kv.first).empty());
   }
   // Exact small-turn sets (readable slices of the same truth).
-  CHECK(sets.attr.at(1) ==
-        std::map<long long, std::string>{{525, "window"}, {526, "window"}});
-  CHECK(sets.attr.at(2) ==
-        std::map<long long, std::string>{{529, "window"}, {530, "window"}});
-  CHECK(sets.attr.at(4) == std::map<long long, std::string>{
-                                {569, "window"}, {570, "window"}, {571, "window"}});
+  CHECK(sets.attr.at(1) == std::map<long long, std::string>{{525, "window"}, {526, "window"}});
+  CHECK(sets.attr.at(2) == std::map<long long, std::string>{{529, "window"}, {530, "window"}});
+  CHECK(sets.attr.at(4) ==
+        std::map<long long, std::string>{{569, "window"}, {570, "window"}, {571, "window"}});
   CHECK(sets.attr.at(6) == std::map<long long, std::string>{
-                                {586, "window"},
-                                {587, "window"},
-                                {588, "window"},
-                                {589, "window"},
-                            });
+                               {586, "window"},
+                               {587, "window"},
+                               {588, "window"},
+                               {589, "window"},
+                           });
   // Partition completeness: every event is attributed, unattributed, or
   // turn skeleton (12 llm.request + 12 llm.response), disjointly.
   std::set<long long> seen;
