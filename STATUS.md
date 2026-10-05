@@ -1,5 +1,5 @@
 # STATUS — Snowglobe
-Updated: 2026-10-05  ·  Phase 1D Block 3 close-out (commit; CI + tag follow this session): issue #3 filed (Timeline lanes), Phase 1D section + alpha.4 CHANGELOG heading below. Gates re-run on the close-out commit before push.
+Updated: 2026-10-05  ·  Phase 1D CLOSED: tag v0.1.0-alpha.4 → 53aec54 (annotated, pushed, ls-remote confirmed); tag-tree CI green https://github.com/subhamxaura/Snowglobe/actions/runs/37333576651 (close-out commit; all 9 jobs)  ·  Issue #3 filed (Timeline lanes viewer follow-up); issue #2 still open (success fixture); second-model linker.cpp review still outstanding (Part E rule 3); branch protection still human-action.
 ## Phase 1D — causal linking (link CLI contract, rules, test policy)
 - Contract: `snowglobe link <run> [--check]` (ADR-0006 amends AGENTS.md §2);
   `links.json` derived sidecar, never rewrites hash-chained events;
