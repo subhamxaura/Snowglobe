@@ -1,5 +1,26 @@
 # STATUS — Snowglobe
-Updated: 2026-10-05  ·  Phase 1D Block 2 DONE (pushed): /api/links + viewer single-source (badges, sidecar/heuristic label, both-paths Playwright), toy exact + error sizes/partition ground truth, check-format.sh owns gate, docs (trace-format/architecture/viewer/limitations), D1 (0H/1M/1L fixed; second-model linker.cpp review REQUESTED separately — not blocking)  ·  Gates: ctest debug 53/53 + asan-ubsan 53/53, vitest 28/28, tsc, format script, Playwright 4 specs incl. both-paths  ·  Block 3 (gates+tag alpha.4) is a separate session — DO NOT start here.
+Updated: 2026-10-05  ·  Phase 1D Block 3 close-out (commit; CI + tag follow this session): issue #3 filed (Timeline lanes), Phase 1D section + alpha.4 CHANGELOG heading below. Gates re-run on the close-out commit before push.
+## Phase 1D — causal linking (link CLI contract, rules, test policy)
+- Contract: `snowglobe link <run> [--check]` (ADR-0006 amends AGENTS.md §2);
+  `links.json` derived sidecar, never rewrites hash-chained events;
+  `--check` exits 3 when stale/missing. `GET /api/links` serves it (404 →
+  labelled heuristic fallback).
+- Rules: `window` (response-anchored `[res_N, req_N+1)`), `lineage`
+  (birth-turn retention, pid-reuse/thread/vanished handling), `argv-match`
+  (tool command in exec argv, upgrades only); probes + `llm.*` skeleton
+  excluded; pre-turn bucket with reasons; confidence `high` throughout.
+- Fixture-test policy: toy-agent-3turn EXACT sets (curated-small);
+  claude-code-1-error exact ids/sizes/small-sets + partition/reason/vocab
+  invariants (190-seq paste unreadable — rationale in test file);
+  determinism by double-run byte-compare; viewer both-paths Playwright.
+- Anchoring difference (response- vs request-anchored) documented in
+  `docs/limitations.md`; sidecar wins where it speaks.
+- Reviews: D1 builder==reviewer done (0H/1M/1L fixed). Second-model
+  `linker.cpp` review still outstanding (Part E rule 3) — requested, not
+  blocking; must land before Phase 2 leans on attribution.
+- Branch protection: NOT enabled (force-push still possible) — human
+  action required in repo settings; AGENTS.md §6.8 is policy only.
+Prior (1D Block 2): /api/links + viewer single-source (badges, sidecar/heuristic label, both-paths Playwright), toy exact + error sizes/partition ground truth, check-format.sh owns gate, docs (trace-format/architecture/viewer/limitations), D1 (0H/1M/1L fixed; second-model linker.cpp review REQUESTED separately — not blocking)  ·  Gates: ctest debug 53/53 + asan-ubsan 53/53, vitest 28/28, tsc, format script, Playwright 4 specs incl. both-paths  ·  Block 3 (gates+tag alpha.4) is a separate session — DO NOT start here.
 Prior (1D Block 1): core/link/ + `snowglobe link [--check]` (ADR-0006), Salvage DONE: claude-code-1-nocredit/ 2nd error fixture (566 ev, 0 decode_error, probe 502 + 1×400 with 193 B binary body verbatim, secret audit 0; vitest 25/25) — issue #2 stays open, only success path missing  ·  Gates re-run: ctest debug 44/44 + asan-ubsan 44/44 (zero findings), vitest 25/25, e2e in-preset green, tsc + clang-format clean  ·  Phase 1C Block 2+3 DONE (skip-credits adjudication): real error fixture claude-code-1-error/ (735 ev, 11×401, secret audit 0), providers/ split + errorInfo, error views, Playwright smoke, screenshots, D1 (builder==reviewer)  ·  Success-path real fixture DEFERRED → issue #2  ·  Tag v0.1.0-alpha.3  ·  2026-10-04: origin/main force-updated f93434b→c0623ad 18:14Z by actor subhamxaura (NOT this session; which session undetermined); rule in AGENTS.md §6.8 (never force-push main, one session per tree, rewrites need approval + refetch)
 
 ## Block 1 DONE (server /api + model.ts + gzip embed + ADR-0005)
@@ -63,9 +84,8 @@ Prior (1D Block 1): core/link/ + `snowglobe link [--check]` (ADR-0006), Salvage 
   CHANGELOG.md
 
 ## In progress
-- Phase 1C: push + CI poll (matrix + viewer job + lint + cross + bench),
-  then close. Do not start Phase 1D (causal linking, install, release)
-  here.
+- Phase 1D Block 3 close-out (this session): gates → push → CI green →
+  tag v0.1.0-alpha.4. Next: Phase 2 (isolation) starts with a new prompt.
 - Note: OpenSSL links dynamically for now (static is a Phase 4 problem).
 
 ## Verification (WSL2 Ubuntu 24.04, all real output)

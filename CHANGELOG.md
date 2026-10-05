@@ -5,6 +5,8 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+## [v0.1.0-alpha.4] - 2026-10-05
+
 ### Added (Phase 1D Block 2 — ground truth + viewer single-sourcing)
 - `GET /api/links`: serves `links.json` when the run has one (read per
   request, no ETag), else 404 and the viewer falls back visibly
