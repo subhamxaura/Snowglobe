@@ -18,6 +18,15 @@ struct TraceOptions {
   // Sensitive (name, value) pairs for argv redaction (ADR-0003), collected
   // by the supervisor from its own environment after proxy env injection.
   std::vector<std::pair<std::string, std::string>> secretEnv;
+  // --isolate (ADR-0007): overlay backing dirs prepared pre-fork (absolute
+  // host paths), project dir absolute. Empty/off = today's behavior.
+  bool isolate = false;
+  std::string isolateProject;
+  std::string isolateUpper;
+  std::string isolateWork;
+  std::string isolateEtcUpper;
+  std::string isolateEtcWork;
+  std::string isolateMnt;
 };
 
 class ITracer {

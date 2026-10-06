@@ -1,5 +1,6 @@
 # STATUS — Snowglobe
-Updated: 2026-10-05  ·  Phase 1D CLOSED: tag v0.1.0-alpha.4 → 53aec54 (annotated, pushed, ls-remote confirmed); tag-tree CI green https://github.com/subhamxaura/Snowglobe/actions/runs/37333576651 (close-out commit; all 9 jobs)  ·  Issue #3 filed (Timeline lanes viewer follow-up); issue #2 still open (success fixture); second-model linker.cpp review still outstanding (Part E rule 3); branch protection still human-action.
+Updated: 2026-10-06  ·  Phase 2 Block 1 DONE (isolate runner, unpushed): `run --isolate` (parent-mapped userns, selective overlays + ro binds, pivot, PID-1 reaping), tests a–e green (toy 3-turn shape, repo + /etc copy-up host-clean, proc invisibility; 55/55 both presets incl. unchanged goldens), doctor overlay honestly green, ADR-0007  ·  Probe findings: self-map EPERM, lowerdir=/ EINVAL (selective layout instead), no fresh procfs (empty tmpfs), cross-ns tracing needs no tracer change  ·  Blocks 2 (seccomp/landlock/env/cgroup + doctor --isolate) and 3 are separate sessions — DO NOT start here.
+Prior (1D closed 2026-10-05): tag v0.1.0-alpha.4 → 53aec54, tag-tree CI green; issues #2 (success fixture) + #3 (Timeline lanes) open; second-model linker.cpp review outstanding (Part E rule 3); branch protection still human-action.
 ## Phase 1D — causal linking (link CLI contract, rules, test policy)
 - Contract: `snowglobe link <run> [--check]` (ADR-0006 amends AGENTS.md §2);
   `links.json` derived sidecar, never rewrites hash-chained events;

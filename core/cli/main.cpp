@@ -23,6 +23,7 @@
 #endif
 
 #include "../doctor/doctor.hpp"
+#include "../isolate/isolate.hpp"
 #include "../link/cli.hpp"
 #include "../proxy/proxy.hpp"
 #include "../redact/redact.hpp"
@@ -49,7 +50,7 @@ constexpr int kExSoftware = 70;
 void usage(std::ostream& os) {
   os << "Usage:\n"
      << "  snowglobe run [--project=DIR] [--out=DIR] [--tracer=auto|ptrace] [-a|--all-opens]\n"
-     << "                [--capture-stdio] [--json] [--no-llm-proxy]\n"
+     << "                [--capture-stdio] [--json] [--no-llm-proxy] [--isolate]\n"
      << "                [--upstream=PROVIDER=URL]... -- <command> [args...]\n"
      << "  snowglobe doctor\n"
      << "  snowglobe version [--json]\n"
@@ -159,6 +160,7 @@ struct RunOptions {
   bool captureStdio = false;
   bool json = false;
   bool noLlmProxy = false;
+  bool isolate = false;               // --isolate: unprivileged userns + overlay (ADR-0007)
   std::vector<std::string> upstreams; // raw PROVIDER=URL strings
   std::vector<std::string> cmd;
 };
@@ -191,6 +193,51 @@ int cmdRun(const RunOptions& o) {
   const std::string cwd = cwdStr();
   const std::string project = o.project.empty() ? cwd : o.project;
 
+  // --isolate prep (ADR-0007): absolute overlay backing dirs under the run
+  // dir; the project must exist and cannot be / itself.
+  snowglobe::isolate::OverlayDirs isoDirs;
+  std::string isoProjectAbs;
+  if (o.isolate) {
+#ifdef __linux__
+    std::error_code pec;
+    const fs::path pabs = fs::absolute(fs::path(project), pec);
+    if (pec || !fs::is_directory(pabs, pec) || pec) {
+      std::cerr << "snowglobe run: --isolate needs an existing --project dir, got '" << project
+                << "'\n";
+      return kExUsage;
+    }
+    isoProjectAbs = pabs.lexically_normal().string();
+    if (isoProjectAbs == "/") {
+      std::cerr << "snowglobe run: --isolate cannot take / as the project\n";
+      return kExUsage;
+    }
+    for (const char* special : {"/proc", "/sys", "/dev"}) {
+      const std::string s = special;
+      if (isoProjectAbs == s ||
+          (isoProjectAbs.size() > s.size() && isoProjectAbs.compare(0, s.size(), s) == 0 &&
+           isoProjectAbs[s.size()] == '/')) {
+        std::cerr << "snowglobe run: --isolate cannot take " << isoProjectAbs
+                  << " as the project (special filesystem)\n";
+        return kExUsage;
+      }
+    }
+    std::error_code rec;
+    const fs::path runAbs = fs::absolute(runDir, rec);
+    if (rec) {
+      std::cerr << "snowglobe run: cannot resolve run dir: " << rec.message() << "\n";
+      return kExSoftware;
+    }
+    std::string prepErr;
+    if (!snowglobe::isolate::prepareRunDir(runAbs.string(), isoDirs, prepErr)) {
+      std::cerr << "snowglobe run: " << prepErr << "\n";
+      return kExSoftware;
+    }
+#else
+    std::cerr << "snowglobe run: --isolate requires Linux (EX_UNAVAILABLE)\n";
+    return kExUnavailable;
+#endif
+  }
+
   // --upstream PROVIDER=URL overrides (gateway testing). Keys lowercased;
   // values must be http(s) URLs.
   std::map<std::string, std::string> upstreamMap;
@@ -217,6 +264,12 @@ int cmdRun(const RunOptions& o) {
   std::string cmdJson; // filled once secrets are collected
 
   const std::string manifestPath = (runDir / "manifest.json").string();
+  // Manifest isolate record (ADR-0007): {} exactly as before without the
+  // flag, so non-isolate manifests (and goldens) stay byte-identical.
+  const std::string isolateJson =
+      o.isolate ? "{\"on\":true,\"features\":[\"userns\",\"mount\",\"pid\",\"overlay\"],"
+                  "\"upper\":\"overlay/upper\"}"
+                : "{}";
   auto writeManifest = [&](const std::string& finished, uint64_t eventCount,
                            const std::string& lastHash) {
     std::ofstream m(manifestPath, std::ios::trunc);
@@ -225,7 +278,7 @@ int cmdRun(const RunOptions& o) {
       << ",\"started\":" << jsonEscape(started) << ",\"finished\":" << finished << ",\"cmd\":["
       << cmdJson << "],\"cwd\":" << jsonEscape(cwd) << ",\"project\":" << jsonEscape(project)
       << ",\"kernel\":" << jsonEscape(kernelStr()) << ",\"tracer\":" << jsonEscape(tracerName)
-      << ",\"isolate\":{},\"env_fingerprint\":" << jsonEscape(envFingerprint())
+      << ",\"isolate\":" << isolateJson << ",\"env_fingerprint\":" << jsonEscape(envFingerprint())
       << ",\"event_count\":" << eventCount << ",\"last_hash\":" << jsonEscape(lastHash)
       << ",\"file_hashes\":{}}";
   };
@@ -319,6 +372,16 @@ int cmdRun(const RunOptions& o) {
   topts.allOpens = o.allOpens;
   topts.tracer = tracerName;
   topts.secretEnv = secrets;
+  if (o.isolate) {
+    // prepareRunDir already absolutised everything off runAbs.
+    topts.isolate = true;
+    topts.isolateProject = isoProjectAbs;
+    topts.isolateUpper = isoDirs.upper;
+    topts.isolateWork = isoDirs.work;
+    topts.isolateEtcUpper = isoDirs.etcUpper;
+    topts.isolateEtcWork = isoDirs.etcWork;
+    topts.isolateMnt = isoDirs.mnt;
+  }
 
   if (o.captureStdio) {
     // Phase 0: stdio passthrough; schema files created empty (see issue #7).
@@ -448,6 +511,8 @@ int main(int argc, char** argv) {
         o.allOpens = true;
       } else if (a == "--capture-stdio") {
         o.captureStdio = true;
+      } else if (a == "--isolate") {
+        o.isolate = true;
       } else if (a == "--json") {
         o.json = true;
       } else if (a == "--no-llm-proxy") {

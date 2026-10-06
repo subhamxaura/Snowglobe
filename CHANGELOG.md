@@ -5,6 +5,20 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 2 Block 1 — isolate runner)
+- `snowglobe run --isolate`: unprivileged userns (parent-written id
+  maps) + mount + pid namespaces, selective overlays (project →
+  `<run>/overlay/upper`, `/etc` → `overlay/system-upper`), ro binds,
+  empty-tmpfs `/proc`, tmpfs `/tmp`, pivot_root, PID-1 reaper with exit
+  propagation. `run.meta` gains `"isolate":true`; manifest gains
+  `isolate:{on,features,upper}` (non-isolate output byte-identical).
+  Setup failures name step + errno and exit 69 (ADR-0007).
+- `isolate_basic` + `isolate_toy` CTests (repo + /etc copy-up with host
+  clean, proc invisibility, 3-turn toy shape under isolate).
+- `doctor` overlayfs-in-userns check uses the parent-map dance (honest
+  green); `viewer` gains a `typecheck` script (local tsc, never bare
+  npx).
+
 ## [v0.1.0-alpha.4] - 2026-10-05
 
 ### Added (Phase 1D Block 2 — ground truth + viewer single-sourcing)

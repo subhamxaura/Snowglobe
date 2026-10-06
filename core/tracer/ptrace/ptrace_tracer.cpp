@@ -20,6 +20,7 @@
 #include "ptrace_tracer.hpp"
 #include "open_flags.hpp"
 
+#include "../../isolate/isolate.hpp"
 #include "../../redact/redact.hpp"
 #include "../../util/string_util.hpp"
 
@@ -325,6 +326,16 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   sigaction(SIGTERM, &sa, &oldTerm);
   gStop.store(0);
 
+  // --isolate pipes (map handshake + setup status), created pre-fork.
+  isolate::ChildPipes ipipes;
+  if (opts.isolate) {
+    if (!isolate::makePipes(ipipes, error_)) {
+      sigaction(SIGINT, &oldInt, nullptr);
+      sigaction(SIGTERM, &oldTerm, nullptr);
+      return -kExitSoftware;
+    }
+  }
+
   // Build argv for execvp.
   std::vector<char*> cargv;
   cargv.reserve(argv.size() + 1);
@@ -342,6 +353,22 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   }
   if (child == 0) {
     // --- tracee ---
+    if (opts.isolate) {
+      isolate::closeSupervisorEnds(ipipes);
+      isolate::ChildConfig cfg;
+      cfg.projectDir = opts.isolateProject;
+      cfg.dirs.upper = opts.isolateUpper;
+      cfg.dirs.work = opts.isolateWork;
+      cfg.dirs.etcUpper = opts.isolateEtcUpper;
+      cfg.dirs.etcWork = opts.isolateEtcWork;
+      cfg.dirs.mnt = opts.isolateMnt;
+      cfg.cmd = argv;
+      cfg.mapReqW = ipipes.mapReqW;
+      cfg.mapAckR = ipipes.mapAckR;
+      cfg.statusW = ipipes.statusW;
+      isolate::enterChild(cfg); // setups, stops, forks init, reaps, _exits
+      _exit(72);                // unreachable
+    }
     if (ptrace(PTRACE_TRACEME, 0, nullptr, nullptr) != 0) {
       _exit(127);
     }
@@ -355,6 +382,16 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   }
 
   // --- supervisor ---
+  // --isolate handshake before the wait loop: id maps, then setup status.
+  // Any failure names step + errno and exits 69 (missing capability).
+  if (opts.isolate) {
+    isolate::closeMiddleEnds(ipipes);
+    if (!isolate::serveMaps(child, ipipes, error_) || !isolate::awaitReady(child, ipipes, error_)) {
+      sigaction(SIGINT, &oldInt, nullptr);
+      sigaction(SIGTERM, &oldTerm, nullptr);
+      return -kExitUnavailable;
+    }
+  }
   std::map<pid_t, ProcInfo> procs;
   procs[child].ppid = ::getpid();
   procs[child].tgid = child; // root starts single-threaded
@@ -379,7 +416,7 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
            ",\"ev\":\"run.meta\",\"pid\":" + std::to_string(child) +
            ",\"tid\":" + std::to_string(child) + ",\"cmd\":[" + cmdJson +
-           "],\"cwd\":" + jsonEscape(cwdStr) + "}");
+           "],\"cwd\":" + jsonEscape(cwdStr) + (opts.isolate ? ",\"isolate\":true}" : "}"));
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
            ",\"ev\":\"proc.start\",\"pid\":" + std::to_string(child) + ",\"tid\":" +
            std::to_string(child) + ",\"ppid\":" + std::to_string(::getpid()) + ",\"root\":true}");

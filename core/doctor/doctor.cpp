@@ -202,10 +202,12 @@ bool putFileCreate(const std::string& path, const std::string& content) {
   return true;
 }
 
-// Tester child for the overlayfs-in-userns check: unshare, self-map, mount
-// tmpfs+overlay, verify the merged view, unmount. Writes "OK:<notes>" (or a
-// reason) to errFd, then _exit()s. Mirrors probe/overlayfs_userns.c.
-void overlayTesterChild(int errFd, const char* base) {
+// Tester child for the overlayfs-in-userns check: unshare, PARENT-WRITTEN
+// id maps (self uid_map is EPERM on some kernels — probe/map_parent.c),
+// mount tmpfs+overlay, verify the merged view, unmount. Writes "OK:<notes>"
+// (or a reason) to errFd, then _exit()s. Mirrors probe/overlayfs_userns.c.
+// mapReqW/mapAckR are the parent handshake (request "M", wait for "G").
+void overlayTesterChild(int errFd, const char* base, int mapReqW, int mapAckR) {
   auto fail = [&](const char* step) {
     const int e = errno;
     char msg[256];
@@ -216,20 +218,25 @@ void overlayTesterChild(int errFd, const char* base) {
   if (::unshare(CLONE_NEWUSER | CLONE_NEWNS) != 0) {
     fail("unshare(NEWUSER|NEWNS)");
   }
-  char map[64];
   char notes[256] = {0};
-  std::snprintf(map, sizeof(map), "0 %d 1", (int)::getuid());
-  if (!procPut("/proc/self/setgroups", "deny") && errno != ENOENT) {
-    std::snprintf(notes + std::strlen(notes), sizeof(notes) - std::strlen(notes),
-                  "; setgroups unwritable (%s)", errnoText(errno).c_str());
+  {
+    char req = 'M';
+    if (::write(mapReqW, &req, 1) != 1) {
+      fail("map request");
+    }
+    char ack = 0;
+    ssize_t n = 0;
+    do {
+      n = ::read(mapAckR, &ack, 1);
+    } while (n < 0 && errno == EINTR);
+    if (n != 1 || ack != 'G') {
+      errno = EPERM;
+      fail("idmap refused");
+    }
   }
-  if (!procPut("/proc/self/uid_map", map)) {
-    fail("self uid_map");
-  }
-  std::snprintf(map, sizeof(map), "0 %d 1", (int)::getgid());
-  if (!procPut("/proc/self/gid_map", map)) {
-    std::snprintf(notes + std::strlen(notes), sizeof(notes) - std::strlen(notes),
-                  "; gid_map unwritten (%s)", errnoText(errno).c_str());
+  if (::getuid() != 0) {
+    errno = EPERM;
+    fail("idmap ineffective");
   }
   {
     char out[300];
@@ -311,11 +318,34 @@ void dropToNobody(int errFd) {
   }
 }
 
+// Parent-written single-id maps for the tester child (the unshare
+// --map-user rule): setgroups-deny first, then uid_map + gid_map.
+// Self-mapping is EPERM on some kernels (probe/map_parent.c).
+bool writeMapsFor(pid_t child) {
+  char path[64];
+  char map[64];
+  std::snprintf(path, sizeof(path), "/proc/%d/setgroups", (int)child);
+  procPut(path, "deny"); // best-effort: gid_map reports its own errno
+  std::snprintf(map, sizeof(map), "0 %d 1", (int)::getuid());
+  std::snprintf(path, sizeof(path), "/proc/%d/uid_map", (int)child);
+  if (!procPut(path, map)) {
+    return false;
+  }
+  std::snprintf(map, sizeof(map), "0 %d 1", (int)::getgid());
+  std::snprintf(path, sizeof(path), "/proc/%d/gid_map", (int)child);
+  return procPut(path, map);
+}
+
 Capability checkOverlayUserns() {
   char base[] = "/tmp/sg-doctor-XXXXXX";
   int errFds[2] = {-1, -1};
+  int mapReq[2] = {-1, -1}; // tester->doctor "M"
+  int mapAck[2] = {-1, -1}; // doctor->tester "G"/"F"
   if (::pipe(errFds) != 0) {
     return {"overlayfs-in-userns", false, std::string("pipe: ") + errnoText(errno)};
+  }
+  if (::pipe(mapReq) != 0 || ::pipe(mapAck) != 0) {
+    return {"overlayfs-in-userns", false, std::string("map pipe: ") + errnoText(errno)};
   }
   const pid_t tester = ::fork();
   if (tester < 0) {
@@ -323,6 +353,8 @@ Capability checkOverlayUserns() {
   }
   if (tester == 0) {
     ::close(errFds[0]);
+    ::close(mapReq[0]);
+    ::close(mapAck[1]);
     if (::geteuid() == 0) {
       dropToNobody(errFds[1]); // _exit(2) on failure
     }
@@ -333,10 +365,29 @@ Capability checkOverlayUserns() {
       (void)!::write(errFds[1], msg, std::strlen(msg));
       _exit(1);
     }
-    overlayTesterChild(errFds[1], base); // never returns
+    overlayTesterChild(errFds[1], base, mapReq[1], mapAck[0]); // never returns
     _exit(127);
   }
   ::close(errFds[1]);
+  ::close(mapReq[1]);
+  ::close(mapAck[0]);
+  // Parent-written id maps (self uid_map is EPERM on some kernels).
+  {
+    char req = 0;
+    ssize_t n = 0;
+    do {
+      n = ::read(mapReq[0], &req, 1);
+    } while (n < 0 && errno == EINTR);
+    ::close(mapReq[0]);
+    const char ack = (n == 1 && req == 'M' && writeMapsFor(tester)) ? 'G' : 'F';
+    (void)!::write(mapAck[1], &ack, 1);
+    ::close(mapAck[1]);
+    if (ack != 'G') {
+      int status = 0;
+      ::waitpid(tester, &status, 0);
+      return {"overlayfs-in-userns", false, "idmap refused (see probe/map_parent.c)"};
+    }
+  }
   int status = 0;
   ::waitpid(tester, &status, 0);
   char msg[384] = {0};

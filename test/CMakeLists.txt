@@ -132,6 +132,23 @@ if(Python3_FOUND)
             $<TARGET_FILE:snowglobe> ${CMAKE_SOURCE_DIR}/test/fixtures/real
   )
   set_tests_properties(link_determinism PROPERTIES TIMEOUT 180)
+
+  # Phase 2 Block 1: --isolate containment. The basic test skips loudly
+  # (exit 69) where the kernel cannot do parent-mapped userns + overlay;
+  # the toy test additionally needs the mock + agent dirs.
+  add_test(
+    NAME isolate_basic
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/isolate/isolate_basic.py
+            $<TARGET_FILE:snowglobe>
+  )
+  set_tests_properties(isolate_basic PROPERTIES TIMEOUT 180)
+  add_test(
+    NAME isolate_toy
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/isolate/isolate_toy.py
+            $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/mockllm
+            ${CMAKE_SOURCE_DIR}/examples/toy-agent
+  )
+  set_tests_properties(isolate_toy PROPERTIES TIMEOUT 300)
 endif()
 
 # Phase 1C: viewer tests. vitest (parser + model units on fixtures) needs
