@@ -36,8 +36,8 @@ The full plan is in `docs/PLAN.md`. When this file and PLAN.md disagree, this fi
    EXEC}`, `PTRACE_O_EXITKILL`, `PTRACE_GET_SYSCALL_INFO`, `process_vm_readv`. v0.4: seccomp
    user-notification trapping only the syscalls we decode. eBPF is optional, later, behind a flag.
    Parity tests between backends are mandatory.
-4. **Isolation = Linux primitives:** user+mount+pid+ipc+uts (+net) namespaces via `clone3`; project dir
-   on **overlayfs** (`lowerdir=repo, upperdir=run/fs/upper`; fallback `fuse-overlayfs`); host `/` bind
+4. **Isolation = Linux primitives:** user+mount+pid+ipc+uts (+net) namespaces via `clone3` or `unshare(2)`; project dir
+   on **overlayfs** (`lowerdir=repo, upperdir=<run>/overlay/upper`; plus `/etc` → `overlay/etc-upper`, `$HOME` → `overlay/home-upper`, `--fs-rw` → `overlay/fs-rw-N`; native overlay required, `fuse-overlayfs` fallback DEFERRED); host `/` bind
    mounted read-only; `tmpfs` on `/tmp`; masked secret paths by default; seccomp-bpf deny-list mirroring
    Docker's default profile; landlock when available; cgroup v2 limits when delegated, else `prlimit`.
    **Never call it a "secure sandbox."** The words are "isolation and visibility"; hostile code belongs
