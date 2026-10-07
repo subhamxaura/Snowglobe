@@ -452,7 +452,7 @@ std::vector<Capability> checkAll() {
   const std::string cgroup = readFile("/proc/self/cgroup");
   out.push_back({"cgroup-v2", cgroup.find("0::") != std::string::npos,
                  cgroup.find("0::") != std::string::npos ? "v2 hierarchy"
-                                                         : "no 0:: entry (prlimit fallback)"});
+                                                         : "cgroup: no (prlimit fallback active)"});
 
   const bool pasta = commandExists("pasta");
   const bool slirp = commandExists("slirp4netns");
@@ -621,8 +621,9 @@ bool probePidns(bool& procfs, std::string& detail, std::string& procDetail) {
   ::waitpid(c, &st, 0);
   const bool exited = WIFEXITED(st) && WEXITSTATUS(st) == kProbeOk && mapped;
   procfs = sawProc;
-  procDetail =
-      sawProc ? "fresh proc mount works" : "fresh proc denied; empty-tmpfs fallback active";
+  procDetail = sawProc ? "fresh proc mount works"
+                       : "optional \u2014 REQUIRED for Bun/Node-class runtimes (issue #4); "
+                         "empty-tmpfs fallback active";
   if (!mapped) {
     detail = "parent idmap refused";
     return false;
@@ -724,11 +725,11 @@ bool probeCgroupDeleg(std::string& detail) {
     if (errno == EEXIST) {
       ::rmdir(cand.c_str());
       if (::mkdir(cand.c_str(), 0755) != 0) {
-        detail = "mkdir: denied (proceeds without limits)";
+        detail = "cgroup: no (prlimit fallback active)";
         return false;
       }
     } else {
-      detail = "mkdir: denied (proceeds without limits)";
+      detail = "cgroup: no (prlimit fallback active)";
       return false;
     }
   }

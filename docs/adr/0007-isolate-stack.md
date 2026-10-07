@@ -5,7 +5,7 @@ Date: 2026-10-05 · Status: accepted · Phase: 2 Block 1
 ## Context
 
 `snowglobe run --isolate` must contain agent side effects (accidents, not
-adversaries — never "secure sandbox") with no root and no Docker: user +
+adversaries — never a security boundary) with no root and no Docker: user +
 mount + pid namespaces, overlayfs, pivot into a new root, PID-1 reaping.
 The constitution (§1.4) prescribes project-dir overlay + host `/` ro +
 tmpfs `/tmp`. This ADR amends the CLI contract (AGENTS.md §2) with the
@@ -46,7 +46,7 @@ tmpfs `/tmp`. This ADR amends the CLI contract (AGENTS.md §2) with the
   Exit codes propagate unchanged through both reapers.
 - Selective mounts: overlayfs on the **project dir**
   (upper `<run>/overlay/upper`, the Phase-3 diff/apply source) and on
-  **/etc** (upper `<run>/overlay/system-upper`, not for diff/apply);
+  **/etc** (upper `<run>/overlay/etc-upper`, not for diff/apply);
   everything else read-only bind (symlinks recreated), empty-tmpfs
   `/proc` (fresh procfs denied, see probes), tmpfs `/tmp` + `/run`,
   pivot_root (failure: exit 69, never chroot fallback). Writes outside
@@ -82,6 +82,22 @@ tmpfs `/tmp`. This ADR amends the CLI contract (AGENTS.md §2) with the
 - Host network stays (no netns this phase — pasta absent; limitation
   documented loudly in Block 3).
 - No seccomp/landlock/env-masking/cgroup yet (Block 2); no adversarial
-  claims anywhere (grep "secure sandbox" must stay 0).
+  claims anywhere (grep for the two-word phrase must stay 1 — constitution only).
 - `doctor`'s overlayfs-in-userns check uses the same parent-map dance,
   so the gate is honest: green here, red-with-reason elsewhere.
+
+## Block 3 conformance (2026-10-07)
+
+- Canonical overlay uppers (implementation truth, §1.4 amended 2026-10-05):
+  project `overlay/upper` (diff/apply source), `/etc` `overlay/etc-upper`,
+  `$HOME` `overlay/home-upper`, `--fs-rw` `overlay/fs-rw-N`. Historical
+  `system-upper` wording retired.
+- Namespaces via `clone3` or `unshare(2)` (implementation uses unshare;
+  constitution amended). Native overlay required; `fuse-overlayfs` DEFERRED.
+- Seccomp mirrors Docker default (moby/profiles) with ERRNO(EPERM), ENOSYS on
+  clone3 (glibc fallback), KILL on io_uring_setup (strict superset). Arg-filtered:
+  clone/unshare (NS flags), socket (AF_ALG/AF_VSOCK), personality (5 values).
+- prlimit fallback always in-child (NPROC+NOFILE, AS only when --memory-max
+  explicit — AS breaks Bun). cgroup adds on top when delegated.
+- Default secret masks (tmpfs 0700): `~/.ssh`, `~/.aws`, `~/.gnupg`;
+  `--allow-path` exempts (exact or parent). ssh git remotes need `--allow-path`.

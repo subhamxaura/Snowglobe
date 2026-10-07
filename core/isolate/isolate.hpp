@@ -80,13 +80,26 @@ struct ChildConfig {
   std::string homeDir;    // absolute $HOME (validated pre-fork)
   OverlayDirs dirs;       // absolute host paths
   std::vector<FsRwMount> fsRw;
-  std::vector<std::string> allowEnv; // re-admitted secret names (exact)
+  std::vector<std::string> allowEnv;  // re-admitted secret names (exact)
+  std::vector<std::string> allowPath; // --allow-path exemptions (absolute, exact or parent)
   std::vector<std::string> cmd;
+  // prlimit fallback (always applied in-child; cgroup adds on top when
+  // delegated): NPROC+NOFILE always, AS only when memExplicit (AS breaks Bun).
+  long long pidsMax = 512;    // RLIMIT_NPROC
+  long long nofileMax = 1024; // RLIMIT_NOFILE
+  long long memBytes = -1;    // RLIMIT_AS bytes, -1 = no AS limit
+  bool memExplicit = false;   // true iff --memory-max was given explicitly
   int mapReqW = -1;
   int mapAckR = -1;
   int statusW = -1;
   int envR = -1; // injected-env block reader ("K=V" lines + "END")
 };
+
+// Default secret-path masks under $HOME (empty-tmpfs, 0700): .ssh, .aws,
+// .gnupg. Returned as absolute paths (homeDir + suffix). Exemptions via
+// allowPath (exact match or parent) are removed.
+std::vector<std::string> defaultSecretMasks(const std::string& homeDir,
+                                            const std::vector<std::string>& allowPath);
 
 // Fork the middle; call ONLY while still single-threaded (before the LLM
 // proxy pool exists). A fork from a multithreaded process inherits

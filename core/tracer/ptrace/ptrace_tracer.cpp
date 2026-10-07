@@ -387,10 +387,21 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
     if (::getcwd(cwd, sizeof(cwd)) != nullptr) {
       cwdStr = cwd;
     }
+    std::string masksJson;
+    if (opts.isolate && !opts.isolateMasks.empty()) {
+      masksJson = ",\"masks\":[";
+      for (size_t i = 0; i < opts.isolateMasks.size(); ++i) {
+        if (i > 0) {
+          masksJson += ",";
+        }
+        masksJson += jsonEscape(opts.isolateMasks[i]);
+      }
+      masksJson += "]";
+    }
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
-           ",\"ev\":\"run.meta\",\"pid\":" + std::to_string(child) +
-           ",\"tid\":" + std::to_string(child) + ",\"cmd\":[" + cmdJson +
-           "],\"cwd\":" + jsonEscape(cwdStr) + (opts.isolate ? ",\"isolate\":true}" : "}"));
+           ",\"ev\":\"run.meta\",\"pid\":" + std::to_string(child) + ",\"tid\":" +
+           std::to_string(child) + ",\"cmd\":[" + cmdJson + "],\"cwd\":" + jsonEscape(cwdStr) +
+           (opts.isolate ? ",\"isolate\":true" + masksJson + "}" : "}"));
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
            ",\"ev\":\"proc.start\",\"pid\":" + std::to_string(child) + ",\"tid\":" +
            std::to_string(child) + ",\"ppid\":" + std::to_string(::getpid()) + ",\"root\":true}");

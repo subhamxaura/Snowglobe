@@ -5,6 +5,43 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 2 Block 3 — conformance resolution; closes Block 2 docs)
+- Seccomp Docker parity (moby/profiles `seccomp/default.json`, unprivileged):
+  ERRNO(EPERM) on add_key/keyctl/request_key, clock_settime/settimeofday/stime,
+  create/delete/query_module, get_kernel_syms, sysfs/_sysctl/uselib/ustat,
+  ioperm/iopl, io_uring_enter/register, kcmp/process_vm_readv/writev,
+  lookup_dcookie/pidfd_getfd, get_mempolicy/mbind/move_pages/set_mempolicy,
+  nfsservctl, quotactl, swapoff, chroot/setdomainname/sethostname/syslog/vhangup,
+  fsconfig/fsmount/fsopen/fspick/mount_setattr/move_mount/open_tree/fanotify_init,
+  setns, umount; ENOSYS on clone3 (glibc falls back to clone); KILL stays on
+  io_uring_setup (strict superset, documented). Arg-filtered (BPF): clone/unshare
+  deny namespace creation (threads/processes keep working), socket denies
+  AF_ALG(38)/AF_VSOCK(40) only, personality allows 0/8/131072/131080/0xffffffff.
+  ptrace/process_vm/kcmp + NUMA stay blocked as strict supersets (documented).
+- prlimit fallback (always in-child; cgroup adds on top when delegated):
+  RLIMIT_NPROC=512 (`ulimit -u`), RLIMIT_NOFILE=1024 always; RLIMIT_AS only when
+  `--memory-max` explicit (`ulimit -v` finite, else unlimited — AS breaks Bun).
+  Run log notes `(prlimit fallback active: ...)`; `doctor` shows
+  `cgroup: no (prlimit fallback active)` when delegation denied.
+- Default secret-path masks (tmpfs 0700): `~/.ssh`, `~/.aws`, `~/.gnupg`
+  (empty inside; host keys invisible); `--allow-path PATH` (repeatable, absolute,
+  exact-or-parent) exempts. `run.meta.masks[]` + manifest `isolate.{masks,allow_path}`
+  record the choice. ssh-based git remotes need `--allow-path ~/.ssh` (documented
+  in architecture/limitations).
+- `doctor --isolate` procfs row: `optional — REQUIRED for Bun/Node-class runtimes
+  (issue #4); empty-tmpfs fallback active`. cgroup-deleg row: `cgroup: no
+  (prlimit fallback active)` when denied.
+- Canonical overlay uppers (implementation truth): project `overlay/upper`
+  (diff/apply source), `/etc` `overlay/etc-upper`, `$HOME` `overlay/home-upper`,
+  `--fs-rw` `overlay/fs-rw-N`. Historical `system-upper` wording retired (ADR-0007
+  Block 3 note); `fuse-overlayfs` DEFERRED (native required); namespaces via
+  `clone3` or `unshare(2)` (§1.4 amended 2026-10-05).
+- Tests: unit arch-mismatch KILL (fail-closed, no fail-open), arg-filtering
+  allow/deny (clone NS, socket ALG/VSOCK, personality values, clone3 ENOSYS),
+  blocklist shape (Docker additions); integration `isolate_basic` k/l/m (seccomp
+  add_key/ALG/getmem EPERM inside vs success outside + personality query allowed;
+  prlimit `ulimit -u/-n/-v` + AS explicit; masks empty/exempt + run.meta).
+
 ### Added (Phase 2 Block 2 — restrictions; partial, Block 3 closes docs)
 - seccomp allowlist-inverse (raw BPF, no libseccomp): ERRNO(EPERM) on a
   curated blocklist (mount/umount/pivot_root/kexec/reboot/modules/ptrace/

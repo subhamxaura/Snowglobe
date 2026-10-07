@@ -262,6 +262,177 @@ def main():
             print("cgroup path: " +
                   [l for l in r.stderr.splitlines() if "cgroup" in l.lower()][0])
 
+        # (k) seccomp Docker parity: 3 newly-blocked calls EPERM inside (mapped
+        # root HAS caps, so EPERM proves the filter), success/different outside.
+        # add_key: success outside (key serial) vs EPERM inside.
+        # socket(AF_ALG): success outside vs EPERM inside (family filtering).
+        # get_mempolicy: success outside vs EPERM inside (NUMA).
+        # personality query still works both sides (allowed values).
+        helper = os.path.join(repo, "sec-helper.py")
+        with open(helper, "w") as f:
+            f.write(
+                "import ctypes, errno, socket\n"
+                "libc=ctypes.CDLL(None,use_errno=True)\n"
+                "libc.syscall.restype=ctypes.c_long\n"
+                "import platform\n"
+                "m=platform.machine()\n"
+                "NR_ADD_KEY=248 if m=='x86_64' else 261\n"
+                "NR_GETMEM=239\n"
+                "ctypes.set_errno(0)\n"
+                "r=libc.syscall(NR_ADD_KEY,b'user',b'sg-k',b'p',1,-4)\n"
+                "print('add_key %d %d' % (r, ctypes.get_errno() if r==-1 else 0))\n"
+                "try:\n"
+                "    s=socket.socket(38,socket.SOCK_SEQPACKET,0)\n"
+                "    print('alg 0 0')\n"
+                "    s.close()\n"
+                "except OSError as ex:\n"
+                "    print('alg -1 %d' % ex.errno)\n"
+                "import ctypes as C\n"
+                "mode=C.c_int(0)\n"
+                "ctypes.set_errno(0)\n"
+                "r=libc.syscall(NR_GETMEM,C.byref(mode),0,0,0,0)\n"
+                "print('getmem %d %d' % (r, ctypes.get_errno() if r==-1 else 0))\n"
+                "ctypes.set_errno(0)\n"
+                "r=libc.syscall(135 if m=='x86_64' else 92,0xFFFFFFFF)\n"
+                "print('persq %d %d' % (r, ctypes.get_errno() if r==-1 else 0))\n"
+            )
+        # Outside (no isolate): add_key success (rc>=0), alg success, getmem success, persq success.
+        r = subprocess.run([sys.executable, helper], capture_output=True, text=True, timeout=30)
+        if r.returncode != 0:
+            print("FAIL: sec helper outside exited %d" % r.returncode)
+            ok = False
+        else:
+            lines = dict(l.split(" ", 1) for l in r.stdout.strip().splitlines() if " " in l)
+            # add_key outside: rc>=0 (key serial), errno 0
+            try:
+                rc, e = map(int, lines.get("add_key", "-99 -99").split())
+                if rc < 0:
+                    print("FAIL: add_key outside should succeed, got %s" % lines.get("add_key"))
+                    ok = False
+            except Exception as ex:
+                print("FAIL: add_key outside parse: %s (%s)" % (lines, ex))
+                ok = False
+            if lines.get("alg", "") != "0 0":
+                print("FAIL: socket-ALG outside should succeed, got %s" % lines.get("alg"))
+                ok = False
+            try:
+                rc, e = map(int, lines.get("getmem", "-99 -99").split())
+                if rc != 0:
+                    print("FAIL: get_mempolicy outside should succeed, got %s" % lines.get("getmem"))
+                    ok = False
+            except Exception as ex:
+                print("FAIL: getmem outside parse: %s" % lines)
+                ok = False
+        # Inside: add_key EPERM (1), alg EPERM (1), getmem EPERM (1), persq success.
+        out = os.path.join(work, "k.sgr")
+        r = run_sg_iso([sys.executable, helper], out, flags=["--project=" + repo])
+        if r.returncode != 0:
+            print("FAIL: sec helper inside exited %d:\n%s" % (r.returncode, r.stderr[-500:]))
+            ok = False
+        else:
+            lines = dict(l.split(" ", 1) for l in r.stdout.strip().splitlines() if " " in l)
+            if lines.get("add_key", "") != "-1 1":
+                print("FAIL: add_key inside want -1 1 (EPERM), got %s" % lines.get("add_key"))
+                ok = False
+            if lines.get("alg", "") != "-1 1":
+                print("FAIL: socket-ALG inside want -1 1 (EPERM), got %s" % lines.get("alg"))
+                ok = False
+            if lines.get("getmem", "") != "-1 1":
+                print("FAIL: get_mempolicy inside want -1 1 (EPERM), got %s" % lines.get("getmem"))
+                ok = False
+            try:
+                rc, e = map(int, lines.get("persq", "-99 -99").split())
+                if rc < 0:
+                    print("FAIL: personality query must stay allowed, got %s" % lines.get("persq"))
+                    ok = False
+            except Exception:
+                print("FAIL: persq inside parse: %s" % lines)
+                ok = False
+
+        # (l) prlimit fallback: child observes reduced ulimit -u (NPROC) and
+        # ulimit -n (NOFILE); AS unlimited without --memory-max (Bun-safe).
+        out = os.path.join(work, "l.sgr")
+        r = run_sg_iso(["bash", "-c", "ulimit -u; ulimit -n; ulimit -v"], out,
+                       flags=["--project=" + repo])
+        if r.returncode != 0:
+            print("FAIL: prlimit run exited %d" % r.returncode)
+            ok = False
+        else:
+            vals = (r.stdout or "").strip().split()
+            if len(vals) < 3:
+                print("FAIL: prlimit output short: %r" % r.stdout)
+                ok = False
+            else:
+                try:
+                    nproc = int(vals[0])
+                    if nproc > 5000:
+                        print("FAIL: ulimit -u not reduced inside: %s" % vals[0])
+                        ok = False
+                except ValueError:
+                    if vals[0] != "unlimited":
+                        print("FAIL: ulimit -u parse: %r" % vals)
+                        ok = False
+                if vals[1] != "1024":
+                    print("FAIL: ulimit -n want 1024, got %s" % vals[1])
+                    ok = False
+                if vals[2] != "unlimited":
+                    print("FAIL: ulimit -v must stay unlimited without --memory-max (Bun), got %s"
+                          % vals[2])
+                    ok = False
+            if "prlimit fallback active" not in r.stderr:
+                print("FAIL: no prlimit fallback note in:\n%s" % r.stderr)
+                ok = False
+        # With --memory-max, AS limits apply (ulimit -v finite).
+        out = os.path.join(work, "l2.sgr")
+        r = run_sg_iso(["bash", "-c", "ulimit -v"], out,
+                       flags=["--project=" + repo, "--memory-max=64M"])
+        if r.returncode != 0:
+            print("FAIL: prlimit AS run exited %d" % r.returncode)
+            ok = False
+        elif (r.stdout or "").strip() == "unlimited":
+            print("FAIL: ulimit -v must be finite with --memory-max=64M")
+            ok = False
+
+        # (m) secret-path masks: ~/.ssh/.aws/.gnupg empty inside, visible with
+        # --allow-path; run.meta records masks.
+        fakehome = os.path.join(work, "fakehome")
+        os.makedirs(os.path.join(fakehome, ".ssh"), exist_ok=True)
+        os.makedirs(os.path.join(fakehome, ".aws"), exist_ok=True)
+        with open(os.path.join(fakehome, ".ssh", "secret.txt"), "w") as f:
+            f.write("TOPSECRET")
+        env = dict(os.environ)
+        env["HOME"] = fakehome
+        out = os.path.join(work, "m.sgr")
+        r = subprocess.run(
+            [SNOWGLOBE, "run", "--out=" + out, "--isolate", "--project=" + repo,
+             "--", "sh", "-c", "ls $HOME/.ssh 2>&1; cat $HOME/.ssh/secret.txt 2>&1; true"],
+            capture_output=True, text=True, env=env, timeout=120)
+        if r.returncode != 0:
+            print("FAIL: mask run exited %d" % r.returncode)
+            ok = False
+        elif "TOPSECRET" in (r.stdout or ""):
+            print("FAIL: masked .ssh content visible:\n%s" % r.stdout)
+            ok = False
+        evs = load_events(out)
+        metas = [e for e in evs if e.get("ev") == "run.meta"]
+        if len(metas) != 1 or not isinstance(metas[0].get("masks"), list):
+            print("FAIL: run.meta masks missing: %s" % metas)
+            ok = False
+        elif not any(".ssh" in m for m in metas[0].get("masks")):
+            print("FAIL: run.meta masks lack .ssh: %s" % metas[0].get("masks"))
+            ok = False
+        # Exempted: visible.
+        out = os.path.join(work, "m2.sgr")
+        r = subprocess.run(
+            [SNOWGLOBE, "run", "--out=" + out, "--isolate", "--project=" + repo,
+             "--allow-path=" + os.path.join(fakehome, ".ssh"),
+             "--", "sh", "-c", "cat $HOME/.ssh/secret.txt 2>&1"],
+            capture_output=True, text=True, env=env, timeout=120)
+        if r.returncode != 0 or "TOPSECRET" not in (r.stdout or ""):
+            print("FAIL: --allow-path .ssh should be visible, rc=%d out=%s err=%s"
+                  % (r.returncode, r.stdout, r.stderr[-500:]))
+            ok = False
+
         # (j) doctor --isolate: rows present, exit matches required-green.
         r = subprocess.run([SNOWGLOBE, "doctor", "--isolate"],
                            capture_output=True, text=True, timeout=120)
@@ -275,6 +446,13 @@ def main():
         if r.returncode != want:
             print("FAIL: doctor --isolate exit %d, want %d (req RED: %s)"
                   % (r.returncode, want, req_red))
+            ok = False
+        # Block 3: procfs row text + cgroup prlimit text.
+        if "REQUIRED for Bun/Node-class runtimes (issue #4)" not in r.stdout:
+            print("FAIL: doctor procfs row lacks Bun/Node REQUIRED text:\n%s" % r.stdout)
+            ok = False
+        if "prlimit fallback active" not in r.stdout:
+            print("FAIL: doctor lacks prlimit fallback active:\n%s" % r.stdout)
             ok = False
 
         print("PASS isolate_basic" if ok else "FAIL isolate_basic")

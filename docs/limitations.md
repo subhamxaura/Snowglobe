@@ -144,3 +144,19 @@ at startup**: Claude Code (Bun v1.4.3) dies SIGABRT after its
 `/proc/self/maps|cgroup|statm|stat` opens fail (0 LLM turns — the
 Phase-2 real-runtime gate is blocked on this, not on EROFS). Python
 agents run fine. The gate re-runs when kernels allow fresh procfs.
+
+## Secret masks + ssh remotes under --isolate
+
+`~/.ssh`, `~/.aws`, `~/.gnupg` are empty-tmpfs masked by default (0700);
+`run.meta.masks[]` + manifest `isolate.masks[]` record the masked paths.
+`--allow-path PATH` (repeatable, absolute, exact-or-parent) exempts —
+ssh-based git remotes need `--allow-path ~/.ssh` (else `git fetch` over ssh
+sees an empty `.ssh` and fails auth, by design).
+
+## prlimit fallback (no cgroup delegation)
+
+When cgroup v2 delegation is denied, the child still gets `RLIMIT_NPROC=512`
+(`ulimit -u`), `RLIMIT_NOFILE=1024` (`ulimit -n`) always, and `RLIMIT_AS`
+only when `--memory-max` was explicit (`ulimit -v` finite; unlimited
+otherwise — AS limits break Bun/Node). `doctor --isolate` shows
+`cgroup: no (prlimit fallback active)` and the run log notes it.

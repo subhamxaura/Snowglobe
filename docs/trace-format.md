@@ -16,7 +16,8 @@ migration note here (AGENTS.md §3).
   llm/            per-request blobs, see "LLM blobs" below (Phase 1B+)
 ```
 
-Phase 0 writes `isolate:{}`, `file_hashes:{}` (populated in Phase 2),
+Phase 0 writes `isolate:{}`, `file_hashes:{}` (populated in Phase 2).
+Isolate writes `isolate:{on:true,features:[userns,mount,pid,overlay],upper:"overlay/upper",masks[],allow_path[]}` (masks = masked `~/.ssh|~/.aws|~/.gnupg` minus `--allow-path`; `upper` is `overlay/upper`, `etc-upper`/`home-upper`/`fs-rw-N` are not for apply),
 `finished:null` until the run completes. Partial traces (crash/kill) keep
 `finished:null` and remain readable.
 
@@ -68,7 +69,7 @@ own tid. Threads that vanish in an exec without an exit stop get
 
 | ev | fields |
 |---|---|
-| `run.meta` | `cmd[], cwd` |
+| `run.meta` | `cmd[], cwd` — plus `isolate:true, masks[]` under `--isolate` (masked secret paths, minus `--allow-path`) |
 | `proc.start` | `ppid, root?, thread?` |
 | `proc.exec` | `path, argv[], cwd` — plus `truncated:true` when argv was cut (64-entry cap) |
 | `proc.exec_failed` | `path, errno` |

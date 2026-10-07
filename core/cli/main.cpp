@@ -54,8 +54,8 @@ void usage(std::ostream& os) {
   os << "Usage:\n"
      << "  snowglobe run [--project=DIR] [--out=DIR] [--tracer=auto|ptrace] [-a|--all-opens]\n"
      << "                [--capture-stdio] [--json] [--no-llm-proxy] [--isolate]\n"
-     << "                [--fs-rw=PATH]... [--allow-env=NAME]... [--memory-max=SIZE]\n"
-     << "                [--pids-max=N]\n"
+     << "                [--fs-rw=PATH]... [--allow-env=NAME]... [--allow-path=PATH]...\n"
+     << "                [--memory-max=SIZE] [--pids-max=N]\n"
      << "                [--upstream=PROVIDER=URL]... -- <command> [args...]\n"
      << "  snowglobe doctor\n"
      << "  snowglobe version [--json]\n"
@@ -165,12 +165,13 @@ struct RunOptions {
   bool captureStdio = false;
   bool json = false;
   bool noLlmProxy = false;
-  bool isolate = false;                     // --isolate: unprivileged userns + overlay (ADR-0007)
-  std::vector<std::string> isolateFsRw;     // --fs-rw PATH (repeatable, isolate only)
-  std::vector<std::string> isolateAllowEnv; // --allow-env NAME (repeatable, isolate only)
-  std::string isolateMemMax;                // --memory-max (isolate only)
-  std::string isolatePidsMax;               // --pids-max (isolate only)
-  std::vector<std::string> upstreams;       // raw PROVIDER=URL strings
+  bool isolate = false;                      // --isolate: unprivileged userns + overlay (ADR-0007)
+  std::vector<std::string> isolateFsRw;      // --fs-rw PATH (repeatable, isolate only)
+  std::vector<std::string> isolateAllowEnv;  // --allow-env NAME (repeatable, isolate only)
+  std::vector<std::string> isolateAllowPath; // --allow-path PATH (repeatable, isolate only)
+  std::string isolateMemMax;                 // --memory-max (isolate only)
+  std::string isolatePidsMax;                // --pids-max (isolate only)
+  std::vector<std::string> upstreams;        // raw PROVIDER=URL strings
   std::vector<std::string> cmd;
 };
 
@@ -205,15 +206,22 @@ int cmdRun(const RunOptions& o) {
   // --isolate prep (ADR-0007): absolute overlay backing dirs under the run
   // dir; the project must exist and cannot be / itself. The isolate-only
   // flags without --isolate are usage errors (loud, never silently idle).
-  if (!o.isolate && (!o.isolateFsRw.empty() || !o.isolateAllowEnv.empty() ||
-                     !o.isolateMemMax.empty() || !o.isolatePidsMax.empty())) {
-    std::cerr << "snowglobe run: --fs-rw/--allow-env/--memory-max/--pids-max need --isolate\n";
+  if (!o.isolate &&
+      (!o.isolateFsRw.empty() || !o.isolateAllowEnv.empty() || !o.isolateAllowPath.empty() ||
+       !o.isolateMemMax.empty() || !o.isolatePidsMax.empty())) {
+    std::cerr << "snowglobe run: --fs-rw/--allow-env/--allow-path/--memory-max/--pids-max need "
+                 "--isolate\n";
     return kExUsage;
   }
   snowglobe::isolate::OverlayDirs isoDirs;
   std::vector<snowglobe::isolate::FsRwMount> isoFsRw;
   std::string isoProjectAbs;
   std::string isoHomeAbs;
+  std::vector<std::string> isoAllowAbs;
+  std::vector<std::string> isoMasks;
+  long long isoMemBytes = -1;
+  bool isoMemExplicit = false;
+  long long isoPidsMax = 512;
   if (o.isolate) {
 #ifdef __linux__
     std::error_code pec;
@@ -265,6 +273,58 @@ int cmdRun(const RunOptions& o) {
       }
       fsRwAbs.push_back(rabs.lexically_normal().string());
     }
+    // --allow-path exemptions: absolute paths (need not exist — secret dirs
+    // like ~/.ssh may be absent; exact match or parent exempts the mask).
+    // ssh-based git remotes need --allow-path for ~/.ssh (documented).
+    isoAllowAbs.clear();
+    for (const std::string& r : o.isolateAllowPath) {
+      std::error_code rec3;
+      const fs::path rabs = fs::absolute(fs::path(r), rec3);
+      if (rec3) {
+        std::cerr << "snowglobe run: --allow-path needs an absolute path, got '" << r << "'\n";
+        return kExUsage;
+      }
+      const std::string s = rabs.lexically_normal().string();
+      if (s.empty() || s[0] != '/') {
+        std::cerr << "snowglobe run: --allow-path needs an absolute path, got '" << r << "'\n";
+        return kExUsage;
+      }
+      isoAllowAbs.push_back(s);
+    }
+    // Parse --memory-max/--pids-max NOW (before spawnMiddle): the child
+    // needs them for the prlimit fallback (NPROC+NOFILE always, AS only
+    // when --memory-max was explicit — AS breaks Bun).
+    isoMemBytes = -1;
+    isoMemExplicit = false;
+    isoPidsMax = 512;
+    if (!o.isolateMemMax.empty()) {
+      std::string perr;
+      if (!snowglobe::isolate::parseMemSize(o.isolateMemMax, isoMemBytes, perr)) {
+        std::cerr << "snowglobe run: --memory-max " << perr << "\n";
+        return kExUsage;
+      }
+      isoMemExplicit = true;
+    }
+    if (!o.isolatePidsMax.empty()) {
+      if (o.isolatePidsMax == "max") {
+        isoPidsMax = -1;
+        // -1 means no NPROC limit? prlimit RLIMIT_NPROC -1 = unlimited?
+        // For safety, treat "max" as no prlimit NPROC change (skip)? No:
+        // keep simple: -1 passes through to cgroup (no limit) and to
+        // setrlimit as RLIM_INFINITY. setrlimit handles -1? RLIM_INFINITY
+        // is ~0ULL, not -1. Handle below: if -1, skip NPROC setrlimit.
+      } else if (o.isolatePidsMax.find_first_not_of("0123456789") != std::string::npos) {
+        std::cerr << "snowglobe run: --pids-max needs an integer or max\n";
+        return kExUsage;
+      } else {
+        try {
+          isoPidsMax = std::stol(o.isolatePidsMax);
+        } catch (...) {
+          std::cerr << "snowglobe run: --pids-max needs an integer or max\n";
+          return kExUsage;
+        }
+      }
+    }
     std::error_code rec;
     const fs::path runAbs = fs::absolute(runDir, rec);
     if (rec) {
@@ -279,6 +339,11 @@ int cmdRun(const RunOptions& o) {
 #else
     std::cerr << "snowglobe run: --isolate requires Linux (EX_UNAVAILABLE)\n";
     return kExUnavailable;
+#endif
+#ifdef __linux__
+    if (o.isolate) {
+      isoMasks = snowglobe::isolate::defaultSecretMasks(isoHomeAbs, isoAllowAbs);
+    }
 #endif
   }
 
@@ -310,10 +375,30 @@ int cmdRun(const RunOptions& o) {
   const std::string manifestPath = (runDir / "manifest.json").string();
   // Manifest isolate record (ADR-0007): {} exactly as before without the
   // flag, so non-isolate manifests (and goldens) stay byte-identical.
-  const std::string isolateJson =
-      o.isolate ? "{\"on\":true,\"features\":[\"userns\",\"mount\",\"pid\",\"overlay\"],"
-                  "\"upper\":\"overlay/upper\"}"
-                : "{}";
+  // With --isolate, adds upper + masks (masked secret paths, minus
+  // --allow-path) + allow_path (exemptions) for audit.
+  std::string isolateJson = "{}";
+  if (o.isolate) {
+    std::string masksArr = "[";
+    for (size_t i = 0; i < isoMasks.size(); ++i) {
+      if (i > 0) {
+        masksArr += ",";
+      }
+      masksArr += jsonEscape(isoMasks[i]);
+    }
+    masksArr += "]";
+    std::string allowArr = "[";
+    for (size_t i = 0; i < isoAllowAbs.size(); ++i) {
+      if (i > 0) {
+        allowArr += ",";
+      }
+      allowArr += jsonEscape(isoAllowAbs[i]);
+    }
+    allowArr += "]";
+    isolateJson = "{\"on\":true,\"features\":[\"userns\",\"mount\",\"pid\",\"overlay\"],"
+                  "\"upper\":\"overlay/upper\",\"masks\":" +
+                  masksArr + ",\"allow_path\":" + allowArr + "}";
+  }
   auto writeManifest = [&](const std::string& finished, uint64_t eventCount,
                            const std::string& lastHash) {
     std::ofstream m(manifestPath, std::ios::trunc);
@@ -375,6 +460,11 @@ int cmdRun(const RunOptions& o) {
       cfg.fsRw.push_back(fm);
     }
     cfg.allowEnv = o.isolateAllowEnv;
+    cfg.allowPath = isoAllowAbs;
+    cfg.pidsMax = isoPidsMax;
+    cfg.nofileMax = 1024;
+    cfg.memBytes = isoMemBytes;
+    cfg.memExplicit = isoMemExplicit;
     cfg.cmd = o.cmd;
     cfg.mapReqW = ipipes.mapReqW;
     cfg.mapAckR = ipipes.mapAckR;
@@ -397,36 +487,19 @@ int cmdRun(const RunOptions& o) {
       return kExUnavailable;
     }
     {
-      long long memBytes = 2LL * 1024 * 1024 * 1024;
-      long long pidsMax = 512;
-      if (!o.isolateMemMax.empty()) {
-        std::string perr;
-        if (!snowglobe::isolate::parseMemSize(o.isolateMemMax, memBytes, perr)) {
-          std::cerr << "snowglobe run: --memory-max " << perr << "\n";
-          return kExUsage;
-        }
-      }
-      if (!o.isolatePidsMax.empty()) {
-        if (o.isolatePidsMax == "max") {
-          pidsMax = -1;
-        } else if (o.isolatePidsMax.find_first_not_of("0123456789") != std::string::npos) {
-          std::cerr << "snowglobe run: --pids-max needs an integer or max\n";
-          return kExUsage;
-        } else {
-          try {
-            pidsMax = std::stol(o.isolatePidsMax);
-          } catch (...) {
-            std::cerr << "snowglobe run: --pids-max needs an integer or max\n";
-            return kExUsage;
-          }
-        }
-      }
+      // cgroup wants concrete limits (2G/512 defaults); prlimit fallback in
+      // the child uses isoMemBytes/isoPidsMax directly (AS only when explicit).
+      const long long memForCg = isoMemExplicit ? isoMemBytes : (2LL * 1024 * 1024 * 1024);
+      const long long pidsForCg = isoPidsMax;
       std::string cgNote;
-      if (snowglobe::isolate::joinCgroup(runDir.filename().string(), (int)isoChild, memBytes,
-                                         pidsMax, cgNote, cgGuard.path)) {
+      if (snowglobe::isolate::joinCgroup(runDir.filename().string(), (int)isoChild, memForCg,
+                                         pidsForCg, cgNote, cgGuard.path)) {
         std::cerr << "note: cgroup limits active (" << cgNote << ")\n";
       } else {
-        std::cerr << "note: " << cgNote << "\n";
+        // joinCgroup already notes delegation denial; append the prlimit
+        // fallback state so `doctor` and run logs agree.
+        std::cerr << "note: " << cgNote << " (prlimit fallback active: NPROC=" << isoPidsMax
+                  << " NOFILE=1024" << (isoMemExplicit ? " AS=explicit" : " AS=unlimited") << ")\n";
       }
     }
   }
@@ -564,6 +637,7 @@ int cmdRun(const RunOptions& o) {
     // tracer adopts its pid and starts the wait loop at its SIGSTOP.
     topts.isolate = true;
     topts.isolateChild = isoChild;
+    topts.isolateMasks = isoMasks;
   }
 
   if (o.captureStdio) {
@@ -726,6 +800,14 @@ int main(int argc, char** argv) {
           return kExUsage;
         }
         o.isolateAllowEnv.push_back(args[++i]);
+      } else if (a.rfind("--allow-path=", 0) == 0) {
+        o.isolateAllowPath.push_back(a.substr(13));
+      } else if (a == "--allow-path") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe run: --allow-path needs PATH\n";
+          return kExUsage;
+        }
+        o.isolateAllowPath.push_back(args[++i]);
       } else if (a.rfind("--memory-max=", 0) == 0) {
         o.isolateMemMax = a.substr(13);
       } else if (a == "--memory-max") {

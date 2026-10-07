@@ -102,7 +102,7 @@ Rules: `run` propagates the agent's exit code; Snowglobe's own failures use 64+ 
                   tracer, isolate{...}, env_fingerprint, event_count, last_hash, file_hashes{}
   events.jsonl    one event per line; "seq" strictly increasing; fields below
   llm/NNNN.req.json  llm/NNNN.res.json | NNNN.res.sse   (raw bytes; headers redacted; chunk timing in .sse.idx)
-  fs/upper/       (isolate mode) overlay upper dir; fs/diff.patch; fs/summary.json
+  overlay/upper/  (isolate mode) project overlay upper (diff/apply source); overlay/etc-upper/, overlay/home-upper/ (not for apply); fs/diff.patch; fs/summary.json
   stdout.log stderr.log (with --capture-stdio)
 ```
 

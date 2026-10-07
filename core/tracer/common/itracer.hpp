@@ -24,6 +24,9 @@ struct TraceOptions {
   // (non-isolate path, unchanged).
   bool isolate = false;
   long long isolateChild = -1;
+  // --isolate secret masks for run.meta (absolute masked paths, already
+  // minus --allow-path exemptions). Empty when not isolating.
+  std::vector<std::string> isolateMasks;
 };
 
 class ITracer {

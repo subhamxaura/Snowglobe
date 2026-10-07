@@ -132,5 +132,4 @@ probes stay out and anything unclassifiable lands in an explicit
 byte-identical (golden-tested); the viewer consumes the sidecar when
 present and labels the seq-heuristic fallback.
 
-Phase 2 adds core/sandbox (clone3 namespaces, overlayfs, seccomp-bpf,
-landlock, cgroup limits). See docs/PLAN.md.
+Phase 2 adds core/isolate (clone3-or-unshare namespaces, overlayfs `overlay/upper|etc-upper|home-upper|fs-rw-N` native only, seccomp-bpf Docker-parity + arg filtering, landlock, cgroup/prlimit, secret tmpfs masks `~/.ssh|~/.aws|~/.gnupg` + `--allow-path`). ssh-based git remotes need `--allow-path ~/.ssh`. See docs/PLAN.md + ADR-0007.

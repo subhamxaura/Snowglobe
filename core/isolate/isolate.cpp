@@ -22,6 +22,7 @@
 #include <sys/mount.h>
 #include <sys/prctl.h>
 #include <sys/ptrace.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/wait.h>
@@ -318,6 +319,38 @@ void stripSecretEnv(const std::vector<std::string>& allowEnv) {
 #else
   (void)allowEnv; // non-Linux: --isolate is unreachable (CLI gates it)
 #endif
+}
+
+std::vector<std::string> defaultSecretMasks(const std::string& homeDir,
+                                            const std::vector<std::string>& allowPath) {
+  std::vector<std::string> cands;
+  if (!homeDir.empty() && homeDir[0] == '/') {
+    cands.push_back(homeDir + "/.ssh");
+    cands.push_back(homeDir + "/.aws");
+    cands.push_back(homeDir + "/.gnupg");
+  }
+  std::vector<std::string> out;
+  for (const std::string& m : cands) {
+    bool exempt = false;
+    for (const std::string& a : allowPath) {
+      if (a == m) {
+        exempt = true;
+        break;
+      }
+      // Parent exemption: --allow-path $HOME (or any parent) exempts children.
+      if (m.size() > a.size() && m.compare(0, a.size(), a) == 0 && m[a.size()] == '/' &&
+          (a.size() == 1 || true)) {
+        // a == "/" would exempt everything (project=/ is already rejected);
+        // still honor it literally (m starts with "/").
+        exempt = true;
+        break;
+      }
+    }
+    if (!exempt) {
+      out.push_back(m);
+    }
+  }
+  return out;
 }
 
 bool parseMemSize(const std::string& s, long long& bytes, std::string& error) {
@@ -962,6 +995,35 @@ void enterChild(const ChildConfig& cfg) {
       failMsg(walkErr);
     }
   }
+  // Default secret-path masks (empty tmpfs, 0700): ~/.ssh, ~/.aws, ~/.gnupg.
+  // Mounted over the merged $HOME overlay (lowerdir=host $HOME, so host keys
+  // would otherwise be visible). --allow-path exempts (exact or parent).
+  // ssh-based git remotes need --allow-path ~/.ssh (documented).
+  {
+    const std::vector<std::string> masks = defaultSecretMasks(cfg.homeDir, cfg.allowPath);
+    for (const std::string& m : masks) {
+      const std::string dst = merged + m;
+      // mkdir -p the chain in the merged view (target may not exist on host).
+      std::string cur;
+      std::string rest = m.size() > 1 ? m.substr(1) : "";
+      size_t i = 0;
+      cur = merged;
+      while (i < rest.size()) {
+        const size_t k = rest.find('/', i);
+        cur += "/" + rest.substr(i, k == std::string::npos ? k : k - i);
+        if (::mkdir(cur.c_str(), 0700) != 0 && errno != EEXIST) {
+          fail("mkdir mask " + cur);
+        }
+        if (k == std::string::npos) {
+          break;
+        }
+        i = k + 1;
+      }
+      if (::mount("tmpfs", dst.c_str(), "tmpfs", 0, "size=64m,mode=0700") != 0) {
+        fail("mount tmpfs mask " + m);
+      }
+    }
+  }
 
   if (::syscall(SYS_pivot_root, merged.c_str(), oldroot.c_str()) != 0) {
     fail("pivot_root");
@@ -1013,6 +1075,35 @@ void enterChild(const ChildConfig& cfg) {
       failMsg(llErr);
     }
   }
+  // prlimit fallback (always applied in-child; cgroup adds on top when
+  // delegated): NPROC+NOFILE always, AS only when --memory-max was explicit
+  // (AS limits break Bun — issue #4 class). Lowering only, so mapped root
+  // always succeeds; failure here is loud (exit 70 -> 69 in supervisor).
+  {
+    struct rlimit rl = {};
+    if (cfg.pidsMax >= 0) {
+      rl.rlim_cur = static_cast<rlim_t>(cfg.pidsMax);
+      rl.rlim_max = static_cast<rlim_t>(cfg.pidsMax);
+      if (::setrlimit(RLIMIT_NPROC, &rl) != 0) {
+        fail("setrlimit NPROC");
+      }
+    }
+    if (cfg.nofileMax >= 0) {
+      rl.rlim_cur = static_cast<rlim_t>(cfg.nofileMax);
+      rl.rlim_max = static_cast<rlim_t>(cfg.nofileMax);
+      if (::setrlimit(RLIMIT_NOFILE, &rl) != 0) {
+        fail("setrlimit NOFILE");
+      }
+    }
+    if (cfg.memExplicit && cfg.memBytes >= 0) {
+      rl.rlim_cur = static_cast<rlim_t>(cfg.memBytes);
+      rl.rlim_max = static_cast<rlim_t>(cfg.memBytes);
+      if (::setrlimit(RLIMIT_AS, &rl) != 0) {
+        fail("setrlimit AS");
+      }
+    }
+  }
+  IMARK("rlimit");
   // Injected env (proxy BASE_URLs): the middle forked before the proxy
   // existed, so the supervisor forwards them here. EOF (supervisor gone)
   // fails loud, never hangs: the status write below would EPIPE anyway.

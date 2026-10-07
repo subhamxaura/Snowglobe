@@ -50,7 +50,7 @@ tag v0.1.0.
 
 ## Phase 2 — Dry-run sandbox (weeks 10–15)
 
-clone3 namespaces, overlayfs (upper under run/fs/upper) + fuse fallback,
+clone3-or-unshare namespaces, overlayfs (upper under <run>/overlay/upper; etc-upper/home-upper; native only, fuse DEFERRED) +
 read-only host bind, tmpfs, secret masks + --unmask, NO_NEW_PRIVS, cgroup/prlimit
 limits, diff/apply, seccomp-bpf + landlock, --net host|none|proxy-only (pasta),
 threat-model.md. Acceptance per sub-task; tag v0.2.0.
