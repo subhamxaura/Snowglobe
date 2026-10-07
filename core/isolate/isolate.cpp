@@ -1,9 +1,14 @@
 // Unprivileged isolation runner (design + probe evidence: ADR-0007).
 // Containment of accidents, never a security boundary.
 #include "isolate.hpp"
+#include "landlock.hpp"
+#include "seccomp.hpp"
 
 #include <algorithm>
+#include <cctype>
+#include <climits>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <vector>
 
@@ -11,6 +16,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <sched.h>
 #include <signal.h>
 #include <sys/mount.h>
@@ -21,6 +27,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #endif
+
+// Global environ (like cli/main.cpp: <unistd.h> may not expose it under
+// -Wpedantic). At global scope — never inside a namespace.
+extern char** environ;
 
 namespace snowglobe::isolate {
 namespace {
@@ -255,6 +265,186 @@ bool mountOverlay(const std::string& lower, const std::string& upper, const std:
   return true;
 }
 
+} // namespace
+
+bool isSecretName(const std::string& name) {
+  static const char* kSuffixes[] = {"KEY", "TOKEN", "SECRET", "PASSWORD", "PASSWD", "CREDENTIAL"};
+  std::string up = name;
+  for (char& c : up) {
+    c = static_cast<char>(std::toupper((unsigned char)c));
+  }
+  for (const char* s : kSuffixes) {
+    const size_t n = std::strlen(s);
+    if (up.size() >= n && up.compare(up.size() - n, n, s) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+void stripSecretEnv(const std::vector<std::string>& allowEnv) {
+#ifdef __linux__
+  if (environ == nullptr) {
+    return;
+  }
+  // Snapshot names first: unsetenv while iterating environ is unsafe.
+  std::vector<std::string> names;
+  for (char** e = environ; *e != nullptr; ++e) {
+    const std::string entry(*e);
+    const size_t eq = entry.find('=');
+    names.push_back(eq == std::string::npos ? entry : entry.substr(0, eq));
+  }
+  for (const std::string& name : names) {
+    if (!isSecretName(name)) {
+      continue;
+    }
+    bool keep = false;
+    for (const std::string& a : allowEnv) {
+      if (a == name) {
+        keep = true;
+        break;
+      }
+    }
+    if (!keep) {
+      const std::string base = name;
+      const size_t us = base.rfind("_BASE_URL");
+      if (us != std::string::npos && us + 9 == base.size()) {
+        keep = true; // proxy wiring always passes (ADR-0005/ADR-0007)
+      }
+    }
+    if (!keep) {
+      ::unsetenv(name.c_str());
+    }
+  }
+#else
+  (void)allowEnv; // non-Linux: --isolate is unreachable (CLI gates it)
+#endif
+}
+
+bool parseMemSize(const std::string& s, long long& bytes, std::string& error) {
+  if (s == "max") {
+    bytes = -1;
+    return true;
+  }
+  size_t n = 0;
+  while (n < s.size() && s[n] >= '0' && s[n] <= '9') {
+    ++n;
+  }
+  if (n == 0) {
+    error = "bad size '" + s + "' (bytes or K/M/G, or max)";
+    return false;
+  }
+  long long v = 0;
+  try {
+    v = std::stoll(s.substr(0, n));
+  } catch (...) {
+    error = "bad size '" + s + "'";
+    return false;
+  }
+  const std::string suf = s.substr(n);
+  long long mult = 1;
+  if (suf.empty()) {
+    mult = 1;
+  } else if (suf == "K" || suf == "k") {
+    mult = 1024LL;
+  } else if (suf == "M" || suf == "m") {
+    mult = 1024LL * 1024;
+  } else if (suf == "G" || suf == "g") {
+    mult = 1024LL * 1024 * 1024;
+  } else {
+    error = "bad size suffix in '" + s + "' (K/M/G)";
+    return false;
+  }
+  if (v < 0 || (mult > 1 && v > (LLONG_MAX / mult))) {
+    error = "bad size '" + s + "'";
+    return false;
+  }
+  bytes = v * mult;
+  return true;
+}
+
+bool joinCgroup(const std::string& tag, int childPid, long long memBytes, long long pidsMax,
+                std::string& note, std::string& outPath) {
+#ifdef __linux__
+  outPath.clear();
+  // cgroup v2 only (0:: entry); anything else is best-effort "no".
+  bool v2 = false;
+  std::string ownScope;
+  {
+    FILE* f = ::fopen("/proc/self/cgroup", "r");
+    if (f == nullptr) {
+      note = "no /proc/self/cgroup";
+      return false;
+    }
+    char* line = nullptr;
+    size_t cap = 0;
+    while (::getline(&line, &cap, f) >= 0) {
+      const std::string l = line;
+      if (l.compare(0, 4, "0::/") == 0) {
+        v2 = true;
+        ownScope = l.substr(3);
+        while (!ownScope.empty() && (ownScope.back() == '\n' || ownScope.back() == '\r')) {
+          ownScope.pop_back();
+        }
+      }
+    }
+    ::free(line);
+    ::fclose(f);
+  }
+  if (!v2) {
+    note = "no cgroup v2 hierarchy";
+    return false;
+  }
+  // Candidate parents: our own scope dir first (delegation point), then
+  // the v2 root. First writable win; all denied → honest note, no fail.
+  std::vector<std::string> parents = {"/sys/fs/cgroup" + ownScope, "/sys/fs/cgroup"};
+  for (const std::string& parent : parents) {
+    const std::string dir = parent + "/sg-" + tag;
+    if (::mkdir(dir.c_str(), 0755) != 0 && errno != EEXIST) {
+      continue;
+    }
+    // Best-effort controller enable (needs parent write; ignore failure —
+    // the limit writes below are the real test).
+    {
+      const std::string sub = parent + "/cgroup.subtree_control";
+      const int fd = ::open(sub.c_str(), O_WRONLY);
+      if (fd >= 0) {
+        (void)!::write(fd, "+memory +pids", 14);
+        ::close(fd);
+      }
+    }
+    bool ok = true;
+    int werr = 0;
+    if (memBytes >= 0) {
+      ok = procPut(dir + "/memory.max", std::to_string(memBytes).c_str(), werr) && ok;
+    }
+    if (pidsMax >= 0) {
+      ok = procPut(dir + "/pids.max", std::to_string(pidsMax).c_str(), werr) && ok;
+    }
+    char pidbuf[32] = {};
+    std::snprintf(pidbuf, sizeof(pidbuf), "%d", childPid);
+    ok = procPut(dir + "/cgroup.procs", pidbuf, werr) && ok;
+    if (ok) {
+      outPath = dir;
+      note = "limits on " + dir;
+      return true;
+    }
+    ::rmdir(dir.c_str());
+  }
+  note = "cgroup delegation denied; continuing without limits";
+  return false;
+#else
+  (void)tag;
+  (void)childPid;
+  (void)memBytes;
+  (void)pidsMax;
+  note = "cgroup requires Linux";
+  outPath.clear();
+  return false;
+#endif
+}
+
+namespace {
+
 void initHelper(const std::vector<std::string>& cmd) {
   std::vector<char*> cargv;
   cargv.reserve(cmd.size() + 1);
@@ -288,16 +478,30 @@ void initHelper(const std::vector<std::string>& cmd) {
 
 #endif
 
-bool prepareRunDir(const std::string& runDir, OverlayDirs& dirs, std::string& error) {
+bool prepareRunDir(const std::string& runDir, const std::vector<std::string>& fsRwPaths,
+                   OverlayDirs& dirs, std::vector<FsRwMount>& fsRw, std::string& error) {
 #ifdef __linux__
   const std::string base = runDir + "/overlay";
   dirs.upper = base + "/upper";
   dirs.work = base + "/work";
   dirs.etcUpper = base + "/etc-upper";
   dirs.etcWork = base + "/etc-work";
+  dirs.homeUpper = base + "/home-upper";
+  dirs.homeWork = base + "/home-work";
   dirs.mnt = base + "/mnt";
-  for (const std::string* d : {&dirs.upper, &dirs.work, &dirs.etcUpper, &dirs.etcWork, &dirs.mnt}) {
-    if (!mkpath(*d, error)) {
+  std::vector<std::string> fixed = {dirs.upper,     dirs.work,     dirs.etcUpper, dirs.etcWork,
+                                    dirs.homeUpper, dirs.homeWork, dirs.mnt};
+  for (size_t i = 0; i < fsRwPaths.size(); ++i) {
+    FsRwMount m;
+    m.path = fsRwPaths[i];
+    m.upper = base + "/fs-rw-" + std::to_string(i);
+    m.work = base + "/fs-rw-" + std::to_string(i) + "-work";
+    fixed.push_back(m.upper);
+    fixed.push_back(m.work);
+    fsRw.push_back(m);
+  }
+  for (const std::string& d : fixed) {
+    if (!mkpath(d, error)) {
       error = "isolate: " + error;
       return false;
     }
@@ -334,8 +538,9 @@ bool prepareRunDir(const std::string& runDir, OverlayDirs& dirs, std::string& er
 
 bool makePipes(ChildPipes& p, std::string& error) {
 #ifdef __linux__
-  int a[2] = {-1, -1}, b[2] = {-1, -1}, c[2] = {-1, -1};
-  if (::pipe2(a, O_CLOEXEC) != 0 || ::pipe2(b, O_CLOEXEC) != 0 || ::pipe2(c, O_CLOEXEC) != 0) {
+  int a[2] = {-1, -1}, b[2] = {-1, -1}, c[2] = {-1, -1}, d[2] = {-1, -1};
+  if (::pipe2(a, O_CLOEXEC) != 0 || ::pipe2(b, O_CLOEXEC) != 0 || ::pipe2(c, O_CLOEXEC) != 0 ||
+      ::pipe2(d, O_CLOEXEC) != 0) {
     error = std::string("isolate: pipe: ") + errnoText(errno);
     return false;
   }
@@ -345,6 +550,8 @@ bool makePipes(ChildPipes& p, std::string& error) {
   p.mapAckW = b[1];
   p.statusR = c[0];
   p.statusW = c[1];
+  p.envR = d[0];
+  p.envW = d[1];
   return true;
 #else
   (void)p;
@@ -355,12 +562,12 @@ bool makePipes(ChildPipes& p, std::string& error) {
 
 void closeSupervisorEnds(ChildPipes& p) {
 #ifdef __linux__
-  for (int fd : {p.mapReqR, p.mapAckW, p.statusR}) {
+  for (int fd : {p.mapReqR, p.mapAckW, p.statusR, p.envW}) {
     if (fd >= 0) {
       ::close(fd);
     }
   }
-  p.mapReqR = p.mapAckW = p.statusR = -1;
+  p.mapReqR = p.mapAckW = p.statusR = p.envW = -1;
 #else
   (void)p;
 #endif
@@ -368,19 +575,75 @@ void closeSupervisorEnds(ChildPipes& p) {
 
 void closeMiddleEnds(ChildPipes& p) {
 #ifdef __linux__
-  for (int fd : {p.mapReqW, p.mapAckR, p.statusW}) {
+  for (int fd : {p.mapReqW, p.mapAckR, p.statusW, p.envR}) {
     if (fd >= 0) {
       ::close(fd);
     }
   }
-  p.mapReqW = p.mapAckR = p.statusW = -1;
+  p.mapReqW = p.mapAckR = p.statusW = p.envR = -1;
 #else
   (void)p;
 #endif
 }
 
+bool writeEnvBlock(int envW, const std::vector<std::pair<std::string, std::string>>& env,
+                   std::string& error) {
+#ifdef __linux__
+  std::string block;
+  for (const auto& kv : env) {
+    if (kv.first.find('\n') != std::string::npos || kv.first.find('=') != std::string::npos ||
+        kv.second.find('\n') != std::string::npos) {
+      error = "isolate: refusing multiline env for " + kv.first;
+      return false;
+    }
+    block += kv.first + "=" + kv.second + "\n";
+  }
+  block += "END\n";
+  if (!writeAll(envW, block.data(), block.size())) {
+    error = std::string("isolate: env block: ") + errnoText(errno);
+    return false;
+  }
+  ::close(envW);
+  return true;
+#else
+  (void)envW;
+  (void)env;
+  error = "isolate: requires Linux";
+  return false;
+#endif
+}
+
+#ifdef __linux__
+// Bounded handshake reads: a stuck middle (e.g. a userspace-lock hang
+// observed in-suite) must fail LOUD after 60s, never hang CI forever.
+// Normal setup answers in milliseconds.
+bool waitReadable(int fd, std::string& error) {
+  for (;;) {
+    struct pollfd pfd = {};
+    pfd.fd = fd;
+    pfd.events = POLLIN;
+    const int r = ::poll(&pfd, 1, 60000);
+    if (r > 0) {
+      return true;
+    }
+    if (r < 0 && errno == EINTR) {
+      continue;
+    }
+    if (r < 0) {
+      error = std::string("isolate: handshake poll: ") + errnoText(errno);
+    } else {
+      error = "isolate: setup timed out after 60s (middle stuck?)";
+    }
+    return false;
+  }
+}
+#endif
+
 bool serveMaps(pid_t child, ChildPipes& p, std::string& error) {
 #ifdef __linux__
+  if (!waitReadable(p.mapReqR, error)) {
+    return false;
+  }
   char req = 0;
   ssize_t n = 0;
   do {
@@ -431,6 +694,11 @@ bool serveMaps(pid_t child, ChildPipes& p, std::string& error) {
 
 bool awaitReady(pid_t child, ChildPipes& p, std::string& error) {
 #ifdef __linux__
+  if (!waitReadable(p.statusR, error)) {
+    int st = 0;
+    ::waitpid(child, &st, WNOHANG);
+    return false;
+  }
   std::string line;
   std::string why;
   if (!readLine(p.statusR, line, why)) {
@@ -461,6 +729,23 @@ bool awaitReady(pid_t child, ChildPipes& p, std::string& error) {
 
 void enterChild(const ChildConfig& cfg) {
 #ifdef __linux__
+  // Debug trace: SG_ISOLATE_DEBUG=1 appends step markers to a file (used
+  // to pin hangs; never on in normal runs).
+  int dbgFd = -1;
+  {
+    const char* dp = ::getenv("SG_ISOLATE_DEBUG");
+    if (dp != nullptr && dp[0] != '\0') {
+      char dpn[64] = {};
+      std::snprintf(dpn, sizeof(dpn), "/tmp/izdbg-%d.log", (int)::getpid());
+      dbgFd = ::open(dpn, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    }
+  }
+#define IMARK(s)                                                                                   \
+  do {                                                                                             \
+    if (dbgFd >= 0) {                                                                              \
+      (void)!::write(dbgFd, s "\n", sizeof(s "\n") - 1);                                           \
+    }                                                                                              \
+  } while (0)
   const int statusW = cfg.statusW;
   // errno is read at call time (argument evaluation precedes any string
   // building inside the body), so call sites pass it straight from the
@@ -481,12 +766,13 @@ void enterChild(const ChildConfig& cfg) {
   if (::getcwd(cwd, sizeof(cwd)) == nullptr) {
     cwd[0] = '\0';
   }
-  const std::string repo = cfg.projectDir;
-  const std::string merged = cfg.dirs.mnt;
-
   if (::unshare(CLONE_NEWUSER | CLONE_NEWNS) != 0) {
     fail("unshare userns");
   }
+  IMARK("unshared");
+  // Map handshake FIRST, before any heap allocation: a multithreaded
+  // supervisor under ASan may hold the allocator lock at fork, and the
+  // middle would deadlock on its first malloc. Handshake uses no heap.
   if (!writeAll(cfg.mapReqW, "M", 1)) {
     fail("map request");
   }
@@ -501,6 +787,8 @@ void enterChild(const ChildConfig& cfg) {
       fail("idmap refused");
     }
   }
+  const std::string repo = cfg.projectDir;
+  const std::string merged = cfg.dirs.mnt;
   if (::getuid() != 0) {
     errno = EPERM;
     fail("idmap ineffective");
@@ -508,6 +796,7 @@ void enterChild(const ChildConfig& cfg) {
   if (::mount(nullptr, "/", nullptr, MS_REC | MS_PRIVATE, nullptr) != 0) {
     fail("make-rprivate");
   }
+  IMARK("rprivate");
   if (::mount("tmpfs", cfg.dirs.mnt.c_str(), "tmpfs", 0, "size=256m,mode=0755") != 0) {
     fail("mount tmpfs base");
   }
@@ -519,14 +808,41 @@ void enterChild(const ChildConfig& cfg) {
   if (::mkdir(oldroot.c_str(), 0755) != 0 && errno != EEXIST) {
     fail("mkdir oldroot");
   }
-
-  // Ancestors of the repo (and /etc when the repo nests under it) are
-  // created empty; everything else top-level is symlinked or ro-bound.
-  std::vector<std::string> anc = ancestors(repo);
-  const bool repoUnderEtc = repo == "/etc" || (repo.size() > 5 && repo.compare(0, 5, "/etc/") == 0);
-  const auto isAnc = [&](const std::string& hostPath) {
-    for (const auto& a : anc) {
-      if (a == hostPath) {
+  // Overlay targets: /etc (unless another target covers it), $HOME, the
+  // repo, and each --fs-rw path. Top-level binds skip these and their
+  // ancestors (mkdir-only); chains + mounts below are depth-sorted so
+  // nesting (repo under $HOME, anything under /etc) mounts inside-out.
+  struct OverlayJob {
+    std::string lower;
+    std::string target;
+    std::string upper;
+    std::string work;
+    std::string what;
+  };
+  std::vector<OverlayJob> jobs = {
+      {"/etc", "/etc", cfg.dirs.etcUpper, cfg.dirs.etcWork, "/etc"},
+      {cfg.homeDir, cfg.homeDir, cfg.dirs.homeUpper, cfg.dirs.homeWork, "home"},
+      {repo, repo, cfg.dirs.upper, cfg.dirs.work, "repo"},
+  };
+  for (const FsRwMount& m : cfg.fsRw) {
+    jobs.push_back({m.path, m.path, m.upper, m.work, "fs-rw " + m.path});
+  }
+  std::vector<std::string> keep = {"/etc"};
+  for (const auto& j : jobs) {
+    keep.push_back(j.target);
+    for (const std::string& a : ancestors(j.target)) {
+      keep.push_back(a);
+    }
+  }
+  const auto isKept = [&](const std::string& hostPath) {
+    // Top-level readdir only: skip binds for overlay targets and their
+    // ancestors (mkdir-only; mounts land below).
+    for (const std::string& k : keep) {
+      if (k == hostPath) {
+        return true;
+      }
+      if (k.size() > hostPath.size() && k.compare(0, hostPath.size(), hostPath) == 0 &&
+          k[hostPath.size()] == '/') {
         return true;
       }
     }
@@ -565,8 +881,8 @@ void enterChild(const ChildConfig& cfg) {
     if (::mkdir(dst.c_str(), 0755) != 0 && errno != EEXIST) {
       fail("mkdir " + dst);
     }
-    if (name == "etc" || isAnc(src) || src == repo) {
-      continue; // overlay or nested-overwrite target, mounted below
+    if (isKept(src)) {
+      continue; // overlay target or ancestor: created empty, mounted below
     }
     if (!bindRo(src, dst, walkErr)) {
       failMsg("bind " + src + " (" + walkErr + ")");
@@ -602,38 +918,50 @@ void enterChild(const ChildConfig& cfg) {
     fail("mount tmpfs tmp");
   }
 
-  // Overlays last (deepest mount wins for nested repo-under-/etc).
-  // The repo chain is built here — after the specials tmpfs mounts, so a
-  // repo under /tmp lands on the fresh tmpfs instead of being shadowed.
-  {
+  // Overlay chains (after the specials tmpfs mounts, so targets under
+  // /tmp land on the fresh tmpfs) then mounts, shallowest first so
+  // nesting (repo under $HOME, anything under /etc) stacks inside-out.
+  // A job whose target another job also targets (only /etc can collide)
+  // is skipped: the deeper mount wins.
+  for (const auto& j : jobs) {
     std::string cur = merged;
-    std::string rest = repo.size() > 1 ? repo.substr(1) : "";
+    std::string rest = j.target.size() > 1 ? j.target.substr(1) : "";
     size_t i = 0;
     while (i < rest.size()) {
-      const size_t j = rest.find('/', i);
-      cur += "/" + rest.substr(i, j == std::string::npos ? j : j - i);
+      const size_t k = rest.find('/', i);
+      cur += "/" + rest.substr(i, k == std::string::npos ? k : k - i);
       if (::mkdir(cur.c_str(), 0755) != 0 && errno != EEXIST) {
         fail("mkdir chain " + cur);
       }
-      if (j == std::string::npos) {
+      if (k == std::string::npos) {
         break;
       }
-      i = j + 1;
+      i = k + 1;
     }
   }
-  if (!repoUnderEtc && repo != "/etc") {
-    if (!mountOverlay("/etc", cfg.dirs.etcUpper, cfg.dirs.etcWork, merged + "/etc", walkErr,
-                      "/etc")) {
+  auto depthOf = [](const std::string& p) { return std::count(p.begin(), p.end(), '/'); };
+  std::stable_sort(jobs.begin(), jobs.end(), [&](const OverlayJob& a, const OverlayJob& b) {
+    return depthOf(a.target) < depthOf(b.target);
+  });
+  size_t etcTargets = 0;
+  for (const auto& j : jobs) {
+    if (j.target == "/etc") {
+      ++etcTargets;
+    }
+  }
+  for (const auto& j : jobs) {
+    if (j.target == "/etc" && etcTargets > 1 && j.what == "/etc") {
+      continue; // a deeper job (repo/home/fs-rw at /etc) owns it
+    }
+    if (!mountOverlay(j.lower, j.upper, j.work, merged + j.target, walkErr, j.what.c_str())) {
       failMsg(walkErr);
     }
-  }
-  if (!mountOverlay(repo, cfg.dirs.upper, cfg.dirs.work, merged + repo, walkErr, "repo")) {
-    failMsg(walkErr);
   }
 
   if (::syscall(SYS_pivot_root, merged.c_str(), oldroot.c_str()) != 0) {
     fail("pivot_root");
   }
+  IMARK("pivoted");
   if (::chdir("/") != 0) {
     fail("chdir /");
   }
@@ -648,9 +976,82 @@ void enterChild(const ChildConfig& cfg) {
   if (::unshare(CLONE_NEWPID) != 0) {
     fail("unshare pidns");
   }
+  IMARK("pidns");
+  // PTRACE_TRACEME precedes the seccomp filter (ptrace(2) itself is
+  // blocked afterwards — nested tracers get EPERM, by design).
   if (::ptrace(PTRACE_TRACEME, 0, nullptr, nullptr) != 0) {
     fail("traceme");
   }
+  IMARK("traceme");
+  {
+    std::string secErr;
+    if (!installIsolateFilter(secErr)) {
+      failMsg(secErr);
+    }
+  }
+  IMARK("seccomp");
+  stripSecretEnv(cfg.allowEnv);
+  IMARK("env");
+  // Landlock LAST (one-way, inherited): RO world, RW islands. Depends on
+  // NO_NEW_PRIVS, which the seccomp installer above has just set —
+  // restrict_self fails EPERM without it on this kernel. Paths are
+  // post-pivot merged-view absolutes (merged/X is /X after pivot).
+  {
+    std::vector<std::string> rw = {cfg.projectDir, cfg.homeDir, "/tmp", "/etc", "/dev", "/run"};
+    for (const auto& j : jobs) {
+      if (std::find(rw.begin(), rw.end(), j.target) == rw.end()) {
+        rw.push_back(j.target);
+      }
+    }
+    std::string llErr;
+    if (!enforceLandlock(rw, llErr)) {
+      failMsg(llErr);
+    }
+  }
+  // Injected env (proxy BASE_URLs): the middle forked before the proxy
+  // existed, so the supervisor forwards them here. EOF (supervisor gone)
+  // fails loud, never hangs: the status write below would EPIPE anyway.
+  {
+    std::string line;
+    int got = 0;
+    for (;;) {
+      line.clear();
+      char c = 0;
+      bool nl = false;
+      while (!nl) {
+        ssize_t n = 0;
+        do {
+          n = ::read(cfg.envR, &c, 1);
+        } while (n < 0 && errno == EINTR);
+        if (n != 1) {
+          errno = EPIPE;
+          fail("env block EOF");
+        }
+        if (c == '\n') {
+          nl = true;
+        } else if (line.size() < 4096) {
+          line.push_back(c);
+        }
+      }
+      if (line == "END") {
+        break;
+      }
+      if (got >= 64) {
+        errno = E2BIG;
+        fail("env block too large");
+      }
+      ++got;
+      const size_t eq = line.find('=');
+      if (eq == std::string::npos || eq == 0) {
+        errno = EINVAL;
+        fail("env block shape");
+      }
+      if (::setenv(line.substr(0, eq).c_str(), line.substr(eq + 1).c_str(), 1) != 0) {
+        fail("env set");
+      }
+    }
+  }
+  IMARK("landlock");
   {
     const char ok[] = "ok\n";
     (void)!::write(statusW, ok, sizeof(ok) - 1);
@@ -678,6 +1079,28 @@ void enterChild(const ChildConfig& cfg) {
 #else
   (void)cfg;
   _exit(69);
+#endif
+}
+
+pid_t spawnMiddle(const ChildConfig& cfg, ChildPipes& pipes, std::string& error) {
+#ifdef __linux__
+  const pid_t child = ::fork();
+  if (child < 0) {
+    error = std::string("isolate: fork: ") + errnoText(errno);
+    return -1;
+  }
+  if (child == 0) {
+    closeSupervisorEnds(pipes);
+    enterChild(cfg); // setups, stops, forks init, reaps, _exits
+    _exit(72);       // unreachable
+  }
+  closeMiddleEnds(pipes);
+  return child;
+#else
+  (void)cfg;
+  (void)pipes;
+  error = "isolate: requires Linux";
+  return -1;
 #endif
 }
 

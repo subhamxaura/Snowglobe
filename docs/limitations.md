@@ -133,3 +133,14 @@ so future traces with the same shapes are read correctly:
   not as an outage — only a run with *no* successful follow-up is
   suspicious. (The `AF_UNSPEC` disconnects nearby are the resolver
   unconnecting UDP sockets after use — recorded as `net.disconnect`.)
+
+## Empty /proc under --isolate (no fresh procfs on this kernel)
+
+New proc/sysfs instances inside the isolate user namespace are denied
+(EPERM — see issue #4, probe/proc_pidns.c), so the
+merged `/proc` is an empty tmpfs, not a fresh procfs. Host pids stay
+invisible either way, but **runtimes needing `/proc/self` content abort
+at startup**: Claude Code (Bun v1.4.3) dies SIGABRT after its
+`/proc/self/maps|cgroup|statm|stat` opens fail (0 LLM turns — the
+Phase-2 real-runtime gate is blocked on this, not on EROFS). Python
+agents run fine. The gate re-runs when kernels allow fresh procfs.

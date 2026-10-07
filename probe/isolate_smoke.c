@@ -14,6 +14,8 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/audit.h>
+#include <linux/ptrace.h>
 #include <sched.h>
 #include <signal.h>
 #include <stdio.h>
@@ -27,8 +29,6 @@
 #include <sys/user.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <linux/audit.h>
-#include <linux/ptrace.h>
 
 #ifndef PTRACE_O_TRACECLONE
 #define PTRACE_O_TRACECLONE 0x00000008
@@ -50,18 +50,30 @@
 #endif
 
 static int fails = 0;
-#define CHECK(c, msg) do { \
-  if (!(c)) { printf("FAIL: %s: %s\n", msg, strerror(errno)); fails = 1; goto done; } \
-  else { printf("ok: %s\n", msg); } \
-} while (0)
+#define CHECK(c, msg)                                                                              \
+  do {                                                                                             \
+    if (!(c)) {                                                                                    \
+      printf("FAIL: %s: %s\n", msg, strerror(errno));                                              \
+      fails = 1;                                                                                   \
+      goto done;                                                                                   \
+    } else {                                                                                       \
+      printf("ok: %s\n", msg);                                                                     \
+    }                                                                                              \
+  } while (0)
 
 static int pput(const char* path, const char* s) {
   int fd = open(path, O_WRONLY);
-  if (fd < 0) return -1;
+  if (fd < 0)
+    return -1;
   size_t n = strlen(s), w = 0;
   while (w < n) {
     ssize_t k = write(fd, s + w, n - w);
-    if (k < 0) { if (errno == EINTR) continue; close(fd); return -1; }
+    if (k < 0) {
+      if (errno == EINTR)
+        continue;
+      close(fd);
+      return -1;
+    }
     w += (size_t)k;
   }
   close(fd);
@@ -71,18 +83,20 @@ static int pput(const char* path, const char* s) {
 // PID-1 init-helper: fork the agent, reap everything, exit with its code.
 static void initHelper(void) {
   pid_t a = fork();
-  if (a < 0) _exit(40);
+  if (a < 0)
+    _exit(40);
   if (a == 0) {
-    char* av[] = {(char*)"sh", (char*)"-c",
-                  (char*)"echo iz-ok > /etc/iz-probe-from-ns", NULL};
+    char* av[] = {(char*)"sh", (char*)"-c", (char*)"echo iz-ok > /etc/iz-probe-from-ns", NULL};
     execvp("sh", av);
     _exit(127);
   }
   int st = 0, code = 99;
   for (;;) {
     pid_t w = waitpid(-1, &st, 0);
-    if (w < 0) break;
-    if (w == a) code = WIFEXITED(st) ? WEXITSTATUS(st) : 100 + WTERMSIG(st);
+    if (w < 0)
+      break;
+    if (w == a)
+      code = WIFEXITED(st) ? WEXITSTATUS(st) : 100 + WTERMSIG(st);
   }
   _exit(code);
 }
@@ -95,45 +109,95 @@ static void middle(const char* base, int reqFd, int ackFd) {
   snprintf(merged, sizeof merged, "%s/merged", base);
   snprintf(oldr, sizeof oldr, "%s/merged/oldroot", base);
   errno = 0;
-  if (unshare(CLONE_NEWUSER | CLONE_NEWNS) != 0) { printf("FAIL: unshare U+NS: %s\n", strerror(errno)); _exit(10); }
+  if (unshare(CLONE_NEWUSER | CLONE_NEWNS) != 0) {
+    printf("FAIL: unshare U+NS: %s\n", strerror(errno));
+    _exit(10);
+  }
   // Parent-driven mapping (self uid_map is EPERM on this kernel — see
   // probe/map_parent.c): request, then wait for the ack byte.
-  if (write(reqFd, "M", 1) != 1) { printf("FAIL: map request\n"); _exit(10); }
+  if (write(reqFd, "M", 1) != 1) {
+    printf("FAIL: map request\n");
+    _exit(10);
+  }
   {
     char ack = 0;
     ssize_t nr = 0;
     while (nr == 0) {
       nr = read(ackFd, &ack, 1);
-      if (nr < 0 && errno != EINTR) { printf("FAIL: map ack: %s\n", strerror(errno)); _exit(11); }
+      if (nr < 0 && errno != EINTR) {
+        printf("FAIL: map ack: %s\n", strerror(errno));
+        _exit(11);
+      }
     }
-    if (ack != 'G') { printf("FAIL: map refused\n"); _exit(11); }
+    if (ack != 'G') {
+      printf("FAIL: map refused\n");
+      _exit(11);
+    }
   }
-  if (mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL) != 0) { printf("FAIL: rprivate\n"); _exit(12); }
-  if (mount("tmpfs", base, "tmpfs", 0, "size=64m,mode=0755") != 0) { printf("FAIL: tmpfs base\n"); _exit(13); }
+  if (mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL) != 0) {
+    printf("FAIL: rprivate\n");
+    _exit(12);
+  }
+  if (mount("tmpfs", base, "tmpfs", 0, "size=64m,mode=0755") != 0) {
+    printf("FAIL: tmpfs base\n");
+    _exit(13);
+  }
   if (mkdir(upper, 0755) || mkdir(work, 0755) || mkdir(merged, 0755) || mkdir(oldr, 0755)) {
-    printf("FAIL: mkdir layers\n"); _exit(14);
+    printf("FAIL: mkdir layers\n");
+    _exit(14);
   }
   char opts[2048], procd[512], tmpd[512];
   snprintf(opts, sizeof opts, "lowerdir=/,upperdir=%s,workdir=%s", upper, work);
-  if (mount("overlay", merged, "overlay", 0, opts) != 0) { printf("FAIL: overlay lowerdir=/: %s\n", strerror(errno)); _exit(15); }
+  if (mount("overlay", merged, "overlay", 0, opts) != 0) {
+    printf("FAIL: overlay lowerdir=/: %s\n", strerror(errno));
+    _exit(15);
+  }
   snprintf(procd, sizeof procd, "%s/proc", merged);
-  if (mount("proc", procd, "proc", 0, "") != 0) { printf("FAIL: proc\n"); _exit(16); }
+  if (mount("proc", procd, "proc", 0, "") != 0) {
+    printf("FAIL: proc\n");
+    _exit(16);
+  }
   snprintf(tmpd, sizeof tmpd, "%s/tmp", merged);
-  if (mount("tmpfs", tmpd, "tmpfs", 0, "size=32m,mode=1777") != 0) { printf("FAIL: tmpfs /tmp\n"); _exit(17); }
-  if (syscall(SYS_pivot_root, merged, oldr) != 0) { printf("FAIL: pivot_root\n"); _exit(18); }
-  if (chdir("/") != 0) { printf("FAIL: chdir /\n"); _exit(19); }
-  if (umount2("/oldroot", MNT_DETACH) != 0) { printf("FAIL: detach oldroot\n"); _exit(20); }
-  if (unshare(CLONE_NEWPID) != 0) { printf("FAIL: unshare PID\n"); _exit(21); }
-  if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) != 0) { printf("FAIL: TRACEME\n"); _exit(22); }
+  if (mount("tmpfs", tmpd, "tmpfs", 0, "size=32m,mode=1777") != 0) {
+    printf("FAIL: tmpfs /tmp\n");
+    _exit(17);
+  }
+  if (syscall(SYS_pivot_root, merged, oldr) != 0) {
+    printf("FAIL: pivot_root\n");
+    _exit(18);
+  }
+  if (chdir("/") != 0) {
+    printf("FAIL: chdir /\n");
+    _exit(19);
+  }
+  if (umount2("/oldroot", MNT_DETACH) != 0) {
+    printf("FAIL: detach oldroot\n");
+    _exit(20);
+  }
+  if (unshare(CLONE_NEWPID) != 0) {
+    printf("FAIL: unshare PID\n");
+    _exit(21);
+  }
+  if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) != 0) {
+    printf("FAIL: TRACEME\n");
+    _exit(22);
+  }
   raise(SIGSTOP);
   pid_t init = fork();
-  if (init < 0) { _exit(23); }
-  if (init == 0) { initHelper(); _exit(99); }
+  if (init < 0) {
+    _exit(23);
+  }
+  if (init == 0) {
+    initHelper();
+    _exit(99);
+  }
   int st = 0, code = 98;
   for (;;) {
     pid_t w = waitpid(-1, &st, 0);
-    if (w < 0) break;
-    if (w == init) code = WIFEXITED(st) ? WEXITSTATUS(st) : 90 + WTERMSIG(st);
+    if (w < 0)
+      break;
+    if (w == init)
+      code = WIFEXITED(st) ? WEXITSTATUS(st) : 90 + WTERMSIG(st);
   }
   _exit(code);
 }
@@ -146,18 +210,21 @@ int main(void) {
   pid_t m = fork();
   CHECK(m >= 0, "fork middle");
   if (m == 0) {
-    close(toC[1]); close(toP[0]);
+    close(toC[1]);
+    close(toP[0]);
     middle(base, toP[1], toC[0]);
     _exit(127);
   }
-  close(toC[0]); close(toP[1]);
+  close(toC[0]);
+  close(toP[1]);
   // Parent-driven id map (single-id self-map, the unshare --map-user rule).
   {
     char req = 0;
     ssize_t nr = 0;
     while (nr == 0) {
       nr = read(toP[0], &req, 1);
-      if (nr < 0 && errno != EINTR) break;
+      if (nr < 0 && errno != EINTR)
+        break;
     }
     CHECK(nr == 1 && req == 'M', "middle requested maps");
     char pgm[64], ump[64], gmp[64], umap[64], gmap[64];
@@ -183,19 +250,23 @@ int main(void) {
   int grandchild = -1, sawSyscall = 0, middleCode = -1;
   for (int i = 0; i < 2000; i++) {
     w = waitpid(-1, &st, 0);
-    if (w < 0 && errno == ECHILD) break;
+    if (w < 0 && errno == ECHILD)
+      break;
     CHECK(w >= 0, "tracer waitpid");
     if (WIFEXITED(w) || WIFSIGNALED(w)) {
-      if (w == m) middleCode = WIFEXITED(w) ? WEXITSTATUS(w) : 200;
+      if (w == m)
+        middleCode = WIFEXITED(w) ? WEXITSTATUS(w) : 200;
       continue;
     }
-    if (!WIFSTOPPED(w)) continue;
+    if (!WIFSTOPPED(w))
+      continue;
     int sig = WSTOPSIG(st);
     unsigned ev = (unsigned)((st >> 16) & 0xffff);
     if (ev == PTRACE_EVENT_CLONE) {
       unsigned long msg = 0;
       CHECK(ptrace(PTRACE_GETEVENTMSG, w, NULL, &msg) == 0, "tracer GETEVENTMSG");
-      if ((pid_t)msg != m) grandchild = (int)msg;
+      if ((pid_t)msg != m)
+        grandchild = (int)msg;
       CHECK(ptrace(PTRACE_CONT, w, NULL, NULL) == 0, "tracer CONT clone");
       continue;
     }
@@ -206,7 +277,8 @@ int main(void) {
       memset(&info, 0, sizeof info);
       errno = 0;
       long r = ptrace(PTRACE_GET_SYSCALL_INFO, w, (void*)sizeof info, &info);
-      if (r >= 0) sawSyscall = 1;
+      if (r >= 0)
+        sawSyscall = 1;
       else if (grandchild < 0 || w == grandchild) {
         printf("note: GET_SYSCALL_INFO on grandchild: %s\n", strerror(errno));
       }
@@ -238,6 +310,7 @@ done:
     snprintf(cmd, sizeof cmd, "rm -rf %s", base);
     (void)!system(cmd);
   }
-  if (!fails) printf("ALL-PASS isolate_smoke\n");
+  if (!fails)
+    printf("ALL-PASS isolate_smoke\n");
   return fails ? 1 : 0;
 }

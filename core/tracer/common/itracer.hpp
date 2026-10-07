@@ -14,19 +14,16 @@ constexpr int kExitSoftware = 70;
 
 struct TraceOptions {
   bool allOpens = false; // --all-opens: do not filter read-opens / noisy paths
-  std::string tracer = "auto";
-  // Sensitive (name, value) pairs for argv redaction (ADR-0003), collected
+  std::string tracer =
+      "auto"; // Sensitive (name, value) pairs for argv redaction (ADR-0003), collected
   // by the supervisor from its own environment after proxy env injection.
   std::vector<std::pair<std::string, std::string>> secretEnv;
-  // --isolate (ADR-0007): overlay backing dirs prepared pre-fork (absolute
-  // host paths), project dir absolute. Empty/off = today's behavior.
+  // --isolate (ADR-0007): the middle was spawned pre-threads by the
+  // caller and handshaked (maps + setup status); the tracer adopts its
+  // pid and starts the wait loop at its first SIGSTOP. -1 = fork here
+  // (non-isolate path, unchanged).
   bool isolate = false;
-  std::string isolateProject;
-  std::string isolateUpper;
-  std::string isolateWork;
-  std::string isolateEtcUpper;
-  std::string isolateEtcWork;
-  std::string isolateMnt;
+  long long isolateChild = -1;
 };
 
 class ITracer {

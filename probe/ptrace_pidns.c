@@ -9,6 +9,8 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/audit.h>
+#include <linux/ptrace.h>
 #include <sched.h>
 #include <signal.h>
 #include <stdio.h>
@@ -17,8 +19,6 @@
 #include <sys/syscall.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <linux/audit.h>
-#include <linux/ptrace.h>
 
 #ifndef PTRACE_O_TRACECLONE
 #define PTRACE_O_TRACECLONE 0x00000008
@@ -37,18 +37,30 @@
 #endif
 
 static int fails = 0;
-#define CHECK(c, msg) do { \
-  if (!(c)) { printf("FAIL: %s: %s\n", msg, strerror(errno)); fails = 1; goto done; } \
-  else { printf("ok: %s\n", msg); } \
-} while (0)
+#define CHECK(c, msg)                                                                              \
+  do {                                                                                             \
+    if (!(c)) {                                                                                    \
+      printf("FAIL: %s: %s\n", msg, strerror(errno));                                              \
+      fails = 1;                                                                                   \
+      goto done;                                                                                   \
+    } else {                                                                                       \
+      printf("ok: %s\n", msg);                                                                     \
+    }                                                                                              \
+  } while (0)
 
 static int pput(const char* path, const char* s) {
   int fd = open(path, O_WRONLY);
-  if (fd < 0) return -1;
+  if (fd < 0)
+    return -1;
   size_t n = strlen(s), w = 0;
   while (w < n) {
     ssize_t k = write(fd, s + w, n - w);
-    if (k < 0) { if (errno == EINTR) continue; close(fd); return -1; }
+    if (k < 0) {
+      if (errno == EINTR)
+        continue;
+      close(fd);
+      return -1;
+    }
     w += (size_t)k;
   }
   close(fd);
@@ -57,15 +69,31 @@ static int pput(const char* path, const char* s) {
 
 static void middle(int reqFd, int ackFd) {
   setvbuf(stdout, NULL, _IONBF, 0);
-  if (unshare(CLONE_NEWUSER) != 0) { printf("FAIL: unshare USER: %s\n", strerror(errno)); _exit(10); }
-  if (write(reqFd, "M", 1) != 1) { printf("FAIL: map req\n"); _exit(11); }
+  if (unshare(CLONE_NEWUSER) != 0) {
+    printf("FAIL: unshare USER: %s\n", strerror(errno));
+    _exit(10);
+  }
+  if (write(reqFd, "M", 1) != 1) {
+    printf("FAIL: map req\n");
+    _exit(11);
+  }
   char ack = 0;
-  if (read(ackFd, &ack, 1) != 1 || ack != 'G') { printf("FAIL: map ack\n"); _exit(12); }
-  if (unshare(CLONE_NEWPID) != 0) { printf("FAIL: unshare PID: %s\n", strerror(errno)); _exit(13); }
-  if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) != 0) { printf("FAIL: TRACEME: %s\n", strerror(errno)); _exit(14); }
+  if (read(ackFd, &ack, 1) != 1 || ack != 'G') {
+    printf("FAIL: map ack\n");
+    _exit(12);
+  }
+  if (unshare(CLONE_NEWPID) != 0) {
+    printf("FAIL: unshare PID: %s\n", strerror(errno));
+    _exit(13);
+  }
+  if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) != 0) {
+    printf("FAIL: TRACEME: %s\n", strerror(errno));
+    _exit(14);
+  }
   raise(SIGSTOP);
   pid_t init = fork();
-  if (init < 0) _exit(15);
+  if (init < 0)
+    _exit(15);
   if (init == 0) {
     char* av[] = {(char*)"/bin/true", NULL};
     execv("/bin/true", av);
@@ -73,7 +101,8 @@ static void middle(int reqFd, int ackFd) {
   }
   int st = 0, code = 99;
   while (waitpid(-1, &st, 0) > 0) {
-    if (WIFEXITED(st)) code = WEXITSTATUS(st);
+    if (WIFEXITED(st))
+      code = WEXITSTATUS(st);
   }
   _exit(code);
 }
@@ -85,11 +114,13 @@ int main(void) {
   pid_t m = fork();
   CHECK(m >= 0, "fork");
   if (m == 0) {
-    close(toC[1]); close(toP[0]);
+    close(toC[1]);
+    close(toP[0]);
     middle(toP[1], toC[0]);
     _exit(127);
   }
-  close(toC[0]); close(toP[1]);
+  close(toC[0]);
+  close(toP[1]);
   char req = 0;
   CHECK(read(toP[0], &req, 1) == 1 && req == 'M', "map request");
   char pgm[64], ump[64], gmp[64], umap[64], gmap[64];
@@ -114,20 +145,25 @@ int main(void) {
     pid_t w = waitpid(-1, &st, __WALL);
     printf("wait: w=%d st=0x%x ev=%u sig=%d\n", (int)w, (unsigned)st,
            (unsigned)((st >> 16) & 0xffff), WSTOPSIG(st));
-    if (w < 0 && errno == ECHILD) break;
-    if (w < 0 && errno == ECHILD) break;
+    if (w < 0 && errno == ECHILD)
+      break;
+    if (w < 0 && errno == ECHILD)
+      break;
     CHECK(w >= 0, "wait");
     if (WIFEXITED(st) || WIFSIGNALED(st)) {
-      if (w == m) code = WIFEXITED(st) ? WEXITSTATUS(st) : 300;
+      if (w == m)
+        code = WIFEXITED(st) ? WEXITSTATUS(st) : 300;
       continue;
     }
-    if (!WIFSTOPPED(w)) continue;
+    if (!WIFSTOPPED(w))
+      continue;
     int sig = WSTOPSIG(st);
     unsigned ev = (unsigned)((st >> 16) & 0xffff);
     if (ev == PTRACE_EVENT_CLONE || ev == PTRACE_EVENT_FORK || ev == PTRACE_EVENT_VFORK) {
       unsigned long msg = 0;
       CHECK(ptrace(PTRACE_GETEVENTMSG, w, NULL, &msg) == 0, "GETEVENTMSG");
-      if ((pid_t)msg != m) grand = (int)msg;
+      if ((pid_t)msg != m)
+        grand = (int)msg;
       CHECK(ptrace(PTRACE_CONT, w, NULL, NULL) == 0, "CONT clone");
       continue;
     }
@@ -135,8 +171,10 @@ int main(void) {
       struct ptrace_syscall_info info;
       memset(&info, 0, sizeof info);
       errno = 0;
-      if (ptrace(PTRACE_GET_SYSCALL_INFO, w, (void*)sizeof info, &info) >= 0) decoded = 1;
-      else printf("note: GET_SYSCALL_INFO grandchild errno: %s\n", strerror(errno));
+      if (ptrace(PTRACE_GET_SYSCALL_INFO, w, (void*)sizeof info, &info) >= 0)
+        decoded = 1;
+      else
+        printf("note: GET_SYSCALL_INFO grandchild errno: %s\n", strerror(errno));
       CHECK(ptrace(PTRACE_SYSCALL, w, NULL, NULL) == 0, "SYSCALL cont");
       continue;
     }
@@ -147,6 +185,7 @@ int main(void) {
   CHECK(decoded, "syscall decoded across pidns");
   CHECK(code == 0, "exit code propagated");
 done:
-  if (!fails) printf("ALL-PASS ptrace_pidns\n");
+  if (!fails)
+    printf("ALL-PASS ptrace_pidns\n");
   return fails ? 1 : 0;
 }

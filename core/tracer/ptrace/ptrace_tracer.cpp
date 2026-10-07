@@ -20,7 +20,6 @@
 #include "ptrace_tracer.hpp"
 #include "open_flags.hpp"
 
-#include "../../isolate/isolate.hpp"
 #include "../../redact/redact.hpp"
 #include "../../util/string_util.hpp"
 
@@ -326,16 +325,6 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   sigaction(SIGTERM, &sa, &oldTerm);
   gStop.store(0);
 
-  // --isolate pipes (map handshake + setup status), created pre-fork.
-  isolate::ChildPipes ipipes;
-  if (opts.isolate) {
-    if (!isolate::makePipes(ipipes, error_)) {
-      sigaction(SIGINT, &oldInt, nullptr);
-      sigaction(SIGTERM, &oldTerm, nullptr);
-      return -kExitSoftware;
-    }
-  }
-
   // Build argv for execvp.
   std::vector<char*> cargv;
   cargv.reserve(argv.size() + 1);
@@ -344,7 +333,15 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   }
   cargv.push_back(nullptr);
 
-  const pid_t child = ::fork();
+  // --isolate: no fork here. The caller spawned the middle while still
+  // single-threaded and handshaked it (maps + setup status); adopt its
+  // pid and start the wait loop at its first SIGSTOP.
+  pid_t child = -1;
+  if (opts.isolate && opts.isolateChild >= 0) {
+    child = static_cast<pid_t>(opts.isolateChild);
+  } else {
+    child = ::fork();
+  }
   if (child < 0) {
     error_ = std::string("fork: ") + errnoText(errno);
     sigaction(SIGINT, &oldInt, nullptr);
@@ -353,45 +350,22 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   }
   if (child == 0) {
     // --- tracee ---
-    if (opts.isolate) {
-      isolate::closeSupervisorEnds(ipipes);
-      isolate::ChildConfig cfg;
-      cfg.projectDir = opts.isolateProject;
-      cfg.dirs.upper = opts.isolateUpper;
-      cfg.dirs.work = opts.isolateWork;
-      cfg.dirs.etcUpper = opts.isolateEtcUpper;
-      cfg.dirs.etcWork = opts.isolateEtcWork;
-      cfg.dirs.mnt = opts.isolateMnt;
-      cfg.cmd = argv;
-      cfg.mapReqW = ipipes.mapReqW;
-      cfg.mapAckR = ipipes.mapAckR;
-      cfg.statusW = ipipes.statusW;
-      isolate::enterChild(cfg); // setups, stops, forks init, reaps, _exits
-      _exit(72);                // unreachable
-    }
     if (ptrace(PTRACE_TRACEME, 0, nullptr, nullptr) != 0) {
       _exit(127);
     }
     ::raise(SIGSTOP);
     // libuv/Node file ops via io_uring bypass syscall tracing entirely;
-    // force the syscall path unless the user overrode it. io_uring remains
-    // a known blind spot (see docs/limitations.md in Block 3).
-    ::setenv("UV_USE_IO_URING", "0", 0);
+    // force the syscall path unless the user overrode it. Under --isolate
+    // the seccomp KILL on io_uring_setup retires this hack at the source
+    // (io_uring remains a known blind spot otherwise, see limitations).
+    if (!opts.isolate) {
+      ::setenv("UV_USE_IO_URING", "0", 0);
+    }
     ::execvp(cargv[0], cargv.data());
     _exit(127); // exec failed; parent reports proc.exec_failed via exit code 127 path
   }
 
   // --- supervisor ---
-  // --isolate handshake before the wait loop: id maps, then setup status.
-  // Any failure names step + errno and exits 69 (missing capability).
-  if (opts.isolate) {
-    isolate::closeMiddleEnds(ipipes);
-    if (!isolate::serveMaps(child, ipipes, error_) || !isolate::awaitReady(child, ipipes, error_)) {
-      sigaction(SIGINT, &oldInt, nullptr);
-      sigaction(SIGTERM, &oldTerm, nullptr);
-      return -kExitUnavailable;
-    }
-  }
   std::map<pid_t, ProcInfo> procs;
   procs[child].ppid = ::getpid();
   procs[child].tgid = child; // root starts single-threaded
@@ -969,10 +943,14 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
               }
             }
             const long fd = okCall ? static_cast<long>(rval) : -1;
+            // ok/errno appear ONLY on failure (success lines stay
+            // byte-identical for the goldens; Block 2 landlock denials
+            // assert fs.open ok:false errno 1).
             emitEv("{" + ts + ",\"ev\":\"fs.open\",\"path\":" + jsonEscape(canon) + ",\"write\":" +
                    (of.write ? "true" : "false") + ",\"create\":" + (of.create ? "true" : "false") +
                    ",\"trunc\":" + (of.trunc ? "true" : "false") + ",\"fd\":" + std::to_string(fd) +
-                   (of.tmpfile ? ",\"tmpfile\":true" : "") + "}");
+                   (of.tmpfile ? ",\"tmpfile\":true" : "") +
+                   (!okCall ? ",\"ok\":false,\"errno\":" + std::to_string(-rval) : "") + "}");
             break;
           }
           case Kind::Unlink: {

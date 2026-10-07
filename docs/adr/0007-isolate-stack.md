@@ -33,6 +33,11 @@ tmpfs `/tmp`. This ADR amends the CLI contract (AGENTS.md §2) with the
   empty tmpfs: host pids stay invisible either way, but agents needing
   `/proc` introspection degrade. Loud limitation, revisited if kernels
   allow it.
+- **Landlock restrict needs NO_NEW_PRIVS here.** `restrict_self` fails
+  EPERM without it (even for a trivial ruleset); the seccomp installer
+  sets NNP first, so landlock stays last. Raw `seccomp(2)` + classic
+  BPF is used instead of libseccomp (no headers on the box, no sudo to
+  install them; keeps the static binary dependency-free).
 
 ## Decision
 
@@ -49,10 +54,25 @@ tmpfs `/tmp`. This ADR amends the CLI contract (AGENTS.md §2) with the
 - Ancestor shadowing (observed): repo ancestors resolve empty except
   the repo chain (e.g. project under /mnt hides the /mnt rbind) —
   containment-consistent; sibling trees are simply not there.
+- **$HOME is overlaid writable by default** (upper `overlay/home-upper`,
+  separate from the diff/apply upper): Claude-class agents keep state in
+  `$HOME` (`.claude.json`, caches) and the real-runtime gate passes no
+  `--fs-rw`, so EROFS-by-default would brick them. Missing/unusable
+  `$HOME` fails loud (69), never half-contained.
+- `--fs-rw PATH` (repeatable, directories only, `--isolate` only) adds a
+  mount overlay per path (uppers `overlay/fs-rw-N`, not for diff/apply)
+  AND the matching landlock RW rule — mount and policy stay coherent, so
+  a `--fs-rw` write can never EPERM-by-landlock after VFS allowed it.
+  Without `--isolate` all four flags (`--fs-rw/--allow-env/--memory-max/
+  --pids-max`) are usage errors (64), never silently idle.
 - `run.meta` gains `"isolate":true` (additive, schema stays 0);
   manifest `isolate:{"on":true,"features":["userns","mount","pid",
   "overlay"],"upper":"overlay/upper"}`. Non-isolate output is
   byte-identical to before (goldens prove it).
+- `fs.open` gains `"ok":false,"errno":N`, emitted ONLY on failure so
+  success lines (and goldens) stay byte-identical. Denied writes
+  (landlock EPERM, ro-bind EROFS) are therefore visible with their
+  errno — the Block 2 landlock test pins `ok:false errno 1`.
 - Any setup failure names step + errno and exits 69 (missing
   capability, never silent). A ptrace failure across the boundary
   (first stop never arrives) is exit 69, never a weakened tracer.

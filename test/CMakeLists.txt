@@ -17,6 +17,7 @@ add_executable(snowglobe_tests
   unit/test_link_scan.cpp
   unit/test_link.cpp
   unit/test_link_fixtures.cpp
+  unit/test_isolate.cpp
 )
 target_link_libraries(snowglobe_tests PRIVATE snowglobe_core Catch2::Catch2WithMain)
 target_include_directories(snowglobe_tests PRIVATE ${CMAKE_SOURCE_DIR}/core)

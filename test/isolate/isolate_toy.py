@@ -67,8 +67,11 @@ def main():
         mock = Mock(os.path.join(MOCKLLM, "server.py"), port, scenario)
         # The workdir doubles as --project: note.txt must copy up.
         # Bytecode caches off: the agent source lives on a read-only bind.
+        # The KEY-named var needs --allow-env under masking (and the mock
+        # must see the real Bearer — end-to-end allow-list proof).
         r = run_sg(SNOWGLOBE,
                    ["--isolate", "--project=" + wd,
+                    "--allow-env=OPENAI_API_KEY",
                     "--upstream=openai=" + mock.base, "--",
                     sys.executable, AGENT, "--workdir", wd,
                     "--data-url", durl],
@@ -114,6 +117,11 @@ def main():
             if f.read() != "hello snowglobe":
                 print("FAIL: upper note.txt content wrong")
                 return 1
+        seen = [h["headers"].get("authorization")
+                for h in mock.header_records()]
+        if seen != ["Bearer " + KEY] * 3:
+            print("FAIL: mock did not see the allowed key x3: %s" % seen)
+            return 1
         print("PASS isolate_toy: 3-turn shape + isolate record, "
               "upper copy-up, host clean")
         return 0

@@ -6,12 +6,16 @@
 #include <fstream>
 #include <sstream>
 
+#include "../isolate/landlock.hpp"
+#include "../isolate/seccomp.hpp"
+
 #ifdef __linux__
 #include <errno.h>
 #include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
 #include <sched.h>
+#include <signal.h>
 #include <sys/mount.h>
 #include <sys/prctl.h>
 #include <sys/stat.h>
@@ -477,6 +481,333 @@ int printTable() {
     std::printf("%-20s %-6s %s\n", c.name.c_str(), c.available ? "yes" : "no", c.detail.c_str());
   }
   return 0;
+}
+
+#ifdef __linux__
+namespace {
+
+// Tester outcomes via _exit codes (parent decodes, never trusts text).
+constexpr int kProbeOk = 0;
+
+// userns row: unshare + parent-written single-id map (the isolate rule).
+bool probeUserns(std::string& detail) {
+  int toC[2] = {-1, -1}, toP[2] = {-1, -1};
+  if (::pipe(toC) != 0 || ::pipe(toP) != 0) {
+    detail = std::string("pipe: ") + errnoText(errno);
+    return false;
+  }
+  const pid_t c = ::fork();
+  if (c < 0) {
+    detail = std::string("fork: ") + errnoText(errno);
+    return false;
+  }
+  if (c == 0) {
+    ::close(toC[1]);
+    ::close(toP[0]);
+    if (::unshare(CLONE_NEWUSER) != 0) {
+      _exit(10);
+    }
+    if (::write(toP[1], "M", 1) != 1) {
+      _exit(11);
+    }
+    char ack = 0;
+    if (::read(toC[0], &ack, 1) != 1 || ack != 'G') {
+      _exit(12);
+    }
+    _exit(::getuid() == 0 ? kProbeOk : 13);
+  }
+  ::close(toC[0]);
+  ::close(toP[1]);
+  char req = 0;
+  bool mapped = false;
+  if (::read(toP[0], &req, 1) == 1 && req == 'M') {
+    mapped = writeMapsFor(c);
+    const char ack = mapped ? 'G' : 'F';
+    (void)!::write(toC[1], &ack, 1);
+  }
+  ::close(toP[0]);
+  ::close(toC[1]);
+  int st = 0;
+  ::waitpid(c, &st, 0);
+  if (!mapped) {
+    detail = "parent idmap refused";
+    return false;
+  }
+  if (WIFEXITED(st) && WEXITSTATUS(st) == kProbeOk) {
+    detail = "unshare + parent single-id map";
+    return true;
+  }
+  detail = "tester exit " + std::to_string(WIFEXITED(st) ? WEXITSTATUS(st) : -1);
+  return false;
+}
+
+// pidns + procfs rows: unshare USER (parent-mapped) + PID, fork; the
+// PID-1 child reports getpid()==1 and attempts a fresh proc mount (the
+// attempt outcome IS the procfs row: EPERM here → tmpfs fallback).
+bool probePidns(bool& procfs, std::string& detail, std::string& procDetail) {
+  procfs = false;
+  int toC[2] = {-1, -1}, toP[2] = {-1, -1};
+  int rep[2] = {-1, -1}; // child report bytes: '1' pidns-ok, 'P' proc-ok
+  if (::pipe(toC) != 0 || ::pipe(toP) != 0 || ::pipe(rep) != 0) {
+    detail = std::string("pipe: ") + errnoText(errno);
+    return false;
+  }
+  const pid_t c = ::fork();
+  if (c < 0) {
+    detail = std::string("fork: ") + errnoText(errno);
+    return false;
+  }
+  if (c == 0) {
+    ::close(toC[1]);
+    ::close(toP[0]);
+    ::close(rep[0]);
+    if (::unshare(CLONE_NEWUSER) != 0) {
+      _exit(10);
+    }
+    if (::write(toP[1], "M", 1) != 1) {
+      _exit(11);
+    }
+    char ack = 0;
+    if (::read(toC[0], &ack, 1) != 1 || ack != 'G') {
+      _exit(12);
+    }
+    if (::unshare(CLONE_NEWPID) != 0) {
+      _exit(13);
+    }
+    const pid_t init = ::fork();
+    if (init < 0) {
+      _exit(14);
+    }
+    if (init == 0) {
+      char r = (::getpid() == 1) ? '1' : '0';
+      (void)!::write(rep[1], &r, 1);
+      char dir[] = "/tmp/sg-doctor-proc-XXXXXX";
+      if (::mkdtemp(dir) == nullptr) {
+        _exit(15);
+      }
+      if (::mount("proc", dir, "proc", 0, "") == 0) {
+        const char p = 'P';
+        (void)!::write(rep[1], &p, 1);
+        ::umount(dir);
+      }
+      ::rmdir(dir);
+      _exit(kProbeOk);
+    }
+    int st = 0;
+    ::waitpid(init, &st, 0);
+    _exit(WIFEXITED(st) && WEXITSTATUS(st) == kProbeOk ? kProbeOk : 16);
+  }
+  ::close(toC[0]);
+  ::close(toP[1]);
+  ::close(rep[1]);
+  char req = 0;
+  bool mapped = false;
+  if (::read(toP[0], &req, 1) == 1 && req == 'M') {
+    mapped = writeMapsFor(c);
+    const char ack = mapped ? 'G' : 'F';
+    (void)!::write(toC[1], &ack, 1);
+  }
+  ::close(toP[0]);
+  ::close(toC[1]);
+  bool sawOne = false;
+  bool sawProc = false;
+  char b = 0;
+  while (::read(rep[0], &b, 1) == 1) {
+    sawOne = sawOne || (b == '1');
+    sawProc = sawProc || (b == 'P');
+  }
+  ::close(rep[0]);
+  int st = 0;
+  ::waitpid(c, &st, 0);
+  const bool exited = WIFEXITED(st) && WEXITSTATUS(st) == kProbeOk && mapped;
+  procfs = sawProc;
+  procDetail =
+      sawProc ? "fresh proc mount works" : "fresh proc denied; empty-tmpfs fallback active";
+  if (!mapped) {
+    detail = "parent idmap refused";
+    return false;
+  }
+  if (!exited || !sawOne) {
+    detail = "pid-1 fork/check failed";
+    return false;
+  }
+  detail = "unshare + PID-1 fork verified";
+  return true;
+}
+
+// seccomp row: install the REAL isolate filter in a throwaway child;
+// io_uring_setup must die SIGSYS (non-vacuous: the kill fires with or
+// without privilege). EPERM paths are proven under --isolate itself.
+bool probeSeccomp(std::string& detail) {
+  const pid_t c = ::fork();
+  if (c < 0) {
+    detail = std::string("fork: ") + errnoText(errno);
+    return false;
+  }
+  if (c == 0) {
+    std::string err;
+    if (!isolate::installIsolateFilter(err)) {
+      _exit(10);
+    }
+#ifdef SYS_io_uring_setup
+    ::syscall(SYS_io_uring_setup, 8, nullptr);
+    _exit(11); // must not survive the call
+#else
+    _exit(12);
+#endif
+  }
+  int st = 0;
+  ::waitpid(c, &st, 0);
+  if (WIFSIGNALED(st) && WTERMSIG(st) == SIGSYS) {
+    detail = "isolate filter kills io_uring_setup (SIGSYS)";
+    return true;
+  }
+  detail = "no SIGSYS death (exit/signal mismatch)";
+  return false;
+}
+
+// landlock row: enforce a scratch RO/RW ruleset via the shared helper;
+// the RO write must EPERM (non-vacuous: the dir is writable unconfined).
+bool probeLandlock(std::string& detail) {
+  char roT[] = "/tmp/sg-doctor-ll-ro-XXXXXX";
+  char rwT[] = "/tmp/sg-doctor-ll-rw-XXXXXX";
+  if (::mkdtemp(roT) == nullptr || ::mkdtemp(rwT) == nullptr) {
+    detail = "mkdtemp scratch failed";
+    return false;
+  }
+  const pid_t c = ::fork();
+  if (c < 0) {
+    detail = std::string("fork: ") + errnoText(errno);
+    return false;
+  }
+  if (c == 0) {
+    if (::prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0) {
+      _exit(14);
+    }
+    std::string err;
+    if (!isolate::enforceLandlock({rwT}, err)) {
+      _exit(10);
+    }
+    const std::string ok = std::string(rwT) + "/f";
+    const int fd = ::open(ok.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) {
+      _exit(11);
+    }
+    ::close(fd);
+    const std::string no = std::string(roT) + "/f";
+    errno = 0;
+    const int fd2 = ::open(no.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd2 >= 0) {
+      ::close(fd2);
+      _exit(12);
+    }
+    _exit((errno == EPERM || errno == EACCES) ? 0 : 13);
+  }
+  int st = 0;
+  ::waitpid(c, &st, 0);
+  ::unlink((std::string(rwT) + "/f").c_str());
+  ::rmdir(roT);
+  ::rmdir(rwT);
+  if (WIFEXITED(st) && WEXITSTATUS(st) == 0) {
+    detail = "scratch RO denied (EPERM), RW allowed";
+    return true;
+  }
+  detail = "enforcement smoke exit " + std::to_string(WIFEXITED(st) ? WEXITSTATUS(st) : -1);
+  return false;
+}
+
+// cgroup-deleg row (best-effort by design): can we mkdir in cgroupfs?
+bool probeCgroupDeleg(std::string& detail) {
+  // mkdtemp needs a template it can mutate: build under a fixed parent.
+  std::string cand = "/sys/fs/cgroup/sg-doctor-probe";
+  if (::mkdir(cand.c_str(), 0755) != 0) {
+    if (errno == EEXIST) {
+      ::rmdir(cand.c_str());
+      if (::mkdir(cand.c_str(), 0755) != 0) {
+        detail = "mkdir: denied (proceeds without limits)";
+        return false;
+      }
+    } else {
+      detail = "mkdir: denied (proceeds without limits)";
+      return false;
+    }
+  }
+  ::rmdir(cand.c_str());
+  detail = "delegated (limits will apply)";
+  return true;
+}
+
+} // namespace
+#endif
+
+std::vector<IsolateRow> checkIsolate() {
+  std::vector<IsolateRow> out;
+#ifdef __linux__
+  {
+    std::string d;
+    out.push_back({"userns", true, probeUserns(d), d});
+  }
+  {
+    // mount+overlay reuses the table's real dance (parent-mapped).
+    const Capability c = checkOverlayUserns();
+    out.push_back({"mount+overlay", true, c.available, c.detail});
+  }
+  {
+    std::string d;
+    std::string pd;
+    bool procfs = false;
+    out.push_back({"pidns", true, probePidns(procfs, d, pd), d});
+    out.push_back({"procfs", false, procfs, pd});
+  }
+  {
+    std::string d;
+    out.push_back({"seccomp", true, probeSeccomp(d), d});
+  }
+  {
+    std::string d;
+    out.push_back({"landlock", true, probeLandlock(d), d});
+  }
+  {
+    std::string d;
+    out.push_back({"cgroup-deleg", false, probeCgroupDeleg(d), d});
+  }
+  out.push_back({"network", false, true, "host network stays (no netns this phase)"});
+#else
+  out.push_back({"userns", true, false, "requires Linux"});
+  out.push_back({"mount+overlay", true, false, "requires Linux"});
+  out.push_back({"pidns", true, false, "requires Linux"});
+  out.push_back({"procfs", false, false, "requires Linux"});
+  out.push_back({"seccomp", true, false, "requires Linux"});
+  out.push_back({"landlock", true, false, "requires Linux"});
+  out.push_back({"cgroup-deleg", false, false, "requires Linux"});
+  out.push_back({"network", false, true, "host network stays (no netns this phase)"});
+#endif
+  return out;
+}
+
+std::string isolateReport() {
+  std::string s = "isolate readiness (required rows must be green):\n";
+  char line[512];
+  for (const IsolateRow& r : checkIsolate()) {
+    std::snprintf(line, sizeof(line), "  %-14s %-4s %-9s %s\n", r.name.c_str(),
+                  r.required ? "req" : "opt", r.ok ? "green" : "RED", r.detail.c_str());
+    s += line;
+  }
+  return s;
+}
+
+int printIsolateTable() {
+  const auto rows = checkIsolate();
+  std::printf("%-14s %-4s %-6s %s\n", "isolate", "req", "status", "detail");
+  bool ready = true;
+  for (const auto& r : rows) {
+    std::printf("%-14s %-4s %-6s %s\n", r.name.c_str(), r.required ? "req" : "opt",
+                r.ok ? "green" : "RED", r.detail.c_str());
+    if (r.required && !r.ok) {
+      ready = false;
+    }
+  }
+  return ready ? 0 : 69;
 }
 
 } // namespace snowglobe::doctor

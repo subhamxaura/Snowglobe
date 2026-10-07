@@ -5,6 +5,25 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 2 Block 2 — restrictions; partial, Block 3 closes docs)
+- seccomp allowlist-inverse (raw BPF, no libseccomp): ERRNO(EPERM) on a
+  curated blocklist (mount/umount/pivot_root/kexec/reboot/modules/ptrace/
+  bpf/perf/userfaultfd/swapon/acct/open_by_handle_at), KILL_PROCESS on
+  `io_uring_setup` (retires `UV_USE_IO_URING=0` under `--isolate` only).
+- Landlock ABI≥1 (shared helper, also used by doctor): RO `/`, RW islands
+  (repo, HOME, /tmp, /etc, /dev, /run, `--fs-rw`); applied last, child
+  only. Denials surface as `fs.open ok:false errno:13` (EACCES by design).
+- `fs.open` gains `"ok":false,"errno":N` on failure only (success lines
+  and goldens byte-identical).
+- Env masking (`KEY|TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIAL$`,
+  `--allow-env` re-admits, `*_BASE_URL` always passes); `$HOME`
+  overlaid writable by default; `--fs-rw PATH` (repeatable, dirs only).
+- cgroup v2 best-effort (`--memory-max/--pids-max`, 2G/512 defaults);
+  delegation denied proceeds with a note (this box).
+- `doctor --isolate` (ISOLATE rows from real probes, exit 0/69);
+  `run --isolate` setup failures echo the same table.
+- `scripts/check-format.sh` owns the format gate (CI lint calls it).
+
 ### Added (Phase 2 Block 1 — isolate runner)
 - `snowglobe run --isolate`: unprivileged userns (parent-written id
   maps) + mount + pid namespaces, selective overlays (project →

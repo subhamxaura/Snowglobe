@@ -19,6 +19,7 @@
 
 #ifdef __linux__
 #include <sys/utsname.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #endif
 
@@ -51,6 +52,8 @@ void usage(std::ostream& os) {
   os << "Usage:\n"
      << "  snowglobe run [--project=DIR] [--out=DIR] [--tracer=auto|ptrace] [-a|--all-opens]\n"
      << "                [--capture-stdio] [--json] [--no-llm-proxy] [--isolate]\n"
+     << "                [--fs-rw=PATH]... [--allow-env=NAME]... [--memory-max=SIZE]\n"
+     << "                [--pids-max=N]\n"
      << "                [--upstream=PROVIDER=URL]... -- <command> [args...]\n"
      << "  snowglobe doctor\n"
      << "  snowglobe version [--json]\n"
@@ -160,8 +163,12 @@ struct RunOptions {
   bool captureStdio = false;
   bool json = false;
   bool noLlmProxy = false;
-  bool isolate = false;               // --isolate: unprivileged userns + overlay (ADR-0007)
-  std::vector<std::string> upstreams; // raw PROVIDER=URL strings
+  bool isolate = false;                     // --isolate: unprivileged userns + overlay (ADR-0007)
+  std::vector<std::string> isolateFsRw;     // --fs-rw PATH (repeatable, isolate only)
+  std::vector<std::string> isolateAllowEnv; // --allow-env NAME (repeatable, isolate only)
+  std::string isolateMemMax;                // --memory-max (isolate only)
+  std::string isolatePidsMax;               // --pids-max (isolate only)
+  std::vector<std::string> upstreams;       // raw PROVIDER=URL strings
   std::vector<std::string> cmd;
 };
 
@@ -194,9 +201,17 @@ int cmdRun(const RunOptions& o) {
   const std::string project = o.project.empty() ? cwd : o.project;
 
   // --isolate prep (ADR-0007): absolute overlay backing dirs under the run
-  // dir; the project must exist and cannot be / itself.
+  // dir; the project must exist and cannot be / itself. The isolate-only
+  // flags without --isolate are usage errors (loud, never silently idle).
+  if (!o.isolate && (!o.isolateFsRw.empty() || !o.isolateAllowEnv.empty() ||
+                     !o.isolateMemMax.empty() || !o.isolatePidsMax.empty())) {
+    std::cerr << "snowglobe run: --fs-rw/--allow-env/--memory-max/--pids-max need --isolate\n";
+    return kExUsage;
+  }
   snowglobe::isolate::OverlayDirs isoDirs;
+  std::vector<snowglobe::isolate::FsRwMount> isoFsRw;
   std::string isoProjectAbs;
+  std::string isoHomeAbs;
   if (o.isolate) {
 #ifdef __linux__
     std::error_code pec;
@@ -221,6 +236,33 @@ int cmdRun(const RunOptions& o) {
         return kExUsage;
       }
     }
+    // $HOME is overlaid writable (agents keep state there); missing HOME
+    // fails loud rather than running half-contained.
+    const char* home = ::getenv("HOME");
+    if (home == nullptr || home[0] == '\0') {
+      std::cerr << "snowglobe run: --isolate needs $HOME set\n";
+      return kExUsage;
+    }
+    {
+      std::error_code hec;
+      const fs::path habs = fs::absolute(fs::path(home), hec);
+      if (hec || !fs::is_directory(habs, hec) || hec) {
+        std::cerr << "snowglobe run: --isolate needs an existing $HOME dir, got '" << home << "'\n";
+        return kExUsage;
+      }
+      isoHomeAbs = habs.lexically_normal().string();
+    }
+    // --fs-rw targets: absolute existing dirs (files cannot overlay).
+    std::vector<std::string> fsRwAbs;
+    for (const std::string& r : o.isolateFsRw) {
+      std::error_code rec2;
+      const fs::path rabs = fs::absolute(fs::path(r), rec2);
+      if (rec2 || !fs::is_directory(rabs, rec2) || rec2) {
+        std::cerr << "snowglobe run: --fs-rw needs an existing dir, got '" << r << "'\n";
+        return kExUsage;
+      }
+      fsRwAbs.push_back(rabs.lexically_normal().string());
+    }
     std::error_code rec;
     const fs::path runAbs = fs::absolute(runDir, rec);
     if (rec) {
@@ -228,7 +270,7 @@ int cmdRun(const RunOptions& o) {
       return kExSoftware;
     }
     std::string prepErr;
-    if (!snowglobe::isolate::prepareRunDir(runAbs.string(), isoDirs, prepErr)) {
+    if (!snowglobe::isolate::prepareRunDir(runAbs.string(), fsRwAbs, isoDirs, isoFsRw, prepErr)) {
       std::cerr << "snowglobe run: " << prepErr << "\n";
       return kExSoftware;
     }
@@ -295,8 +337,102 @@ int cmdRun(const RunOptions& o) {
     return kExUnavailable;
   }
 
-  // LLM proxy first: it must be listening before the child starts, and the
-  // env injection below is inherited across fork. A proxy that cannot bind
+  // --isolate middle spawn happens HERE, while still single-threaded
+  // (before the proxy pool exists): forking later inherits userspace
+  // locks held by proxy threads and deadlocks the middle (proven
+  // in-suite under sanitizers). The middle sets up, stops at SIGSTOP,
+  // and waits; the tracer adopts it below after the proxy is up.
+  // Best-effort cgroup placement also happens here (pre-init-fork).
+  // The guard rmdirs the cgroup at every exit below (best-effort).
+  struct CgroupGuard {
+    std::string path;
+    ~CgroupGuard() {
+      if (!path.empty()) {
+        ::rmdir(path.c_str());
+      }
+    }
+  };
+  CgroupGuard cgGuard;
+  pid_t isoChild = -1;
+  snowglobe::isolate::ChildPipes ipipes; // isolate only; lives to tracer adopt
+  if (o.isolate) {
+    std::string pipeErr;
+    if (!snowglobe::isolate::makePipes(ipipes, pipeErr)) {
+      std::cerr << "snowglobe run: " << pipeErr << "\n";
+      return kExSoftware;
+    }
+    snowglobe::isolate::ChildConfig cfg;
+    cfg.projectDir = isoProjectAbs;
+    cfg.homeDir = isoHomeAbs;
+    cfg.dirs = isoDirs;
+    for (const auto& m : isoFsRw) {
+      snowglobe::isolate::FsRwMount fm;
+      fm.path = m.path;
+      fm.upper = m.upper;
+      fm.work = m.work;
+      cfg.fsRw.push_back(fm);
+    }
+    cfg.allowEnv = o.isolateAllowEnv;
+    cfg.cmd = o.cmd;
+    cfg.mapReqW = ipipes.mapReqW;
+    cfg.mapAckR = ipipes.mapAckR;
+    cfg.statusW = ipipes.statusW;
+    cfg.envR = ipipes.envR;
+    std::string spawnErr;
+    isoChild = snowglobe::isolate::spawnMiddle(cfg, ipipes, spawnErr);
+    if (isoChild < 0) {
+      std::cerr << "snowglobe run: " << spawnErr << "\n";
+      return kExSoftware;
+    }
+    std::string mapErr;
+    // Maps now; setup status later: the middle blocks reading injected
+    // env (forwarded after the proxy starts) before reporting ready.
+    if (!snowglobe::isolate::serveMaps(isoChild, ipipes, mapErr)) {
+      std::cerr << snowglobe::doctor::isolateReport();
+      std::cerr << "snowglobe run: " << mapErr << "\n";
+      int st = 0;
+      ::waitpid(isoChild, &st, 0);
+      return kExUnavailable;
+    }
+    {
+      long long memBytes = 2LL * 1024 * 1024 * 1024;
+      long long pidsMax = 512;
+      if (!o.isolateMemMax.empty()) {
+        std::string perr;
+        if (!snowglobe::isolate::parseMemSize(o.isolateMemMax, memBytes, perr)) {
+          std::cerr << "snowglobe run: --memory-max " << perr << "\n";
+          return kExUsage;
+        }
+      }
+      if (!o.isolatePidsMax.empty()) {
+        if (o.isolatePidsMax == "max") {
+          pidsMax = -1;
+        } else if (o.isolatePidsMax.find_first_not_of("0123456789") != std::string::npos) {
+          std::cerr << "snowglobe run: --pids-max needs an integer or max\n";
+          return kExUsage;
+        } else {
+          try {
+            pidsMax = std::stol(o.isolatePidsMax);
+          } catch (...) {
+            std::cerr << "snowglobe run: --pids-max needs an integer or max\n";
+            return kExUsage;
+          }
+        }
+      }
+      std::string cgNote;
+      if (snowglobe::isolate::joinCgroup(runDir.filename().string(), (int)isoChild, memBytes,
+                                         pidsMax, cgNote, cgGuard.path)) {
+        std::cerr << "note: cgroup limits active (" << cgNote << ")\n";
+      } else {
+        std::cerr << "note: " << cgNote << "\n";
+      }
+    }
+  }
+
+  // LLM proxy: it must be listening before the agent's first request,
+  // and the env injection below is inherited by non-isolate children
+  // across fork (the isolate middle forked earlier and gets injected
+  // env forwarded over a pipe instead). A proxy that cannot bind
   // is a hard error — silently running without capture would fake the
   // recording contract.
   std::unique_ptr<snowglobe::proxy::LlmProxy> proxy;
@@ -346,12 +482,43 @@ int cmdRun(const RunOptions& o) {
     // OpenAI call would misroute to api.openai.com/chat/completions (404).
     // Anthropic/Gemini SDKs version their own paths, so those bases stay bare.
     const std::string base = "http://127.0.0.1:" + std::to_string(proxyPort);
-    ::setenv("OPENAI_BASE_URL", (base + "/openai/v1").c_str(), 1);
-    ::setenv("OPENAI_API_BASE", (base + "/openai/v1").c_str(), 1);
-    ::setenv("ANTHROPIC_BASE_URL", (base + "/anthropic").c_str(), 1);
-    ::setenv("ANTHROPIC_API_BASE", (base + "/anthropic").c_str(), 1);
-    ::setenv("GOOGLE_GEMINI_BASE_URL", (base + "/gemini").c_str(), 1);
-    ::setenv("GEMINI_API_BASE", (base + "/gemini").c_str(), 1);
+    const std::vector<std::pair<std::string, std::string>> injected = {
+        {"OPENAI_BASE_URL", base + "/openai/v1"},     {"OPENAI_API_BASE", base + "/openai/v1"},
+        {"ANTHROPIC_BASE_URL", base + "/anthropic"},  {"ANTHROPIC_API_BASE", base + "/anthropic"},
+        {"GOOGLE_GEMINI_BASE_URL", base + "/gemini"}, {"GEMINI_API_BASE", base + "/gemini"},
+    };
+    for (const auto& kv : injected) {
+      ::setenv(kv.first.c_str(), kv.second.c_str(), 1);
+    }
+    if (o.isolate) {
+      // The middle forked before these existed: forward them over the env
+      // pipe, then read setup status (the middle blocks on env first).
+      std::string envErr;
+      if (!snowglobe::isolate::writeEnvBlock(ipipes.envW, injected, envErr)) {
+        std::cerr << "snowglobe run: " << envErr << "\n";
+        return kExSoftware;
+      }
+    }
+  }
+  if (o.isolate && o.noLlmProxy) {
+    // No proxy, no injection — still close the middle's env wait with an
+    // empty block (a missing write would hang the run, never skip this).
+    std::string envErr;
+    if (!snowglobe::isolate::writeEnvBlock(
+            ipipes.envW, std::vector<std::pair<std::string, std::string>>(), envErr)) {
+      std::cerr << "snowglobe run: " << envErr << "\n";
+      return kExSoftware;
+    }
+  }
+  if (o.isolate) {
+    std::string readyErr;
+    if (!snowglobe::isolate::awaitReady(isoChild, ipipes, readyErr)) {
+      std::cerr << snowglobe::doctor::isolateReport();
+      std::cerr << "snowglobe run: " << readyErr << "\n";
+      int st = 0;
+      ::waitpid(isoChild, &st, 0);
+      return kExUnavailable;
+    }
   }
 
   // Secret env collected AFTER injection (superset, safer); redacts run.meta
@@ -373,14 +540,10 @@ int cmdRun(const RunOptions& o) {
   topts.tracer = tracerName;
   topts.secretEnv = secrets;
   if (o.isolate) {
-    // prepareRunDir already absolutised everything off runAbs.
+    // The middle was spawned (and handshaked) above, pre-threads; the
+    // tracer adopts its pid and starts the wait loop at its SIGSTOP.
     topts.isolate = true;
-    topts.isolateProject = isoProjectAbs;
-    topts.isolateUpper = isoDirs.upper;
-    topts.isolateWork = isoDirs.work;
-    topts.isolateEtcUpper = isoDirs.etcUpper;
-    topts.isolateEtcWork = isoDirs.etcWork;
-    topts.isolateMnt = isoDirs.mnt;
+    topts.isolateChild = isoChild;
   }
 
   if (o.captureStdio) {
@@ -401,6 +564,11 @@ int cmdRun(const RunOptions& o) {
   }
   if (code < 0) {
     if (code == -kExUnavailable) {
+      if (o.isolate) {
+        // Echo the same readiness list doctor --isolate prints, then the
+        // specific step + errno, so the missing capability is named twice.
+        std::cerr << snowglobe::doctor::isolateReport();
+      }
       std::cerr << "snowglobe run: " << tracer->error() << "\n";
       return kExUnavailable;
     }
@@ -469,6 +637,9 @@ int main(int argc, char** argv) {
   const std::string sub = args[0];
 
   if (sub == "doctor") {
+    if (args.size() > 1 && args[1] == "--isolate") {
+      return snowglobe::doctor::printIsolateTable();
+    }
     return snowglobe::doctor::printTable();
   }
   if (sub == "version") {
@@ -513,6 +684,38 @@ int main(int argc, char** argv) {
         o.captureStdio = true;
       } else if (a == "--isolate") {
         o.isolate = true;
+      } else if (a.rfind("--fs-rw=", 0) == 0) {
+        o.isolateFsRw.push_back(a.substr(8));
+      } else if (a == "--fs-rw") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe run: --fs-rw needs PATH\n";
+          return kExUsage;
+        }
+        o.isolateFsRw.push_back(args[++i]);
+      } else if (a.rfind("--allow-env=", 0) == 0) {
+        o.isolateAllowEnv.push_back(a.substr(12));
+      } else if (a == "--allow-env") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe run: --allow-env needs NAME\n";
+          return kExUsage;
+        }
+        o.isolateAllowEnv.push_back(args[++i]);
+      } else if (a.rfind("--memory-max=", 0) == 0) {
+        o.isolateMemMax = a.substr(13);
+      } else if (a == "--memory-max") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe run: --memory-max needs SIZE\n";
+          return kExUsage;
+        }
+        o.isolateMemMax = args[++i];
+      } else if (a.rfind("--pids-max=", 0) == 0) {
+        o.isolatePidsMax = a.substr(11);
+      } else if (a == "--pids-max") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe run: --pids-max needs N\n";
+          return kExUsage;
+        }
+        o.isolatePidsMax = args[++i];
       } else if (a == "--json") {
         o.json = true;
       } else if (a == "--no-llm-proxy") {
