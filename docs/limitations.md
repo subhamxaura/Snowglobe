@@ -7,10 +7,12 @@ ptrace backend cannot see or cannot do, with the mechanism in each case.
 
 Two attribution rules coexist by design and differ in anchoring:
 
-- `links.json` (`core/link/`, ADR-0006) is **response-anchored**: turn N
-  owns side effects in `[response N, request N+1)` (plus lineage
-  retention for background children). Anything before the first
-  response is explicitly `unattributed` (`pre-turn`), never guessed.
+- `links.json` (`core/link/`, ADR-0006) is **response-partitioned
+  (res-partition, R1)**: turn N owns side effects in `[response N,
+  response N+1)` (plus lineage retention for background children).
+  An event after request N+1 but before response N+1 still belongs to
+  turn N — an in-flight request moves no boundary. Anything before the
+  first response is explicitly `unattributed` (`pre-turn`), never guessed.
 - The viewer fallback (`TurnIndex` without a sidecar) is
   **request-anchored**: `[request N, request N+1)`. Where links.json
   speaks it wins; unlisted seqs keep the old span answer. The UI labels

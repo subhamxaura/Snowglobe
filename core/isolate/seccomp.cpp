@@ -5,6 +5,7 @@
 #include "seccomp.hpp"
 
 #ifdef __linux__
+#include <cassert>
 #include <errno.h>
 #include <linux/audit.h>
 #include <linux/filter.h>
@@ -44,6 +45,9 @@ constexpr unsigned int kNsMask = 0x7E020080U;
 // stays allowed — networking works).
 constexpr unsigned int kAfAlg = 38;
 constexpr unsigned int kAfVsock = 40;
+// x32 ABI bit (R5): x32 syscalls reuse AUDIT_ARCH_X86_64 with this bit set
+// in nr. Denied as a range (see the JGE rule after the LD nr below).
+constexpr unsigned int kX32Bit = 0x40000000U;
 
 void pushErrno(std::vector<BlockedCall>& out, const char* name, int nr) {
   // Named local (not a braced temporary): GCC 13 -O3 misreads the
@@ -319,6 +323,23 @@ std::vector<struct sock_filter> buildIsolateFilterWithArch(const std::vector<Blo
     ins.jf = jf;
     return ins;
   };
+  auto jumpGe = [](unsigned int k, unsigned char jt, unsigned char jf) -> struct sock_filter {
+    struct sock_filter ins = {};
+    ins.code = static_cast<unsigned short>(BPF_JMP + BPF_JGE + BPF_K);
+    ins.k = k;
+    ins.jt = jt;
+    ins.jf = jf;
+    return ins;
+  };
+  // Forward jump distance with a load-bearing range check (R4): BPF jt/jf
+  // are 8-bit, so a target farther than 255 would silently truncate into a
+  // wrong program. The filter is small today (~70 insns); this trips loudly
+  // in debug builds the day growth threatens it.
+  auto fwdOff = [](size_t target, size_t cur) -> unsigned char {
+    assert(target > cur);
+    assert(target - cur - 1 <= 255);
+    return static_cast<unsigned char>(target - cur - 1);
+  };
   auto ret = [](unsigned int k) -> struct sock_filter {
     struct sock_filter ins = {};
     ins.code = static_cast<unsigned short>(BPF_RET + BPF_K);
@@ -377,7 +398,8 @@ std::vector<struct sock_filter> buildIsolateFilterWithArch(const std::vector<Blo
   // personality: JEQ nr, LD arg0, 5x JEQ allowed (7 insns)
   const size_t personalityInsns = hasPersonality ? 7 : 0;
 
-  const size_t callBase = 3; // [0] LD arch, [1] JEQ arch, [2] LD nr
+  // [0] LD arch, [1] JEQ arch, [2] LD nr, [3] x32 range deny.
+  const size_t callBase = 4;
   const size_t simpleEnd = callBase + calls.size();
   const size_t cloneBase = simpleEnd;
   const size_t unshareBase = cloneBase + cloneInsns;
@@ -390,14 +412,17 @@ std::vector<struct sock_filter> buildIsolateFilterWithArch(const std::vector<Blo
 
   // [0] A = audit arch.
   prog.push_back(loadAbs(4)); // offsetof(struct seccomp_data, arch)
-  // [1] arch match else KILL (fail closed: x32 and friends die loudly).
-  {
-    const auto jf = static_cast<unsigned char>(killIdx - 1 - 1);
-    prog.push_back(jumpEq(auditArch, 0, jf));
-  }
+  // [1] arch match else KILL (fail closed: unknown arches die loudly;
+  // x32 shares this arch value and is denied by the nr-range rule (R5)).
+  prog.push_back(jumpEq(auditArch, 0, fwdOff(killIdx, 1)));
   // [2] A = syscall number.
   prog.push_back(loadAbs(0)); // offsetof(struct seccomp_data, nr)
-  // [3..] one JEQ per simple blocked call.
+  // [3] x32 ABI range deny (R5): x32 numbers reuse this arch with bit 30
+  // set, so every nr-JEQ below would miss -> ALLOW (fail open;
+  // probe/x32.c prints ENABLED on CONFIG_X86_X32_ABI=y kernels). Deny the
+  // whole high range: no legitimate nr reaches it on x86_64 or aarch64.
+  prog.push_back(jumpGe(kX32Bit, fwdOff(errnoIdx, 3), 0));
+  // [4..] one JEQ per simple blocked call.
   for (size_t i = 0; i < calls.size(); ++i) {
     size_t target;
     if (calls[i].kill) {
@@ -407,8 +432,7 @@ std::vector<struct sock_filter> buildIsolateFilterWithArch(const std::vector<Blo
     } else {
       target = errnoIdx;
     }
-    const auto jt = static_cast<unsigned char>(target - (callBase + i) - 1);
-    prog.push_back(jumpEq(static_cast<unsigned int>(calls[i].nr), jt, 0));
+    prog.push_back(jumpEq(static_cast<unsigned int>(calls[i].nr), fwdOff(target, callBase + i), 0));
   }
   // --- clone: deny namespace creation, allow thread/process creation ---
   if (hasClone) {
@@ -420,9 +444,7 @@ std::vector<struct sock_filter> buildIsolateFilterWithArch(const std::vector<Blo
     // else ERRNO(EPERM). jt skips to unshareBase, jf lands on ERRNO.
     {
       const size_t cur = cloneBase + 3;
-      const auto jt = static_cast<unsigned char>(unshareBase - cur - 1);
-      const auto jf = static_cast<unsigned char>(errnoIdx - cur - 1);
-      prog.push_back(jumpEq(0, jt, jf));
+      prog.push_back(jumpEq(0, fwdOff(unshareBase, cur), fwdOff(errnoIdx, cur)));
     }
   }
   // --- unshare: same shape (flags in args[0]) ---
@@ -432,9 +454,7 @@ std::vector<struct sock_filter> buildIsolateFilterWithArch(const std::vector<Blo
     prog.push_back(aluAnd(kNsMask));
     {
       const size_t cur = unshareBase + 3;
-      const auto jt = static_cast<unsigned char>(socketBase - cur - 1);
-      const auto jf = static_cast<unsigned char>(errnoIdx - cur - 1);
-      prog.push_back(jumpEq(0, jt, jf));
+      prog.push_back(jumpEq(0, fwdOff(socketBase, cur), fwdOff(errnoIdx, cur)));
     }
   }
   // --- socket: deny AF_ALG + AF_VSOCK only, allow everything else ---
@@ -444,15 +464,11 @@ std::vector<struct sock_filter> buildIsolateFilterWithArch(const std::vector<Blo
     // family == ALG -> ERRNO; else fall through to the VSOCK check.
     {
       const size_t cur = socketBase + 2;
-      const auto jf = static_cast<unsigned char>(0); // next insn (VSOCK check)
-      const auto jt = static_cast<unsigned char>(errnoIdx - cur - 1);
-      prog.push_back(jumpEq(kAfAlg, jt, jf));
+      prog.push_back(jumpEq(kAfAlg, fwdOff(errnoIdx, cur), 0)); // jf 0: next insn
     }
     {
       const size_t cur = socketBase + 3;
-      const auto jt = static_cast<unsigned char>(errnoIdx - cur - 1);
-      const auto jf = static_cast<unsigned char>(personalityBase - cur - 1);
-      prog.push_back(jumpEq(kAfVsock, jt, jf));
+      prog.push_back(jumpEq(kAfVsock, fwdOff(errnoIdx, cur), fwdOff(personalityBase, cur)));
     }
   }
   // --- personality: allow only Docker's 5 values, deny the rest ---
@@ -468,13 +484,10 @@ std::vector<struct sock_filter> buildIsolateFilterWithArch(const std::vector<Blo
       if (i < 4) {
         // Allowed -> jump directly to ALLOW (skip remaining value checks);
         // otherwise fall through to the next value check.
-        const auto jt = static_cast<unsigned char>(nextCheck - cur - 1);
-        prog.push_back(jumpEq(allowed[i], jt, 0));
+        prog.push_back(jumpEq(allowed[i], fwdOff(nextCheck, cur), 0));
       } else {
         // Last value: jt -> allow path, jf -> ERRNO.
-        const auto jt = static_cast<unsigned char>(nextCheck - cur - 1);
-        const auto jf = static_cast<unsigned char>(errnoIdx - cur - 1);
-        prog.push_back(jumpEq(allowed[i], jt, jf));
+        prog.push_back(jumpEq(allowed[i], fwdOff(nextCheck, cur), fwdOff(errnoIdx, cur)));
       }
     }
   }
@@ -500,6 +513,11 @@ bool installIsolateFilter(std::string& error) {
     error = "isolate: seccomp unsupported on this arch";
     return false;
   }
+  // TSYNC invariant (R6): the caller installs this while single-threaded
+  // (the middle, pre-fork; spawn-before-threads), so plain seccomp(2)
+  // covers the only thread and init+agent inherit the filter via fork.
+  // Never call this after threads exist without SECCOMP_FILTER_FLAG_TSYNC:
+  // sibling threads would keep the old (empty) filter — a silent fail-open.
   if (::prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0) {
     error = std::string("isolate: no_new_privs: ") + ::strerror(errno);
     return false;

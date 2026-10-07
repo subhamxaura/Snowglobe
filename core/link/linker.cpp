@@ -3,6 +3,7 @@
 #include "link.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <limits>
 #include <set>
 #include <sstream>
@@ -161,6 +162,13 @@ bool isProbeReq(const Ev& r) {
 
 // Whitespace-normalised comparison: trim + collapse runs (commands are
 // case-sensitive; a "FOO" argv never matches a "foo" tool string).
+// Boundary predicate for joined-argv substring hits (R2): a hit counts
+// only at string start/end, whitespace, or '/'. In particular "rm" never
+// matches "perform_clean" (no boundary around the hit), while "/bin/rm"
+// still matches "rm" and "git status" still matches "git status --short".
+bool isMatchBoundary(char c) {
+  return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '/';
+}
 std::string normSpace(const std::string& s) {
   std::string out;
   bool pending = false;
@@ -195,7 +203,16 @@ bool argvMatches(const std::vector<std::string>& argv, const std::string& cmd) {
     }
     joined += na;
   }
-  return joined.find(want) != std::string::npos;
+  // Substring hits require token boundaries on both sides (R2).
+  for (size_t pos = joined.find(want); pos != std::string::npos; pos = joined.find(want, pos + 1)) {
+    const bool left = (pos == 0) || isMatchBoundary(joined[pos - 1]);
+    const size_t end = pos + want.size();
+    const bool right = (end == joined.size()) || isMatchBoundary(joined[end]);
+    if (left && right) {
+      return true;
+    }
+  }
+  return false;
 }
 
 struct Turn {
@@ -299,10 +316,22 @@ LinksDoc buildLinks(const std::vector<std::string>& lines, BlobReader blobs) {
   }
   std::stable_sort(turns.begin(), turns.end(),
                    [](const Turn& a, const Turn& b) { return a.reqKey < b.reqKey; });
+  // Load-bearing invariant for spanAt's binary search below (R3):
+  // resKeys non-decreasing in reqKey order. Holds while responses
+  // complete in request order (sequential agents, all fixtures). A
+  // concurrent trace completing out of order trips this assert — loudly,
+  // by design (silent misattribution is worse); the fix then is a linear
+  // scan fallback in spanAt, not a quieter rule.
+  for (size_t i = 1; i < turns.size(); ++i) {
+    assert(turns[i - 1].resKey <= turns[i].resKey);
+  }
   doc.turns = static_cast<long long>(turns.size());
 
   // Pass 2: attribute every non-llm event in file order.
-  // span i = [turns[i].resKey, turns[i+1].reqKey); tail runs to +inf.
+  // Res-partition (R1): span i = [turns[i].resKey, turns[i+1].resKey);
+  // tail runs to +inf. The owner is the last *completed* response: an
+  // event after request N+1 but before response N+1 still belongs to
+  // turn N (an in-flight request does not move the boundary).
   std::vector<TurnLinks> out(turns.size());
   for (size_t i = 0; i < turns.size(); ++i) {
     out[i].turn = turns[i].id;

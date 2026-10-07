@@ -5,6 +5,35 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Fixed (Phase 3 ITEM 0 — second-model review findings, all cited with severity)
+- [High] x32 ABI bypassed the seccomp filter (R5): x32 numbers reuse
+  `AUDIT_ARCH_X86_64` with bit 30 set, missing every nr-JEQ into ALLOW
+  (proven: x32 `add_key` returned a live key serial under the old filter;
+  `probe/x32.c` prints ENABLED on `CONFIG_X86_X32_ABI=y` kernels).
+  The filter now denies `nr >= 0x40000000` first (JGE→EPERM), with a
+  regression test (`seccomp x32 numbers are denied`).
+- [Medium] `argvMatches` over-matched substrings (R2): tool command "rm"
+  upgraded `proc.exec ["sh","-c","perform_clean"]` to argv-match. Joined-argv
+  hits now require token boundaries (start/end, whitespace, `/`); pinned by
+  `argv-match requires token boundaries` (negative + `/bin/rm` and
+  `git status --short` positives).
+- [Low] Linker span prose disagreed with the res-partition implementation
+  (R1): `link.hpp`, the Pass-2 comment, `docs/limitations.md`, and ADR-0006
+  (+R1 note) now state `[response N, response N+1)`; new in-flight test pins
+  `[req_{N+1}, res_{N+1})` → turn N. No format change (fixtures byte-identical).
+- [Low] Missing monotonicity assert on the `spanAt` binary-search invariant
+  (R3): turns sorted by `reqKey` now assert non-decreasing `resKey`
+  (concurrent out-of-order completion trips loudly instead of misattributing).
+- [Low] BPF jump offsets were unchecked 8-bit truncations (R4): all forward
+  jumps go through a range-asserted helper.
+- [Info] No `SECCOMP_FILTER_FLAG_TSYNC` rationale recorded (R6): installer
+  documents the single-threaded pre-fork invariant it relies on.
+
+### Added (Phase 3 ITEM 0)
+- `docs/threat-model.md`: the AGENTS.md §1.4 promise — microVM-vs-isolate
+  boundary, accident-containment framing, explicit non-goals, boundary table.
+  §1.4 conformance is now fully RESOLVED (this doc was the open item).
+
 ### Added (Phase 2 Block 3 — conformance resolution; closes Block 2 docs)
 - Seccomp Docker parity (moby/profiles `seccomp/default.json`, unprivileged):
   ERRNO(EPERM) on add_key/keyctl/request_key, clock_settime/settimeofday/stime,

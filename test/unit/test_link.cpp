@@ -170,3 +170,61 @@ TEST_CASE("linker attributes the synthetic stream by rule", "[link]") {
   // Deterministic: same input → byte-identical output.
   CHECK(buildLinks(synthLines(), synthBlobs()).json == doc.json);
 }
+
+TEST_CASE("linker res-partition pins in-flight events to the last completed response", "[link]") {
+  // R1: span i = [res_i, res_{i+1}). The fs.open at key 3 sits after
+  // request 2 (key 2) but before response 2 (key 4): the old
+  // "[response, next request)" reading would owner it to turn 2, but the
+  // in-flight request moves no boundary — it belongs to turn 1.
+  using snowglobe::link::buildLinks;
+  const std::vector<std::string> lines = {
+      R"json({"seq":0,"ev":"llm.request","id":1,"provider":"openai","method":"POST","model":"m","bytes":9,"pid":99,"tid":98})json",
+      R"json({"seq":1,"ev":"llm.response","id":1,"status":200,"bytes":7,"pid":99,"tid":98})json",
+      R"json({"seq":2,"ev":"llm.request","id":2,"provider":"openai","method":"POST","model":"m","bytes":9,"pid":99,"tid":97})json",
+      R"json({"seq":3,"ev":"fs.open","pid":77,"tid":77,"path":"/tmp/inflight","write":true})json",
+      R"json({"seq":4,"ev":"llm.response","id":2,"status":200,"bytes":3,"pid":99,"tid":97})json",
+  };
+  const auto doc = buildLinks(lines, [](const std::string&, std::string&) { return false; });
+  CHECK(doc.turns == 2);
+  const auto turns = viewTurns(doc.json);
+  REQUIRE(turns.size() == 2);
+  CHECK(turns.at(1).attr == std::map<long long, std::string>{{3, "window"}});
+  CHECK(turns.at(2).attr.empty());
+}
+
+TEST_CASE("argv-match requires token boundaries", "[link]") {
+  // R2: "rm" must NOT match "perform_clean" (substring without a
+  // boundary), while "/bin/rm" (slash boundary) and "git status" inside
+  // "git status --short" (whitespace boundaries) still upgrade to
+  // argv-match. Unknown pids keep every exec on the window basis first,
+  // so the assertion isolates the upgrade itself.
+  using snowglobe::link::buildLinks;
+  const char* body =
+      R"json({"choices":[{"message":{"tool_calls":[{"id":"call_a","type":"function",)json"
+      R"json("function":{"name":"run_command","arguments":"{\"command\": \"rm\"}"}},)json"
+      R"json({"id":"call_b","type":"function",)json"
+      R"json("function":{"name":"run_command","arguments":"{\"command\": \"git status\"}"}}]}}]})json";
+  const std::vector<std::string> lines = {
+      R"json({"seq":0,"ev":"llm.request","id":1,"provider":"openai","method":"POST","model":"m","bytes":9,"pid":99,"tid":98})json",
+      R"json({"seq":1,"ev":"llm.response","id":1,"status":200,"bytes":7,"req":"llm/0001.res.json","res":"llm/0001.res.json","pid":99,"tid":98})json",
+      R"json({"seq":2,"ev":"proc.exec","pid":71,"tid":71,"path":"/usr/bin/sh","argv":["sh","-c","perform_clean"]})json",
+      R"json({"seq":3,"ev":"proc.exec","pid":72,"tid":72,"path":"/bin/rm","argv":["/bin/rm"]})json",
+      R"json({"seq":4,"ev":"proc.exec","pid":73,"tid":73,"path":"/usr/bin/git","argv":["git","status","--short"]})json",
+  };
+  auto blobs = [&body](const std::string& rel, std::string& out) {
+    if (rel == "llm/0001.res.json") {
+      out = body;
+      return true;
+    }
+    return false;
+  };
+  const auto doc = buildLinks(lines, blobs);
+  CHECK(doc.turns == 1);
+  const auto turns = viewTurns(doc.json);
+  REQUIRE(turns.size() == 1);
+  CHECK(turns.at(1).attr == std::map<long long, std::string>{
+                                {2, "window"},
+                                {3, "argv-match"},
+                                {4, "argv-match"},
+                            });
+}

@@ -7,9 +7,11 @@
 //
 // Turn rule mirrors viewer/lib/model.ts: every non-probe llm.response is a
 // turn (INCLUDING errors); probes (HEAD, or model-less with no body) never
-// are. A turn spans [its response, next turn's request); the tail runs to
-// end of trace. Ordering is by seq when every event carries one, else file
-// order (normalised fixtures strip seq).
+// are. A turn spans [its response, next turn's response); the tail runs to
+// end of trace (res-partition, R1: the owner is the last *completed*
+// response, so an event after request N+1 but before response N+1 still
+// belongs to turn N). Ordering is by seq when every event carries one,
+// else file order (normalised fixtures strip seq).
 //
 // Attribution (first hit wins, strongest evidence last upgrades):
 //   window:    side effect inside a turn span → confidence high.

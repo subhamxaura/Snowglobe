@@ -150,6 +150,42 @@ TEST_CASE("seccomp filter kills io_uring_setup with SIGSYS", "[isolate]") {
 #endif
 }
 
+TEST_CASE("seccomp x32 numbers are denied (R5)", "[isolate]") {
+#ifdef __linux__
+  // probe/x32.c prints ENABLED on CONFIG_X86_X32_ABI=y kernels (this dev
+  // box: ENABLED). x32 reuses the native audit arch with bit 30 set in nr,
+  // so every nr-JEQ misses -> ALLOW without a range rule (proven bypass:
+  // x32 add_key returned a live key serial under the pre-R5 filter). The
+  // JGE range rule must EPERM any nr with the bit, on any arch (no
+  // legitimate nr reaches it on x86_64 or aarch64).
+  const pid_t c = ::fork();
+  REQUIRE(c >= 0);
+  if (c == 0) {
+    std::string err;
+    if (!snowglobe::isolate::installIsolateFilter(err)) {
+      _exit(10);
+    }
+#ifdef SYS_add_key
+    errno = 0;
+    const long r = ::syscall(static_cast<long>(SYS_add_key) | 0x40000000L, "user", "x32deny",
+                             "payload", 7, -4);
+    if (r != -1 || errno != EPERM) {
+      _exit(11); // bypassed (key serial) or wrong errno
+    }
+#else
+    _exit(12);
+#endif
+    _exit(0);
+  }
+  int st = 0;
+  REQUIRE(::waitpid(c, &st, 0) == c);
+  CHECK(WIFEXITED(st));
+  CHECK(WEXITSTATUS(st) == 0);
+#else
+  SUCCEED("requires Linux");
+#endif
+}
+
 TEST_CASE("seccomp arch mismatch kills (fail closed, no fail-open)", "[isolate]") {
   // The BPF LD-nr thread starts with an arch check that KILLs on mismatch.
   // Prove it: build the real filter for the WRONG arch, install in a child,
