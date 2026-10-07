@@ -16,11 +16,17 @@
 
 static int pput(const char* path, const char* s) {
   int fd = open(path, O_WRONLY);
-  if (fd < 0) return -1;
+  if (fd < 0)
+    return -1;
   size_t n = strlen(s), w = 0;
   while (w < n) {
     ssize_t k = write(fd, s + w, n - w);
-    if (k < 0) { if (errno == EINTR) continue; close(fd); return -1; }
+    if (k < 0) {
+      if (errno == EINTR)
+        continue;
+      close(fd);
+      return -1;
+    }
     w += (size_t)k;
   }
   close(fd);
@@ -30,18 +36,38 @@ static int pput(const char* path, const char* s) {
 int main(void) {
   setvbuf(stdout, NULL, _IONBF, 0);
   int toC[2], toP[2];
-  if (pipe(toC) || pipe(toP)) { printf("pipe: %s\n", strerror(errno)); return 1; }
+  if (pipe(toC) || pipe(toP)) {
+    printf("pipe: %s\n", strerror(errno));
+    return 1;
+  }
   pid_t m = fork();
-  if (m < 0) { printf("fork: %s\n", strerror(errno)); return 1; }
+  if (m < 0) {
+    printf("fork: %s\n", strerror(errno));
+    return 1;
+  }
   if (m == 0) {
-    close(toC[1]); close(toP[0]);
-    if (unshare(CLONE_NEWUSER) != 0) { printf("child unshare: %s\n", strerror(errno)); _exit(10); }
-    if (write(toP[1], "M", 1) != 1) _exit(11);
+    close(toC[1]);
+    close(toP[0]);
+    if (unshare(CLONE_NEWUSER) != 0) {
+      printf("child unshare: %s\n", strerror(errno));
+      _exit(10);
+    }
+    if (write(toP[1], "M", 1) != 1)
+      _exit(11);
     char ack = 0;
-    if (read(toC[0], &ack, 1) != 1 || ack != 'G') { printf("child no ack\n"); _exit(12); }
-    if (unshare(CLONE_NEWPID) != 0) { printf("child pidns: %s\n", strerror(errno)); _exit(13); }
+    if (read(toC[0], &ack, 1) != 1 || ack != 'G') {
+      printf("child no ack\n");
+      _exit(12);
+    }
+    if (unshare(CLONE_NEWPID) != 0) {
+      printf("child pidns: %s\n", strerror(errno));
+      _exit(13);
+    }
     pid_t init = fork();
-    if (init < 0) { printf("child fork: %s\n", strerror(errno)); _exit(14); }
+    if (init < 0) {
+      printf("child fork: %s\n", strerror(errno));
+      _exit(14);
+    }
     if (init == 0) {
       // I am PID 1 of the new ns (getpid()==1): mount proc now.
       printf("init pid=%d\n", (int)getpid());
@@ -57,9 +83,13 @@ int main(void) {
     waitpid(init, &st, 0);
     _exit(WIFEXITED(st) ? WEXITSTATUS(st) : 20);
   }
-  close(toC[0]); close(toP[1]);
+  close(toC[0]);
+  close(toP[1]);
   char req = 0;
-  if (read(toP[0], &req, 1) != 1) { printf("parent no req\n"); return 2; }
+  if (read(toP[0], &req, 1) != 1) {
+    printf("parent no req\n");
+    return 2;
+  }
   char pgm[64], ump[64], gmp[64], umap[64], gmap[64];
   snprintf(pgm, sizeof pgm, "/proc/%d/setgroups", (int)m);
   snprintf(ump, sizeof ump, "/proc/%d/uid_map", (int)m);
@@ -67,8 +97,14 @@ int main(void) {
   snprintf(umap, sizeof umap, "0 %d 1", (int)getuid());
   snprintf(gmap, sizeof gmap, "0 %d 1", (int)getgid());
   pput(pgm, "deny");
-  if (pput(ump, umap) || pput(gmp, gmap)) { printf("parent maps failed\n"); return 3; }
-  if (write(toC[1], "G", 1) != 1) { printf("parent no ack\n"); return 4; }
+  if (pput(ump, umap) || pput(gmp, gmap)) {
+    printf("parent maps failed\n");
+    return 3;
+  }
+  if (write(toC[1], "G", 1) != 1) {
+    printf("parent no ack\n");
+    return 4;
+  }
   int st = 0;
   waitpid(m, &st, 0);
   printf("middle exit=%d\n", WIFEXITED(st) ? WEXITSTATUS(st) : -1);

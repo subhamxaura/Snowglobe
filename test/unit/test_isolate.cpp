@@ -17,8 +17,8 @@
 #define PR_SET_NO_NEW_PRIVS 38
 #endif
 
-#include "isolate/landlock.hpp"
 #include "isolate/isolate.hpp"
+#include "isolate/landlock.hpp"
 #include "isolate/seccomp.hpp"
 
 TEST_CASE("isolate blocklist shape", "[isolate]") {

@@ -5,10 +5,10 @@
 
 #ifdef __linux__
 #include <errno.h>
-#include <string.h>
 #include <linux/audit.h>
 #include <linux/filter.h>
 #include <linux/seccomp.h>
+#include <string.h>
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -104,9 +104,9 @@ std::vector<struct sock_filter> buildIsolateFilter(const std::vector<BlockedCall
     ins.k = off;
     return ins;
   };
-  const size_t archBase = 0;                 // [0] LD arch, [1] JEQ arch
-  const size_t nrBase = 2;                   // [2] LD nr
-  const size_t callBase = 3;                 // [3..] one JEQ per call
+  const size_t archBase = 0; // [0] LD arch, [1] JEQ arch
+  const size_t nrBase = 2;   // [2] LD nr
+  const size_t callBase = 3; // [3..] one JEQ per call
   const size_t allowIdx = callBase + calls.size();
   const size_t errnoIdx = allowIdx + 1;
   const size_t killIdx = errnoIdx + 1;
@@ -181,7 +181,9 @@ bool installIsolateFilter(std::string& error) {
 
 namespace snowglobe::isolate {
 
-std::vector<BlockedCall> isolateBlocklist() { return {}; }
+std::vector<BlockedCall> isolateBlocklist() {
+  return {};
+}
 
 bool installIsolateFilter(std::string& error) {
   error = "isolate: requires Linux";
