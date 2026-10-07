@@ -35,7 +35,13 @@ constexpr unsigned int kAuditArch = 0; // unsupported: builder yields empty
 #endif
 
 void pushErrno(std::vector<BlockedCall>& out, const char* name, int nr) {
-  out.push_back(BlockedCall{nr, name, false});
+  // Named local (not a braced temporary): GCC 13 -O3 misreads the
+  // aggregate copy as a 1-byte overflow (false positive, aarch64 CI).
+  BlockedCall c;
+  c.nr = nr;
+  c.name = name;
+  c.kill = false;
+  out.push_back(c);
 }
 
 } // namespace

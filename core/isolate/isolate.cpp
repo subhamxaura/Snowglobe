@@ -871,7 +871,9 @@ void enterChild(const ChildConfig& cfg) {
       const ssize_t n = ::readlink(src.c_str(), tgt, sizeof(tgt) - 1);
       if (n > 0) {
         tgt[n] = '\0';
-        ::symlink(tgt, dst.c_str());
+        if (::symlink(tgt, dst.c_str()) != 0 && errno != EEXIST) {
+          fail("symlink " + dst);
+        }
       }
       continue;
     }

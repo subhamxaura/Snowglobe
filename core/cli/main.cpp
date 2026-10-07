@@ -493,8 +493,18 @@ int cmdRun(const RunOptions& o) {
     if (o.isolate) {
       // The middle forked before these existed: forward them over the env
       // pipe, then read setup status (the middle blocks on env first).
+      // An EPIPE here means the middle already died in setup: fall through
+      // to awaitReady so its ERR (not our EPIPE) names the real cause.
       std::string envErr;
       if (!snowglobe::isolate::writeEnvBlock(ipipes.envW, injected, envErr)) {
+        std::string readyErr;
+        if (!snowglobe::isolate::awaitReady(isoChild, ipipes, readyErr)) {
+          std::cerr << snowglobe::doctor::isolateReport();
+          std::cerr << "snowglobe run: " << readyErr << "\n";
+          int st = 0;
+          ::waitpid(isoChild, &st, 0);
+          return kExUnavailable;
+        }
         std::cerr << "snowglobe run: " << envErr << "\n";
         return kExSoftware;
       }
@@ -506,6 +516,14 @@ int cmdRun(const RunOptions& o) {
     std::string envErr;
     if (!snowglobe::isolate::writeEnvBlock(
             ipipes.envW, std::vector<std::pair<std::string, std::string>>(), envErr)) {
+      std::string readyErr;
+      if (!snowglobe::isolate::awaitReady(isoChild, ipipes, readyErr)) {
+        std::cerr << snowglobe::doctor::isolateReport();
+        std::cerr << "snowglobe run: " << readyErr << "\n";
+        int st = 0;
+        ::waitpid(isoChild, &st, 0);
+        return kExUnavailable;
+      }
       std::cerr << "snowglobe run: " << envErr << "\n";
       return kExSoftware;
     }
