@@ -766,6 +766,9 @@ void enterChild(const ChildConfig& cfg) {
   if (::getcwd(cwd, sizeof(cwd)) == nullptr) {
     cwd[0] = '\0';
   }
+  // The supervisor ignores SIGPIPE (EPIPE must surface as errors, never
+  // an anonymous -13); the traced tree keeps default behavior instead.
+  ::signal(SIGPIPE, SIG_DFL);
   if (::unshare(CLONE_NEWUSER | CLONE_NEWNS) != 0) {
     fail("unshare userns");
   }

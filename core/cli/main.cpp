@@ -18,6 +18,8 @@
 #include <vector>
 
 #ifdef __linux__
+#include <dirent.h>
+#include <signal.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -647,6 +649,12 @@ int cmdLs(bool json) {
 } // namespace
 
 int main(int argc, char** argv) {
+#ifdef __linux__
+  // A supervisor must never die of SIGPIPE: pipe writes to a dead middle
+  // (or closed stdout) surface as EPIPE on the next write and flow into
+  // the normal 69/70 error paths instead of an anonymous -13.
+  ::signal(SIGPIPE, SIG_IGN);
+#endif
   std::vector<std::string> args(argv + 1, argv + argc);
   if (args.empty() || args[0] == "-h" || args[0] == "--help") {
     usage(std::cerr);
