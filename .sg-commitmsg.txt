@@ -1,8 +1,0 @@
-fix(ci): format missed files + 22.04 landlock headers
-
-- clang-format -i on files the gate missed while untracked
-  (landlock/seccomp/test_isolate/proc_pidns).
-- core/isolate/landlock.cpp: #ifndef fallbacks for REFER/TRUNCATE
-  (absent from Ubuntu 22.04 headers; runtime ABI query still gates).
-- scripts/check-format.sh now covers untracked files too
-  (git ls-files --others), closing the blind spot structurally.
