@@ -68,7 +68,9 @@ Accident containment plus complete observation, all unprivileged
 
 ## Terminology rule
 
-Never call it a "secure sandbox" — in code, docs, or output. The words
-are "isolation and visibility". `grep -ri "secure sandbox"` must match
-only the prohibition line in AGENTS.md §1.4 (fixture blobs embed the
-constitution verbatim and are excluded from that check).
+Never use the prohibited two-word term for it — not in code, docs, or
+output (the single allowed occurrence is the prohibition line in
+AGENTS.md §1.4 itself; this file avoids repeating the exact bigram on
+purpose so that check stays at 1). The words are "isolation and
+visibility". Fixture blobs embed the constitution verbatim and are
+excluded from that check.
