@@ -33,6 +33,23 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   whiteouts). Known kernel behavior: agent `rmdir` of an emptied merged
   dir fails EIO here (per-file whiteouts work; see limitations).
 
+### Fixed (Phase 3 D1 self-review, core/diff+apply builder==reviewer)
+- [High] `planApply` treated non-ENOENT `lstat` failures as absent (EACCES
+  would stage writes that fail mid-apply, breaking all-or-nothing): new
+  `statFinal` helper aborts validation (70, zero writes) on any IO error.
+- [High] Directory deletes checked baseline files but ignored host extras
+  (extra files would vanish silently in the rmtree): new `checkSubtree`
+  demands an exact match (content, targets, no extras) or conflicts.
+- [Medium] Symlink policy was blanket-reject (broke legitimate retargets
+  and masked a vacuous escape test): per-kind validation now (parent
+  traversal still refused; temp+rename never follows).
+- [Medium] Unknown-content deletes never suppressed on missing host
+  (rerun-after-apply never emptied): missing host path now counts applied.
+- [Low] Stat hid counts on link rows; `close(-1)` on a failed dup; dead
+  helpers left from refactors. TOCTOU/O_NOFOLLOW discipline documented
+  in-code. Second-model ranges: `core/diff/apply.cpp:32-115`,
+  `:189-290`, `:364-754`.
+
 ### Fixed (Phase 3 ITEM 0 — second-model review findings, all cited with severity)
 - [High] x32 ABI bypassed the seccomp filter (R5): x32 numbers reuse
   `AUDIT_ARCH_X86_64` with bit 30 set, missing every nr-JEQ into ALLOW
