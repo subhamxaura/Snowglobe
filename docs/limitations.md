@@ -147,6 +147,37 @@ at startup**: Claude Code (Bun v1.4.3) dies SIGABRT after its
 Phase-2 real-runtime gate is blocked on this, not on EROFS). Python
 agents run fine. The gate re-runs when kernels allow fresh procfs.
 
+## diff/apply/compare limits (Phase 3)
+
+- **Agent `rmdir` of an emptied merged dir can fail EIO.** Observed on
+  6.6.87-WSL2: deleting every file inside an overlay-merged directory
+  works (per-file whiteouts), but the final `rmdir` of the emptied dir
+  returns EIO, so the dir itself survives in the upper. Per-file deletes
+  diff/apply cleanly; directory whiteouts (when the kernel produces
+  them) delete recursively. The golden covers dir deletes with
+  hand-made whiteouts instead of agent `rm -rf`.
+
+
+- **Rename detection is content-hash exact.** A rename whose bytes changed
+  in transit reports as A+D (never a guessed R); empty files never pair.
+  Directory renames surface as per-file A/D pairs (dirs are structural,
+  not changes).
+- **Non-isolate runs have no content.** `diff` there lists event-derived
+  paths (`created?`/`modified?`/`deleted?`/`renamed?`) with an explicit
+  content-absent line — kinds are last-event guesses, never hunks.
+- **Exclude-list heuristics.** Default excludes (`.git/`, `.snowglobe/`,
+  `node_modules/`, plus `--baseline-exclude`) hide those subtrees from
+  baseline, diff, and apply alike; agent behavior there is invisible by
+  policy. `.git` is the exception in one direction only: always walked
+  for review (tamper must be visible), never written by `apply`.
+- **Untracked metadata.** Empty directories, mode-only changes, mtimes,
+  and ownership are not changes (`diff` skips them; `apply` does not
+  restore mtimes). `apply` preserves the upper file's mode bits.
+- **Opaque-dir xattr may be unreadable** (EPERM on `trusted.overlay.*`):
+  counted in the summary; explicit whiteouts still classify D.
+- **`diff --patch` is informational.** `apply` reads the upper, never the
+  patch; patch output is for review and bisection, not replay.
+
 ## Secret masks + ssh remotes under --isolate
 
 `~/.ssh`, `~/.aws`, `~/.gnupg` are empty-tmpfs masked by default (0700);

@@ -1,0 +1,62 @@
+# snowglobe diff $WORK/r1.sgr
+# informational: apply reads the upper, not this patch
+diff --git a/.git/config b/.git/config
+new file
+--- /dev/null
++++ b/.git/config
+@@ -0,0 +1 @@
++tampered
+diff --git a/big.txt b/big.txt
+--- a/big.txt
++++ b/big.txt
+@@ -2998,3 +2998,8 @@
+ line 2997
+ line 2998
+ line 2999
++append 3000
++append 3001
++append 3002
++append 3003
++append 3004
+diff --git a/del.txt b/del.txt
+deleted
+--- a/del.txt
++++ /dev/null
+@@ -1 +0,0 @@
+-bye
+diff --git a/link.txt b/link.txt
+--- a/link.txt
++++ b/link.txt
+@@ -1 +1 @@
+-keep.txt
++mod.txt
+diff --git a/mod.txt b/mod.txt
+--- a/mod.txt
++++ b/mod.txt
+@@ -1,3 +1,3 @@
+ v1
+-line2
++line2 MOD
+ line3
+diff --git a/new.txt b/new.txt
+new file
+--- /dev/null
++++ b/new.txt
+@@ -0,0 +1 @@
++new
+diff --git a/newlink.txt b/newlink.txt
+new file
+--- /dev/null
++++ b/newlink.txt
+@@ -0,0 +1 @@
++keep.txt
+diff --git a/old.txt b/renamed.txt
+rename from old.txt
+rename to renamed.txt
+similarity 100%
+diff --git a/uni-é.txt b/uni-é.txt
+--- a/uni-é.txt
++++ b/uni-é.txt
+@@ -1 +1,2 @@
+ u1
++u2

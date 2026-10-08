@@ -12,6 +12,11 @@ add_library(snowglobe_core STATIC
   isolate/isolate.cpp
   isolate/seccomp.cpp
   isolate/landlock.cpp
+  diff/myers.cpp
+  diff/baseline.cpp
+  diff/changeset.cpp
+  diff/apply.cpp
+  diff/cli.cpp
 )
 target_include_directories(snowglobe_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(snowglobe_core PROPERTIES POSITION_INDEPENDENT_CODE ON)

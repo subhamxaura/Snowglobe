@@ -1,0 +1,12 @@
+apply --dry-run (no writes)
+  write big.txt
+  unlink del.txt
+  symlink link.txt -> mod.txt
+  write mod.txt
+  write new.txt
+  symlink newlink.txt -> keep.txt
+  unlink old.txt
+  write renamed.txt
+  write uni-é.txt
+  REJECTED .git/config: under .git/ (repo metadata is reviewed, never written)
+aborted: 0 conflict(s), 1 rejected; NOTHING written

@@ -25,6 +25,8 @@
 #include <unistd.h>
 #endif
 
+#include "../diff/baseline.hpp"
+#include "../diff/cli.hpp"
 #include "../doctor/doctor.hpp"
 #include "../isolate/isolate.hpp"
 #include "../link/cli.hpp"
@@ -55,7 +57,7 @@ void usage(std::ostream& os) {
      << "  snowglobe run [--project=DIR] [--out=DIR] [--tracer=auto|ptrace] [-a|--all-opens]\n"
      << "                [--capture-stdio] [--json] [--no-llm-proxy] [--isolate]\n"
      << "                [--fs-rw=PATH]... [--allow-env=NAME]... [--allow-path=PATH]...\n"
-     << "                [--memory-max=SIZE] [--pids-max=N]\n"
+     << "                [--baseline-exclude=REL]... [--memory-max=SIZE] [--pids-max=N]\n"
      << "                [--upstream=PROVIDER=URL]... -- <command> [args...]\n"
      << "  snowglobe doctor\n"
      << "  snowglobe version [--json]\n"
@@ -63,7 +65,10 @@ void usage(std::ostream& os) {
      << "  snowglobe rm <run>\n"
      << "  snowglobe view <run> [--port=7777] [--open]\n"
      << "  snowglobe link <run> [--check]\n"
-     << "  snowglobe diff|apply|replay|compare|share <run> ... (not yet implemented)\n";
+     << "  snowglobe diff <run> [--stat] [--patch=FILE]\n"
+     << "  snowglobe apply <run> [--dry-run] [--yes]\n"
+     << "  snowglobe compare <runA> <runB> [--stat] [--json]\n"
+     << "  snowglobe replay|share <run> ... (not yet implemented)\n";
 }
 
 std::string rfc3339Utc(std::time_t t) {
@@ -169,9 +174,11 @@ struct RunOptions {
   std::vector<std::string> isolateFsRw;      // --fs-rw PATH (repeatable, isolate only)
   std::vector<std::string> isolateAllowEnv;  // --allow-env NAME (repeatable, isolate only)
   std::vector<std::string> isolateAllowPath; // --allow-path PATH (repeatable, isolate only)
-  std::string isolateMemMax;                 // --memory-max (isolate only)
-  std::string isolatePidsMax;                // --pids-max (isolate only)
-  std::vector<std::string> upstreams;        // raw PROVIDER=URL strings
+  std::vector<std::string>
+      isolateBaselineExclude;         // --baseline-exclude REL (repeatable, isolate only)
+  std::string isolateMemMax;          // --memory-max (isolate only)
+  std::string isolatePidsMax;         // --pids-max (isolate only)
+  std::vector<std::string> upstreams; // raw PROVIDER=URL strings
   std::vector<std::string> cmd;
 };
 
@@ -206,11 +213,11 @@ int cmdRun(const RunOptions& o) {
   // --isolate prep (ADR-0007): absolute overlay backing dirs under the run
   // dir; the project must exist and cannot be / itself. The isolate-only
   // flags without --isolate are usage errors (loud, never silently idle).
-  if (!o.isolate &&
-      (!o.isolateFsRw.empty() || !o.isolateAllowEnv.empty() || !o.isolateAllowPath.empty() ||
-       !o.isolateMemMax.empty() || !o.isolatePidsMax.empty())) {
-    std::cerr << "snowglobe run: --fs-rw/--allow-env/--allow-path/--memory-max/--pids-max need "
-                 "--isolate\n";
+  if (!o.isolate && (!o.isolateFsRw.empty() || !o.isolateAllowEnv.empty() ||
+                     !o.isolateAllowPath.empty() || !o.isolateBaselineExclude.empty() ||
+                     !o.isolateMemMax.empty() || !o.isolatePidsMax.empty())) {
+    std::cerr << "snowglobe run: --fs-rw/--allow-env/--allow-path/--baseline-exclude/"
+                 "--memory-max/--pids-max need --isolate\n";
     return kExUsage;
   }
   snowglobe::isolate::OverlayDirs isoDirs;
@@ -336,6 +343,22 @@ int cmdRun(const RunOptions& o) {
       std::cerr << "snowglobe run: " << prepErr << "\n";
       return kExSoftware;
     }
+    // Baseline for diff/apply (ADR-0008): hashed walk of the project BEFORE
+    // the agent runs. Loud failure (70), never a silent missing baseline.
+    {
+      const auto t0 = std::chrono::steady_clock::now();
+      snowglobe::diff::Baseline baseline;
+      std::string baselineErr;
+      if (!snowglobe::diff::writeBaseline(isoProjectAbs, runAbs.string() + "/baseline.json",
+                                          o.isolateBaselineExclude, baseline, baselineErr)) {
+        std::cerr << "snowglobe run: " << baselineErr << "\n";
+        return kExSoftware;
+      }
+      const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::steady_clock::now() - t0)
+                          .count();
+      std::cerr << "note: baseline " << baseline.files.size() << " files in " << ms << "ms\n";
+    }
 #else
     std::cerr << "snowglobe run: --isolate requires Linux (EX_UNAVAILABLE)\n";
     return kExUnavailable;
@@ -399,6 +422,9 @@ int cmdRun(const RunOptions& o) {
                   "\"upper\":\"overlay/upper\",\"masks\":" +
                   masksArr + ",\"allow_path\":" + allowArr + "}";
   }
+  // Baseline pointer (ADR-0008, additive): isolate runs snapshot the
+  // project before the agent runs; non-isolate manifests stay byte-identical.
+  const std::string baselineFrag = o.isolate ? ",\"baseline\":\"baseline.json\"" : "";
   auto writeManifest = [&](const std::string& finished, uint64_t eventCount,
                            const std::string& lastHash) {
     std::ofstream m(manifestPath, std::ios::trunc);
@@ -407,7 +433,8 @@ int cmdRun(const RunOptions& o) {
       << ",\"started\":" << jsonEscape(started) << ",\"finished\":" << finished << ",\"cmd\":["
       << cmdJson << "],\"cwd\":" << jsonEscape(cwd) << ",\"project\":" << jsonEscape(project)
       << ",\"kernel\":" << jsonEscape(kernelStr()) << ",\"tracer\":" << jsonEscape(tracerName)
-      << ",\"isolate\":" << isolateJson << ",\"env_fingerprint\":" << jsonEscape(envFingerprint())
+      << ",\"isolate\":" << isolateJson << baselineFrag
+      << ",\"env_fingerprint\":" << jsonEscape(envFingerprint())
       << ",\"event_count\":" << eventCount << ",\"last_hash\":" << jsonEscape(lastHash)
       << ",\"file_hashes\":{}}";
   };
@@ -808,6 +835,14 @@ int main(int argc, char** argv) {
           return kExUsage;
         }
         o.isolateAllowPath.push_back(args[++i]);
+      } else if (a.rfind("--baseline-exclude=", 0) == 0) {
+        o.isolateBaselineExclude.push_back(a.substr(19));
+      } else if (a == "--baseline-exclude") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe run: --baseline-exclude needs REL\n";
+          return kExUsage;
+        }
+        o.isolateBaselineExclude.push_back(args[++i]);
       } else if (a.rfind("--memory-max=", 0) == 0) {
         o.isolateMemMax = a.substr(13);
       } else if (a == "--memory-max") {
@@ -874,7 +909,16 @@ int main(int argc, char** argv) {
   if (sub == "link") {
     return snowglobe::link::cmdLink(args);
   }
-  if (sub == "diff" || sub == "apply" || sub == "replay" || sub == "compare" || sub == "share") {
+  if (sub == "diff") {
+    return snowglobe::diff::cmdDiff(args);
+  }
+  if (sub == "apply") {
+    return snowglobe::diff::cmdApply(args);
+  }
+  if (sub == "compare") {
+    return snowglobe::diff::cmdCompare(args);
+  }
+  if (sub == "replay" || sub == "share") {
     std::cerr << "snowglobe " << sub << ": not yet implemented (Phase 2+)\n";
     return kExUnavailable;
   }

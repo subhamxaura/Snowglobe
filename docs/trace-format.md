@@ -52,6 +52,32 @@ Shape (all keys fixed order, compact):
 - Traces with no turns yield `"turns":[]` (nothing is attributable;
   `snowglobe link` still exits 0 and says so).
 
+## baseline.json (Phase 3, isolate runs)
+
+`<run>/baseline.json`: `{"version":1,"project":"<abs>","excludes":[…],
+"files":{"rel":{"type":"file","sha256":…,"size":N,"mtime":T} |
+{"type":"link","target":…,"mtime":T}},"skipped_special":N}` (keys sorted;
+default excludes `.git/`, `.snowglobe/`, `node_modules/` plus
+`--baseline-exclude`; fifos/sockets/devices counted, never recorded;
+unreadable files abort the run). Manifest points at it
+(`"baseline":"baseline.json"`, isolate runs only; schema stays 0).
+`mtime` is forensic; diff/apply key on sha256 (files) and targets (links).
+
+## diff / apply / compare change sets (Phase 3)
+
+Change sets are derived at command time (upper-vs-baseline, never
+stored): `(scope, path)` with scope ∈ project/etc/home/fs-rw-N; kinds
+A/M/D/R (R = whiteout + same-hash add, non-empty files only; symlinks
+never pair) plus S (special files: shown, never applied). `diff` shows
+the *pending* subset (host already equal to upper is suppressed as
+applied, counted); hunks come from host bytes verified against baseline
+hashes (mismatch → letter kept, hunks withheld, `host-changed` note).
+`apply` validates all then writes (exit 65, nothing written, on
+conflict/rejection); `compare` joins two raw (host-independent) sets.
+Non-isolate runs: event-derived paths only (`created?` etc. plus the
+content-absent line). The run dir does not (yet) carry
+`fs/diff.patch`: `diff --patch=FILE` writes a user-chosen file.
+
 ## Common fields
 
 `seq, ts_us (CLOCK_REALTIME), t_ms (monotonic ms since run start), ev, pid,

@@ -133,3 +133,11 @@ byte-identical (golden-tested); the viewer consumes the sidecar when
 present and labels the seq-heuristic fallback.
 
 Phase 2 adds core/isolate (clone3-or-unshare namespaces, overlayfs `overlay/upper|etc-upper|home-upper|fs-rw-N` native only, seccomp-bpf Docker-parity + arg filtering, landlock, cgroup/prlimit, secret tmpfs masks `~/.ssh|~/.aws|~/.gnupg` + `--allow-path`). ssh-based git remotes need `--allow-path ~/.ssh`. See docs/PLAN.md + ADR-0007.
+
+Phase 3 adds core/diff (ADR-0008): `run --isolate` snapshots a hashed
+`baseline.json` first; `diff` derives the pending change set
+(upper-vs-baseline classified A/M/D/R, host-reconciled, hunks from a
+hand-rolled Hirschberg diff); `apply` validates everything (conflicts +
+symlink/`.git` safety) then writes all-or-nothing (exit 65, zero writes,
+on abort); `compare` joins two raw sets. The tracer never learns about
+any of this — diff/apply/compare read run artifacts + host files only.

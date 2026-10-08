@@ -1,0 +1,7 @@
+content not captured (run with --isolate for content)
+created? $WORK/proj5/created.txt
+deleted? $WORK/proj5/gone.txt
+created? $WORK/proj5/newdir
+renamed? $WORK/proj5/renamed.txt
+renamed? $WORK/proj5/w.txt
+5 path(s) from trace events (no content)

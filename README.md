@@ -24,12 +24,21 @@ observable environment; records every LLM call **and** every process/file/networ
 side effect, causally linked; lets you review the filesystem diff before applying
 it; and replays runs deterministically in CI.
 
-## What exists today (Phases 0–1C)
+## What exists today (run/isolate/link/diff/apply/compare + viewer)
 
 - `snowglobe run -- <command>` — ptrace tracer + LLM recording proxy →
   `<run>.sgr/` (events.jsonl + manifest.json + `llm/` blobs, SHA-256
   chained). Propagates the child's exit code. Base-URL injection captures
   OpenAI/Anthropic/Gemini traffic; stored headers redacted.
+- `snowglobe run --isolate -- <command>` — the above inside user+mount+pid
+  namespaces (overlayfs project upper, seccomp + Landlock, hashed
+  `baseline.json` snapshot for later diffing).
+- `snowglobe link <run> [--check]` — causal turn-attribution sidecar.
+- `snowglobe diff <run> [--stat] [--patch=FILE]` — pending change set
+  from the overlay upper (honest event-only mode without `--isolate`).
+- `snowglobe apply <run> [--dry-run] [--yes]` — validated all-or-nothing
+  write-back (exit 65, zero writes, on conflict/rejection).
+- `snowglobe compare <runA> <runB> [--stat] [--json]` — change-set join.
 - `snowglobe view <run> [--port=7777] [--open]` — embedded offline viewer
   (Next.js static export, no network calls) on localhost: timeline,
   turns (OpenAI/Anthropic parsing + cost), processes, files, network,

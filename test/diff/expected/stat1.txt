@@ -1,0 +1,10 @@
+A project .git/config +1 -0
+M project big.txt +5 -0
+D project del.txt +0 -1
+M project link.txt (symlink -> mod.txt) +1 -1
+M project mod.txt +1 -1
+A project new.txt +1 -0
+A project newlink.txt (symlink -> keep.txt) +1 -0
+R project old.txt -> renamed.txt +0 -0
+M project uni-é.txt +1 -0
+9 pending change(s): +3 A, 4 M, 1 D, 1 R, 0 S

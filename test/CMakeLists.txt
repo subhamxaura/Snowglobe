@@ -18,6 +18,8 @@ add_executable(snowglobe_tests
   unit/test_link.cpp
   unit/test_link_fixtures.cpp
   unit/test_isolate.cpp
+  unit/test_myers.cpp
+  unit/test_baseline.cpp
 )
 target_link_libraries(snowglobe_tests PRIVATE snowglobe_core Catch2::Catch2WithMain)
 target_include_directories(snowglobe_tests PRIVATE ${CMAKE_SOURCE_DIR}/core)
@@ -150,6 +152,18 @@ if(Python3_FOUND)
             ${CMAKE_SOURCE_DIR}/examples/toy-agent
   )
   set_tests_properties(isolate_toy PROPERTIES TIMEOUT 300)
+
+  # Phase 3: diff/apply/compare over the overlay upper (ADR-0008). The
+  # golden drives a scripted --isolate run (create/modify/delete/rename,
+  # unicode, symlink, empty + large files) and pins diff --stat/--patch,
+  # apply (clean + conflict-zero-writes + dry-run), and compare output.
+  # Like isolate_basic, it skips loudly (exit 69) without userns+overlay.
+  add_test(
+    NAME diff_apply
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/diff/diff_apply_golden.py
+            $<TARGET_FILE:snowglobe>
+  )
+  set_tests_properties(diff_apply PROPERTIES TIMEOUT 300)
 endif()
 
 # Phase 1C: viewer tests. vitest (parser + model units on fixtures) needs

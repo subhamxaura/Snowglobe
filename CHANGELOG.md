@@ -5,6 +5,34 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 3 Blocks 1+2 — baseline, diff, apply, compare; ADR-0008)
+- `run --isolate` snapshots a hashed `baseline.json` first (regular files
+  + symlinks; skips `.git/`, `.snowglobe/`, `node_modules/` +
+  `--baseline-exclude`; manifest gains `"baseline":"baseline.json"`).
+  Walk cost is logged (`note: baseline N files in Mms`).
+- `snowglobe diff <run> [--stat] [--patch=FILE]`: pending change set from
+  every overlay upper (A/M/D/R + S inventory; R = whiteout + same-hash
+  add, non-empty files only; already-applied entries suppressed but
+  counted). Real Hirschberg-diff hunks (host bytes verified vs baseline;
+  mismatch → letter kept, hunks withheld). Non-isolate runs get an honest
+  event-derived path report, never hunks. Exit 0; 69 without
+  baseline/upper.
+- `snowglobe apply <run> [--dry-run] [--yes]`: validate-all-then-write
+  (conflict = host ≠ baseline; safety: absolute/`..`/`.git`/parent-chain
+  symlinks refused, temp+rename writes, dir deletes need exact subtree
+  match). Any conflict/rejection → exit 65, NOTHING written. `--dry-run`
+  reports identically; off-tty requires `--yes`.
+- `snowglobe compare <runA> <runB> [--stat] [--json]`: host-independent
+  change-set join (A-only/B-only/both-same/both-differ).
+- Tests: Myers/Hirschberg property tests (500 randomized reconstructions
+  + optimality oracle, exhaustive small cases, budget fallback) and
+  baseline round-trip/strict-reader units; `diff_apply` golden (scripted
+  isolate ops, stat/patch/dry-run/compare/event-mode goldens, clean
+  apply + rerun-empty, conflict + extras + symlink-escape 65 with
+  byte-identical zero-writes proofs, exit codes 64/65/69, crafted dir
+  whiteouts). Known kernel behavior: agent `rmdir` of an emptied merged
+  dir fails EIO here (per-file whiteouts work; see limitations).
+
 ### Fixed (Phase 3 ITEM 0 — second-model review findings, all cited with severity)
 - [High] x32 ABI bypassed the seccomp filter (R5): x32 numbers reuse
   `AUDIT_ARCH_X86_64` with bit 30 set, missing every nr-JEQ into ALLOW

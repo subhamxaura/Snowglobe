@@ -1,0 +1,6 @@
+project a.txt: both, differ
+project b.txt: A-only
+project c.txt: B-only
+project new2.txt: both, same
+project other.txt: B-only
+5 path(s): 1 A-only, 2 B-only, 1 same, 1 differ
