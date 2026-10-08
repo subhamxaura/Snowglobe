@@ -33,6 +33,15 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   whiteouts). Known kernel behavior: agent `rmdir` of an emptied merged
   dir fails EIO here (per-file whiteouts work; see limitations).
 
+### Fixed (CI: prlimit scoping vs ASan observers)
+- `RLIMIT_AS` (and NPROC/NOFILE) moved from the isolate middle to the
+  agent child just before `execvp`: the 22.04-asan CI leg died with
+  `AddressSanitizer failed to mmap` under explicit `--memory-max=64M`
+  (ASan needs vast address space; observer must stay unlimited). Limits
+  still reach the agent (`ulimit -u/-n/-v` pinned); middle/init never
+  limited. AS-limit test now uses absolute `/bin/bash` (no PATH-search
+  allocator activity pre-exec on old toolchains).
+
 ### Fixed (Phase 3 D1 self-review, core/diff+apply builder==reviewer)
 - [High] `planApply` treated non-ENOENT `lstat` failures as absent (EACCES
   would stage writes that fail mid-apply, breaking all-or-nothing): new

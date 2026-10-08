@@ -83,8 +83,10 @@ struct ChildConfig {
   std::vector<std::string> allowEnv;  // re-admitted secret names (exact)
   std::vector<std::string> allowPath; // --allow-path exemptions (absolute, exact or parent)
   std::vector<std::string> cmd;
-  // prlimit fallback (always applied in-child; cgroup adds on top when
-  // delegated): NPROC+NOFILE always, AS only when memExplicit (AS breaks Bun).
+  // prlimit fallback (applied in the agent child just before exec, never
+  // in middle/init — an address limit would kill instrumented observers;
+  // cgroup adds on top when delegated): NPROC+NOFILE always, AS only when
+  // memExplicit (AS breaks Bun).
   long long pidsMax = 512;    // RLIMIT_NPROC
   long long nofileMax = 1024; // RLIMIT_NOFILE
   long long memBytes = -1;    // RLIMIT_AS bytes, -1 = no AS limit

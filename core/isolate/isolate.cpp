@@ -478,10 +478,10 @@ bool joinCgroup(const std::string& tag, int childPid, long long memBytes, long l
 
 namespace {
 
-void initHelper(const std::vector<std::string>& cmd) {
+void initHelper(const ChildConfig& cfg) {
   std::vector<char*> cargv;
-  cargv.reserve(cmd.size() + 1);
-  for (const auto& a : cmd) {
+  cargv.reserve(cfg.cmd.size() + 1);
+  for (const auto& a : cfg.cmd) {
     cargv.push_back(const_cast<char*>(a.c_str()));
   }
   cargv.push_back(nullptr);
@@ -490,6 +490,36 @@ void initHelper(const std::vector<std::string>& cmd) {
     _exit(71);
   }
   if (agent == 0) {
+    // prlimit fallback, agent-scoped (D1/CI: 22.04-asan dies if the
+    // *observer* is address-limited — ASan needs vast address space, so
+    // limits constrain only the about-to-exec agent, never middle/init).
+    // NPROC+NOFILE always; AS only when --memory-max was explicit
+    // (AS breaks Bun). Lowering as mapped root cannot fail loudly enough
+    // to matter: failure here is a loud 70, never a silent unlimited run.
+    if (cfg.pidsMax >= 0) {
+      struct rlimit rl = {};
+      rl.rlim_cur = static_cast<rlim_t>(cfg.pidsMax);
+      rl.rlim_max = static_cast<rlim_t>(cfg.pidsMax);
+      if (::setrlimit(RLIMIT_NPROC, &rl) != 0) {
+        _exit(70);
+      }
+    }
+    if (cfg.nofileMax >= 0) {
+      struct rlimit rl = {};
+      rl.rlim_cur = static_cast<rlim_t>(cfg.nofileMax);
+      rl.rlim_max = static_cast<rlim_t>(cfg.nofileMax);
+      if (::setrlimit(RLIMIT_NOFILE, &rl) != 0) {
+        _exit(70);
+      }
+    }
+    if (cfg.memExplicit && cfg.memBytes >= 0) {
+      struct rlimit rl = {};
+      rl.rlim_cur = static_cast<rlim_t>(cfg.memBytes);
+      rl.rlim_max = static_cast<rlim_t>(cfg.memBytes);
+      if (::setrlimit(RLIMIT_AS, &rl) != 0) {
+        _exit(70);
+      }
+    }
     ::execvp(cargv[0], cargv.data());
     _exit(127);
   }
@@ -1075,35 +1105,8 @@ void enterChild(const ChildConfig& cfg) {
       failMsg(llErr);
     }
   }
-  // prlimit fallback (always applied in-child; cgroup adds on top when
-  // delegated): NPROC+NOFILE always, AS only when --memory-max was explicit
-  // (AS limits break Bun — issue #4 class). Lowering only, so mapped root
-  // always succeeds; failure here is loud (exit 70 -> 69 in supervisor).
-  {
-    struct rlimit rl = {};
-    if (cfg.pidsMax >= 0) {
-      rl.rlim_cur = static_cast<rlim_t>(cfg.pidsMax);
-      rl.rlim_max = static_cast<rlim_t>(cfg.pidsMax);
-      if (::setrlimit(RLIMIT_NPROC, &rl) != 0) {
-        fail("setrlimit NPROC");
-      }
-    }
-    if (cfg.nofileMax >= 0) {
-      rl.rlim_cur = static_cast<rlim_t>(cfg.nofileMax);
-      rl.rlim_max = static_cast<rlim_t>(cfg.nofileMax);
-      if (::setrlimit(RLIMIT_NOFILE, &rl) != 0) {
-        fail("setrlimit NOFILE");
-      }
-    }
-    if (cfg.memExplicit && cfg.memBytes >= 0) {
-      rl.rlim_cur = static_cast<rlim_t>(cfg.memBytes);
-      rl.rlim_max = static_cast<rlim_t>(cfg.memBytes);
-      if (::setrlimit(RLIMIT_AS, &rl) != 0) {
-        fail("setrlimit AS");
-      }
-    }
-  }
-  IMARK("rlimit");
+  // prlimit fallback lives in the agent child just before exec (see
+  // initHelper): limits constrain the agent, never this middle observer.
   // Injected env (proxy BASE_URLs): the middle forked before the proxy
   // existed, so the supervisor forwards them here. EOF (supervisor gone)
   // fails loud, never hangs: the status write below would EPIPE anyway.
@@ -1158,7 +1161,7 @@ void enterChild(const ChildConfig& cfg) {
     _exit(72); // post-handshake fork failure: tracer sees exit, reports it
   }
   if (init == 0) {
-    initHelper(cfg.cmd);
+    initHelper(cfg);
   }
   int st = 0;
   int code = 98;

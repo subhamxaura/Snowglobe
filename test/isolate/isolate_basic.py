@@ -383,8 +383,11 @@ def main():
                 print("FAIL: no prlimit fallback note in:\n%s" % r.stderr)
                 ok = False
         # With --memory-max, AS limits apply (ulimit -v finite).
+        # Absolute /bin/bash: no PATH search, so no allocator activity
+        # between the agent's pre-exec RLIMIT_AS and execve (old-toolchain
+        # ASan runtimes can die on a post-limit mmap).
         out = os.path.join(work, "l2.sgr")
-        r = run_sg_iso(["bash", "-c", "ulimit -v"], out,
+        r = run_sg_iso(["/bin/bash", "-c", "ulimit -v"], out,
                        flags=["--project=" + repo, "--memory-max=64M"])
         if r.returncode != 0:
             print("FAIL: prlimit AS run exited %d" % r.returncode)
