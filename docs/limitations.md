@@ -169,7 +169,12 @@ agents run fine. The gate re-runs when kernels allow fresh procfs.
   `node_modules/`, plus `--baseline-exclude`) hide those subtrees from
   baseline, diff, and apply alike; agent behavior there is invisible by
   policy. `.git` is the exception in one direction only: always walked
-  for review (tamper must be visible), never written by `apply`.
+  for review (tamper must be visible), never written by `apply`. Build
+  outputs (`build/`, `target/`, `dist/`) are NOT excluded by default —
+  baseline cost is linear in bytes hashed (this repo: 68.6s unfiltered at
+  15,865 files incl. 1.6 GB `build/`, 17.1s with
+  `--baseline-exclude=build`; debug binary, single-threaded portable
+  SHA-256), so exclude them explicitly on big repos.
 - **Untracked metadata.** Empty directories, mode-only changes, mtimes,
   and ownership are not changes (`diff` skips them; `apply` does not
   restore mtimes). `apply` preserves the upper file's mode bits.

@@ -222,13 +222,11 @@ int checkDirFd(int dirFd, const std::string& rel, const Baseline& baseline, std:
     if (S_ISDIR(st.st_mode)) {
       // A host dir matches only with baseline entries beneath it.
       auto it = baseline.files.lower_bound(sub + "/");
-      if (it == baseline.files.end() ||
-          it->first.compare(0, sub.size() + 1, sub + "/") != 0) {
+      if (it == baseline.files.end() || it->first.compare(0, sub.size() + 1, sub + "/") != 0) {
         rc = 1; // extra dir: would be deleted silently
         break;
       }
-      const int subFd =
-          ::openat(dirFd, n.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+      const int subFd = ::openat(dirFd, n.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
       if (subFd < 0) {
         error = "open dir " + sub + ": " + errnoText(errno);
         rc = -1;
