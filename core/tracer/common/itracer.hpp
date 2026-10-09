@@ -1,6 +1,13 @@
 #pragma once
 // Thread ownership: implementations are driven from the supervisor thread.
+//
+// SyscallBackend interface (ADR-0009): every tracer backend implements
+// ITracer and is constructed through createTracer(). PtraceTracer is the
+// default (byte-identical semantics, forever); NotifyTracer (seccomp
+// user-notification) is selected explicitly via --backend=notify and
+// shares this interface so parity tests drive both backends identically.
 #include <functional>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,9 +20,11 @@ constexpr int kExitUnavailable = 69;
 constexpr int kExitSoftware = 70;
 
 struct TraceOptions {
-  bool allOpens = false; // --all-opens: do not filter read-opens / noisy paths
-  std::string tracer =
-      "auto"; // Sensitive (name, value) pairs for argv redaction (ADR-0003), collected
+  bool allOpens = false;       // --all-opens: do not filter read-opens / noisy paths
+  std::string tracer = "auto"; // --backend/--tracer selection (ADR-0009): "auto" (default,
+                               // resolves to ptrace until the notify backend lands),
+                               // "ptrace", "notify" ("seccomp" is accepted as an alias).
+  // Sensitive (name, value) pairs for argv redaction (ADR-0003), collected
   // by the supervisor from its own environment after proxy env injection.
   std::vector<std::pair<std::string, std::string>> secretEnv;
   // --isolate (ADR-0007): the middle was spawned pre-threads by the
@@ -52,5 +61,12 @@ protected:
     return true;
   }
 };
+
+// Backend selection (ADR-0009). Normalises aliases ("seccomp" → "notify")
+// and resolves "auto" → "ptrace" (notify becomes the auto choice only
+// after BLOCK 2 numbers + parity land). Returns nullptr + error on
+// unknown names or on non-Linux platforms; the caller maps that to
+// EX_UNAVAILABLE with the returned message.
+std::unique_ptr<ITracer> createTracer(const std::string& backend, std::string& error);
 
 } // namespace snowglobe::tracer

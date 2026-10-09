@@ -5,6 +5,43 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 4 Block 1 — ADR-0009 + notify skeleton; Phase 3 PRE-ITEM fixes)
+
+- ADR-0009 (seccomp user-notification backend): `run
+  [--backend=ptrace|notify|auto]` (`--tracer=` stays an alias, `seccomp`
+  maps to `notify`); default stays `ptrace`, `auto` resolves to `ptrace`
+  until Block 2 numbers + parity land. Notify shape: no PTRACE_SYSCALL
+  stops, lifecycle via PTRACE_SEIZE + TRACE* options, observed syscalls
+  via SECCOMP_RET_USER_NOTIF, boring syscalls ALLOW with zero stops.
+  Documented semantic delta: entry-only observation → outcome events
+  carry `result_known:false` (additive, schema stays 0); `run.meta` gains
+  `backend` (Block 2; ptrace goldens stay byte-identical via the
+  normaliser). Single-threaded pre-exec filter-install invariant (R6);
+  revert is a valid outcome if Block 2 numbers/delta fail.
+- Skeleton: `ITracer` is the documented `SyscallBackend` interface with a
+  `createTracer()` factory (auto/seccomp aliases normalised);
+  `PtraceTracer` untouched; new `NotifyTracer` (`core/tracer/notify/`)
+  with a real capability probe (`SECCOMP_GET_ACTION_AVAIL`) that fails
+  LOUD (EX_UNAVAILABLE) until the Block 2 notification loop lands — no
+  USER_NOTIF filter is installed without a loop to answer it, so no
+  tracee can wedge. `--backend=notify` on capable kernels reports the
+  skeleton message; incapable kernels report the probe reason.
+- `diff` persists review artifacts (AGENTS.md §3 truth): every content
+  diff writes `fs/diff.patch` (byte-identical to `--patch=FILE`) +
+  `fs/summary.json` (`version/counts/changes/applied/opaque_unreadable`,
+  deterministic, no absolute paths) into the run dir — silent on
+  success so `--stat` output stays byte-stable, loud note on failure.
+  `trace-format.md` documents both; `diff_apply` golden asserts
+  persistence + patch equality + summary counts/shape.
+- Linker res-sorted span index: turns still render in request order but
+  span lookup binary-searches a res-completion-sorted index, so
+  concurrent out-of-order completions attribute to the last completed
+  response (retires the req==res monotonicity assert). New C++ test pins
+  seq-between-responses and seq-after-both ownership; `model.test.ts`
+  pins the viewer heuristic staying request-anchored (sidecar wins where
+  it speaks — limitations.md). No fixture changes (existing orderings
+  are unaffected).
+
 ### Added (Phase 3 Blocks 1+2 — baseline, diff, apply, compare; ADR-0008)
 - `run --isolate` snapshots a hashed `baseline.json` first (regular files
   + symlinks; skips `.git/`, `.snowglobe/`, `node_modules/` +

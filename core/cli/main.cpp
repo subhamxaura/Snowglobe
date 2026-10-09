@@ -54,7 +54,8 @@ constexpr int kExSoftware = 70;
 
 void usage(std::ostream& os) {
   os << "Usage:\n"
-     << "  snowglobe run [--project=DIR] [--out=DIR] [--tracer=auto|ptrace] [-a|--all-opens]\n"
+     << "  snowglobe run [--project=DIR] [--out=DIR] [--backend=auto|ptrace|notify]\n"
+     << "                [-a|--all-opens]\n"
      << "                [--capture-stdio] [--json] [--no-llm-proxy] [--isolate]\n"
      << "                [--fs-rw=PATH]... [--allow-env=NAME]... [--allow-path=PATH]...\n"
      << "                [--baseline-exclude=REL]... [--memory-max=SIZE] [--pids-max=N]\n"
@@ -187,9 +188,13 @@ int cmdRun(const RunOptions& o) {
     std::cerr << "snowglobe run: missing command after --\n";
     return kExUsage;
   }
-  const std::string tracerName = o.tracer == "auto" ? "ptrace" : o.tracer;
-  if (tracerName != "ptrace") {
-    std::cerr << "snowglobe run: tracer '" + o.tracer + "' unavailable in v0.1 (only ptrace)\n";
+  std::string backend = o.tracer;
+  if (backend == "seccomp") {
+    backend = "notify"; // historical alias (ADR-0009)
+  }
+  const std::string tracerName = (backend == "auto" || backend.empty()) ? "ptrace" : backend;
+  if (tracerName != "ptrace" && tracerName != "notify") {
+    std::cerr << "snowglobe run: unknown backend '" + o.tracer + "' (want auto|ptrace|notify)\n";
     return kExUnavailable;
   }
 
@@ -445,9 +450,11 @@ int cmdRun(const RunOptions& o) {
     return kExSoftware;
   }
 
-  std::unique_ptr<snowglobe::tracer::ITracer> tracer(snowglobe::tracer::PtraceTracer::create());
+  std::string backendError;
+  std::unique_ptr<snowglobe::tracer::ITracer> tracer(
+      snowglobe::tracer::createTracer(o.tracer, backendError));
   if (!tracer) {
-    std::cerr << "snowglobe run: ptrace backend requires Linux (EX_UNAVAILABLE)\n";
+    std::cerr << "snowglobe run: " << backendError << " (EX_UNAVAILABLE)\n";
     return kExUnavailable;
   }
 
@@ -877,7 +884,9 @@ int main(int argc, char** argv) {
         o.out = a.substr(6);
       } else if (a.rfind("--tracer=", 0) == 0) {
         o.tracer = a.substr(9);
-      } else if (a == "--project" || a == "--out" || a == "--tracer") {
+      } else if (a.rfind("--backend=", 0) == 0) {
+        o.tracer = a.substr(10); // canonical spelling (ADR-0009); --tracer= is an alias
+      } else if (a == "--project" || a == "--out" || a == "--tracer" || a == "--backend") {
         if (i + 1 >= args.size()) {
           std::cerr << "snowglobe run: " << a << " needs a value\n";
           return kExUsage;
