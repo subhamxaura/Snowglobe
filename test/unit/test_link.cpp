@@ -192,6 +192,32 @@ TEST_CASE("linker res-partition pins in-flight events to the last completed resp
   CHECK(turns.at(2).attr.empty());
 }
 
+TEST_CASE("linker res-sorted index attributes out-of-order completions", "[link]") {
+  // Concurrent completion: req1 (seq0), req2 (seq1), res2 (seq2), res1
+  // (seq4). Res-completion order is turn2 then turn1, so seq3 (between
+  // the two responses) belongs to turn 2 and seq5 (after both) to turn
+  // 1. The retired req-ordered spanAt + monotonicity assert misattributed
+  // (or tripped); the res-sorted index owns each correctly. Turns still
+  // render in request order (turn 1 first).
+  using snowglobe::link::buildLinks;
+  const std::vector<std::string> lines = {
+      R"json({"seq":0,"ev":"llm.request","id":1,"provider":"openai","method":"POST","model":"m","bytes":9,"pid":99,"tid":98})json",
+      R"json({"seq":1,"ev":"llm.request","id":2,"provider":"openai","method":"POST","model":"m","bytes":9,"pid":99,"tid":97})json",
+      R"json({"seq":2,"ev":"llm.response","id":2,"status":200,"bytes":3,"pid":99,"tid":97})json",
+      R"json({"seq":3,"ev":"fs.open","pid":77,"tid":77,"path":"/tmp/between","write":true})json",
+      R"json({"seq":4,"ev":"llm.response","id":1,"status":200,"bytes":7,"pid":99,"tid":98})json",
+      R"json({"seq":5,"ev":"fs.open","pid":77,"tid":77,"path":"/tmp/after","write":true})json",
+  };
+  const auto doc = buildLinks(lines, [](const std::string&, std::string&) { return false; });
+  CHECK(doc.turns == 2);
+  const auto turns = viewTurns(doc.json);
+  REQUIRE(turns.size() == 2);
+  CHECK(turns.at(2).attr == std::map<long long, std::string>{{3, "window"}});
+  CHECK(turns.at(1).attr == std::map<long long, std::string>{{5, "window"}});
+  // Deterministic under the new index.
+  CHECK(buildLinks(lines, [](const std::string&, std::string&) { return false; }).json == doc.json);
+}
+
 TEST_CASE("argv-match requires token boundaries", "[link]") {
   // R2: "rm" must NOT match "perform_clean" (substring without a
   // boundary), while "/bin/rm" (slash boundary) and "git status" inside

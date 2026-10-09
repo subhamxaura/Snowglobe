@@ -13,6 +13,10 @@
 //     body) are NOT turns and never split a span.
 //   - A turn spans [its request seq, next turn's request seq): side
 //     effects between response N and request N+1 belong to turn N.
+//     (Heuristic only: links.json sidecar spans [res_N, res_N+1) in
+//     res-completion order via a res-sorted index — core/link — so
+//     out-of-order completions differ by design; sidecar wins where it
+//     speaks, see TurnIndex below and docs/limitations.md.)
 //   - Linking is 1D by seq for now (per-process-tree linking replaces the
 //     inside later); the stable interface is getTurnForEvent(seq).
 import type { Manifest, TraceEvent } from "./types";

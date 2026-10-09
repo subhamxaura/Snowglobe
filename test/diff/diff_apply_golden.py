@@ -166,6 +166,31 @@ def main():
             with open(patch1) as f:
                 if not check_golden("patch1.txt", norm(work, f.read())):
                     ok = False
+            # Persisted review artifacts (AGENTS.md §3): every content diff
+            # writes fs/diff.patch + fs/summary.json into the run dir.
+            # The persisted patch must equal the user --patch file.
+            persisted = os.path.join(r1, "fs", "diff.patch")
+            summary = os.path.join(r1, "fs", "summary.json")
+            if not os.path.isfile(persisted):
+                print("FAIL: diff did not persist fs/diff.patch")
+                ok = False
+            elif open(persisted, "rb").read() != open(patch1, "rb").read():
+                print("FAIL: fs/diff.patch differs from --patch file")
+                ok = False
+            if not os.path.isfile(summary):
+                print("FAIL: diff did not persist fs/summary.json")
+                ok = False
+            else:
+                try:
+                    sj = json.load(open(summary))
+                    n = sj.get("counts", {})
+                    total = sum(n.values()) if isinstance(n, dict) else -1
+                    if sj.get("version") != 1 or total != len(sj.get("changes", [])):
+                        print("FAIL: fs/summary.json counts mismatch: %s" % sj)
+                        ok = False
+                except Exception as e:
+                    print("FAIL: fs/summary.json unreadable: %s" % e)
+                    ok = False
 
         # apply --dry-run golden (rel paths only: no normalization needed).
         r = sh([SNOWGLOBE, "apply", r1, "--dry-run"])

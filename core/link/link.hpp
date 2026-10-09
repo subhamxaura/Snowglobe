@@ -11,7 +11,10 @@
 // end of trace (res-partition, R1: the owner is the last *completed*
 // response, so an event after request N+1 but before response N+1 still
 // belongs to turn N). Ordering is by seq when every event carries one,
-// else file order (normalised fixtures strip seq).
+// else file order (normalised fixtures strip seq). Turns render in request
+// order; span lookup uses a separate res-completion-sorted index, so
+// concurrent out-of-order completions attribute correctly (no monotonicity
+// assert; resOrder binary search).
 //
 // Attribution (first hit wins, strongest evidence last upgrades):
 //   window:    side effect inside a turn span → confidence high.

@@ -3,7 +3,6 @@
 #include "link.hpp"
 
 #include <algorithm>
-#include <cassert>
 #include <limits>
 #include <set>
 #include <sstream>
@@ -316,22 +315,31 @@ LinksDoc buildLinks(const std::vector<std::string>& lines, BlobReader blobs) {
   }
   std::stable_sort(turns.begin(), turns.end(),
                    [](const Turn& a, const Turn& b) { return a.reqKey < b.reqKey; });
-  // Load-bearing invariant for spanAt's binary search below (R3):
-  // resKeys non-decreasing in reqKey order. Holds while responses
-  // complete in request order (sequential agents, all fixtures). A
-  // concurrent trace completing out of order trips this assert — loudly,
-  // by design (silent misattribution is worse); the fix then is a linear
-  // scan fallback in spanAt, not a quieter rule.
-  for (size_t i = 1; i < turns.size(); ++i) {
-    assert(turns[i - 1].resKey <= turns[i].resKey);
+  // Res-sorted span index (out-of-order safe): turns stay in reqKey order
+  // for deterministic output, but span boundaries live in res-completion
+  // order. resOrder[j] = turns index of the j-th completed response
+  // (sorted by resKey, ties by reqKey). spanAt binary-searches resOrder
+  // and returns the owning turns index (or -1 pre-first-response), so a
+  // concurrent trace completing res2 before res1 attributes correctly
+  // instead of tripping the old req==res monotonicity assert (retired).
+  std::vector<size_t> resOrder(turns.size());
+  for (size_t i = 0; i < turns.size(); ++i) {
+    resOrder[i] = i;
   }
+  std::stable_sort(resOrder.begin(), resOrder.end(), [&](size_t a, size_t b) {
+    if (turns[a].resKey != turns[b].resKey) {
+      return turns[a].resKey < turns[b].resKey;
+    }
+    return turns[a].reqKey < turns[b].reqKey;
+  });
   doc.turns = static_cast<long long>(turns.size());
 
   // Pass 2: attribute every non-llm event in file order.
-  // Res-partition (R1): span i = [turns[i].resKey, turns[i+1].resKey);
-  // tail runs to +inf. The owner is the last *completed* response: an
-  // event after request N+1 but before response N+1 still belongs to
-  // turn N (an in-flight request does not move the boundary).
+  // Res-partition (R1): in res-completion order, span j =
+  // [resOrder[j].resKey, resOrder[j+1].resKey); tail runs to +inf. The
+  // owner is the last *completed* response: an event after request N+1
+  // but before response N+1 still belongs to turn N (an in-flight
+  // request does not move the boundary).
   std::vector<TurnLinks> out(turns.size());
   for (size_t i = 0; i < turns.size(); ++i) {
     out[i].turn = turns[i].id;
@@ -341,16 +349,19 @@ LinksDoc buildLinks(const std::vector<std::string>& lines, BlobReader blobs) {
   }
   auto spanAt = [&](long long k) -> long long {
     long long lo = 0;
-    long long hi = static_cast<long long>(turns.size());
+    long long hi = static_cast<long long>(resOrder.size());
     while (lo < hi) {
       const long long mid = (lo + hi) / 2;
-      if (turns[static_cast<size_t>(mid)].resKey <= k) {
+      if (turns[resOrder[static_cast<size_t>(mid)]].resKey <= k) {
         lo = mid + 1;
       } else {
         hi = mid;
       }
     }
-    return lo - 1; // -1 = before the first response
+    if (lo == 0) {
+      return -1; // before the first completed response
+    }
+    return static_cast<long long>(resOrder[static_cast<size_t>(lo - 1)]);
   };
 
   std::map<std::string, long long> birth; // pid → turn index at proc.start (-1 pre-turn)

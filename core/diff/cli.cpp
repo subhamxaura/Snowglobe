@@ -122,40 +122,76 @@ int cmdDiff(const std::vector<std::string>& args) {
     return kExSoftware;
   }
   std::cerr << renderStat(cs);
-  if (wantPatch) {
-    std::string patch = "# snowglobe diff " + args[1] +
-                        "\n# informational: apply reads the upper, not this patch\n";
-    size_t omitted = 0;
-    for (const Change& c : cs.changes) {
-      if (c.kind == 'S' || c.patch.empty()) {
-        if (c.kind == 'S') {
-          ++omitted;
-        } else if (c.kind == 'D' && c.noOldBytes) {
-          patch += "# deleted, old content unavailable: " + scopeLabel(c.scope, c.fsRwIndex) + "/" +
-                   c.path + "\n";
-        } else if (c.hostChanged) {
-          patch +=
-              "# host changed since run (hunks withheld): " + scopeLabel(c.scope, c.fsRwIndex) +
-              "/" + c.path + "\n";
-        }
-        continue;
+  // Persisted review artifacts (AGENTS.md §3): fs/diff.patch (same bytes
+  // --patch=FILE writes) + fs/summary.json (machine-readable pending
+  // set). Built once so the persisted copy and the user file are
+  // byte-identical. Persistence is best-effort and silent on success so
+  // existing --stat output stays byte-stable; failures note loudly but
+  // do not fail the diff itself (the stat above already succeeded).
+  std::string patch =
+      "# snowglobe diff " + args[1] + "\n# informational: apply reads the upper, not this patch\n";
+  size_t omitted = 0;
+  for (const Change& c : cs.changes) {
+    if (c.kind == 'S' || c.patch.empty()) {
+      if (c.kind == 'S') {
+        ++omitted;
+      } else if (c.kind == 'D' && c.noOldBytes) {
+        patch += "# deleted, old content unavailable: " + scopeLabel(c.scope, c.fsRwIndex) + "/" +
+                 c.path + "\n";
+      } else if (c.hostChanged) {
+        patch += "# host changed since run (hunks withheld): " + scopeLabel(c.scope, c.fsRwIndex) +
+                 "/" + c.path + "\n";
       }
-      if (c.kind == 'R') {
-        patch += "diff --git a/" + c.path + " b/" + c.newPath + "\nrename from " + c.path +
-                 "\nrename to " + c.newPath + "\nsimilarity 100%\n";
-        continue;
-      }
-      const std::string scopePfx =
-          (c.scope == Scope::Project) ? "" : scopeLabel(c.scope, c.fsRwIndex) + "/";
-      if (c.kind == 'A') {
-        patch += "diff --git a/" + scopePfx + c.path + " b/" + scopePfx + c.path + "\nnew file\n";
-      } else if (c.kind == 'D') {
-        patch += "diff --git a/" + scopePfx + c.path + " b/" + scopePfx + c.path + "\ndeleted\n";
-      } else {
-        patch += "diff --git a/" + scopePfx + c.path + " b/" + scopePfx + c.path + "\n";
-      }
-      patch += c.patch;
+      continue;
     }
+    if (c.kind == 'R') {
+      patch += "diff --git a/" + c.path + " b/" + c.newPath + "\nrename from " + c.path +
+               "\nrename to " + c.newPath + "\nsimilarity 100%\n";
+      continue;
+    }
+    const std::string scopePfx =
+        (c.scope == Scope::Project) ? "" : scopeLabel(c.scope, c.fsRwIndex) + "/";
+    if (c.kind == 'A') {
+      patch += "diff --git a/" + scopePfx + c.path + " b/" + scopePfx + c.path + "\nnew file\n";
+    } else if (c.kind == 'D') {
+      patch += "diff --git a/" + scopePfx + c.path + " b/" + scopePfx + c.path + "\ndeleted\n";
+    } else {
+      patch += "diff --git a/" + scopePfx + c.path + " b/" + scopePfx + c.path + "\n";
+    }
+    patch += c.patch;
+  }
+  {
+    const std::string fsDir = runDir + "/fs";
+    if (::mkdir(fsDir.c_str(), 0755) != 0 && errno != EEXIST) {
+      std::cerr << "note: could not persist fs artifacts (" << fsDir << ": " << strerror(errno)
+                << ")\n";
+    } else {
+      const std::string patchPath = fsDir + "/diff.patch";
+      FILE* pf = ::fopen(patchPath.c_str(), "wb");
+      if (pf == nullptr) {
+        std::cerr << "note: could not persist " << patchPath << ": " << strerror(errno) << "\n";
+      } else {
+        const bool ok =
+            patch.empty() || ::fwrite(patch.data(), 1, patch.size(), pf) == patch.size();
+        if (::fclose(pf) != 0 || !ok) {
+          std::cerr << "note: could not persist " << patchPath << ": " << strerror(errno) << "\n";
+        }
+      }
+      const std::string summaryPath = fsDir + "/summary.json";
+      const std::string summary = renderSummaryJson(cs);
+      FILE* sf = ::fopen(summaryPath.c_str(), "wb");
+      if (sf == nullptr) {
+        std::cerr << "note: could not persist " << summaryPath << ": " << strerror(errno) << "\n";
+      } else {
+        const bool ok =
+            summary.empty() || ::fwrite(summary.data(), 1, summary.size(), sf) == summary.size();
+        if (::fclose(sf) != 0 || !ok) {
+          std::cerr << "note: could not persist " << summaryPath << ": " << strerror(errno) << "\n";
+        }
+      }
+    }
+  }
+  if (wantPatch) {
     if (omitted > 0) {
       std::cerr << "note: " << omitted << " special file(s) omitted from patch\n";
     }

@@ -72,6 +72,11 @@ bool computeRawChanges(const std::string& runDir, const Baseline& baseline, Chan
 // Rendered --stat table (per-path rows + summary) for human output.
 std::string renderStat(const ChangeSet& cs);
 
+// Persisted fs/summary.json (machine-readable pending set, deterministic,
+// no absolute paths): {"version":1,"changes":[{scope,path,kind,...}],
+// "counts":{A,M,D,R,S},"applied":N,"opaque_unreadable":N}.
+std::string renderSummaryJson(const ChangeSet& cs);
+
 // compare join of two change sets (both computed with includePatch=false;
 // content equality via hashes, no host reads).
 struct CompareRow {

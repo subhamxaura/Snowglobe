@@ -949,6 +949,52 @@ std::string renderCompareJson(const std::vector<CompareRow>& rows) {
   return s;
 }
 
+std::string renderSummaryJson(const ChangeSet& cs) {
+  using snowglobe::util::jsonEscape;
+  long nA = 0, nM = 0, nD = 0, nR = 0, nS = 0;
+  std::string s = "{\"version\":1,\"changes\":[";
+  for (size_t i = 0; i < cs.changes.size(); ++i) {
+    const Change& c = cs.changes[i];
+    if (i > 0) {
+      s += ",";
+    }
+    s += "{\"scope\":" + jsonEscape(scopeLabel(c.scope, c.fsRwIndex)) +
+         ",\"path\":" + jsonEscape(c.path) + ",\"kind\":" + jsonEscape(std::string(1, c.kind));
+    if (c.kind == 'R') {
+      s += ",\"newPath\":" + jsonEscape(c.newPath);
+    }
+    s += ",\"adds\":" + std::to_string(c.adds) + ",\"dels\":" + std::to_string(c.dels);
+    if (!c.oldSha.empty()) {
+      s += ",\"oldSha\":" + jsonEscape(c.oldSha);
+    }
+    if (!c.newSha.empty()) {
+      s += ",\"newSha\":" + jsonEscape(c.newSha);
+    }
+    if (c.isLink) {
+      s += ",\"linkTarget\":" + jsonEscape(c.linkTarget);
+    }
+    if (c.hostChanged) {
+      s += ",\"hostChanged\":true";
+    }
+    if (c.noOldBytes) {
+      s += ",\"noOldBytes\":true";
+    }
+    s += "}";
+    switch (c.kind) {
+    case 'A': ++nA; break;
+    case 'M': ++nM; break;
+    case 'D': ++nD; break;
+    case 'R': ++nR; break;
+    default: ++nS; break;
+    }
+  }
+  s += "],\"counts\":{\"A\":" + std::to_string(nA) + ",\"M\":" + std::to_string(nM) +
+       ",\"D\":" + std::to_string(nD) + ",\"R\":" + std::to_string(nR) +
+       ",\"S\":" + std::to_string(nS) + "},\"applied\":" + std::to_string(cs.applied) +
+       ",\"opaque_unreadable\":" + std::to_string(cs.opaqueUnreadable) + "}";
+  return s;
+}
+
 bool eventPathReport(const std::string& eventsPath, std::string& out, std::string& error) {
   using snowglobe::link::findField;
   using snowglobe::link::readField;

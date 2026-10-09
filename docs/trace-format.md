@@ -75,8 +75,13 @@ hashes (mismatch → letter kept, hunks withheld, `host-changed` note).
 `apply` validates all then writes (exit 65, nothing written, on
 conflict/rejection); `compare` joins two raw (host-independent) sets.
 Non-isolate runs: event-derived paths only (`created?` etc. plus the
-content-absent line). The run dir does not (yet) carry
-`fs/diff.patch`: `diff --patch=FILE` writes a user-chosen file.
+content-absent line). Every content `diff` persists review artifacts
+into the run dir: `fs/diff.patch` (the same bytes `--patch=FILE`
+writes: informational, `apply` reads the upper, never the patch) and
+`fs/summary.json` (`{"version":1,"changes":[{scope,path,kind,newPath?,
+adds,dels,oldSha?,newSha?,linkTarget?,hostChanged?,noOldBytes?}],
+"counts":{A,M,D,R,S},"applied":N,"opaque_unreadable":N}` — pending set
+only, deterministic, no absolute paths).
 
 ## Common fields
 

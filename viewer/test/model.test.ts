@@ -94,6 +94,31 @@ describe("file helpers", () => {
   });
 });
 
+describe("out-of-order completion: heuristic stays request-anchored", () => {
+  // Concurrent completion (req1 seq0, req2 seq1, res2 seq2, res1 seq4).
+  // The C++ sidecar (res-partitioned, res-sorted index) owns seq3→turn2
+  // and seq5→turn1; the viewer heuristic without a sidecar stays
+  // request-anchored ([req_N, req_N+1)), so seq5→turn2. The difference
+  // is by design (docs/limitations.md) — this test pins the heuristic
+  // side so a future res-anchored change is deliberate, not drift.
+  const synth: TraceEvent[] = [
+    E({ ev: "llm.request", id: 1, provider: "m", method: "POST", model: "m", bytes: 10, seq: 0 }),
+    E({ ev: "llm.request", id: 2, provider: "m", method: "POST", model: "m", bytes: 10, seq: 1 }),
+    E({ ev: "llm.response", id: 2, status: 200, bytes: 5, seq: 2 }),
+    E({ ev: "fs.open", path: "/tmp/between", write: true, seq: 3 }),
+    E({ ev: "llm.response", id: 1, status: 200, bytes: 5, seq: 4 }),
+    E({ ev: "fs.open", path: "/tmp/after", write: true, seq: 5 }),
+  ];
+  it("builds turns in request order, heuristic spans by reqSeq", () => {
+    const turns = buildTurns(synth);
+    expect(turns.map((t) => t.id)).toEqual([1, 2]);
+    const idx = new TurnIndex(synth);
+    expect(idx.source).toBe("heuristic");
+    expect(idx.getTurnForEvent(3)?.id).toBe(2);
+    expect(idx.getTurnForEvent(5)?.id).toBe(2); // sidecar would say 1
+  });
+});
+
 describe("links.json sidecar (TurnIndex source)", () => {
   const synth: TraceEvent[] = [
     E({ ev: "llm.request", id: 0, provider: "m", method: "POST", model: "m", bytes: 10, seq: 10 }),
