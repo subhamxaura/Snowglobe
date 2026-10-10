@@ -1,14 +1,15 @@
 # TSan suppressions for Snowglobe. Consumed ONLY by the tsan CTest preset
 # (test/CMakeLists sets TSAN_OPTIONS=suppressions=<this file> for the proxy
-# integration tests when built with -fsanitize=thread). Debug/asan run
-# fully unsuppressed.
+# and replay integration tests when built with -fsanitize=thread).
+# Debug/asan run fully unsuppressed.
 #
-# libstdc++ 11 <regex> compiler internal race, Ubuntu 22.04 only
-# (CI run 36447650097, test proxy_concurrent; same shape re-observed in
-# proxy_notify_concurrent, CI run 38027094329): concurrent first-use
-# construction of httplib's thread_local response-line regexes
-# (ClientImpl::read_response_line) from our per-request upstream threads
-# races inside _Compiler/_Scanner/ctype::narrow on libstdc++.so globals.
+# libstdc++ <regex> compiler internal race (CI run 36447650097, test
+# proxy_concurrent; same shape re-observed in proxy_notify_concurrent, CI
+# run 38027094329, and in replay_concurrent on BOTH toolchains, CI run
+# 38064833528): concurrent first-use construction of httplib's
+# thread_local response-line regexes (ClientImpl::read_response_line)
+# from our per-request upstream threads races inside
+# _Compiler/_Scanner/ctype::narrow on libstdc++.so globals.
 # Both stacks are third-party frames (httplib const path + libstdc++ regex
 # compile); the only snowglobe frames are cli.send (proxy.cpp:481) and
 # thread spawn (proxy.cpp:426) — no snowglobe frame touches shared mutable

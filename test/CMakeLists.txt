@@ -177,6 +177,15 @@ if(Python3_FOUND)
               ${CMAKE_SOURCE_DIR}/examples/toy-agent
     )
     set_tests_properties(${tname} PROPERTIES TIMEOUT ${ttimeout})
+    # TSan builds only: the known httplib response-line regex race fires
+    # on concurrent first use (libstdc++ internals, our code has zero
+    # regex use) — the record phase of replay_concurrent trips it exactly
+    # like proxy_concurrent did. Same suppression file as the proxy tests
+    # (see test/tsan.supp); the snowglobe children inherit it.
+    if(CMAKE_CXX_FLAGS MATCHES "sanitize=thread")
+      set_tests_properties(${tname} PROPERTIES ENVIRONMENT
+        "TSAN_OPTIONS=suppressions=${CMAKE_CURRENT_SOURCE_DIR}/tsan.supp")
+    endif()
   endforeach()
 
   # Phase 1C Block 1: view server API (stdlib only, fixture copied to temp).
