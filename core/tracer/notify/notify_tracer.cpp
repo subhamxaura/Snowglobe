@@ -312,8 +312,8 @@ int NotifyTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
   }
   if (opts.isolate) {
     // Non-isolate parity first: the isolate middle would need its own
-    // listener hand-over (documented in ADR-0009 follow-ups). Degrade
-    // with the honest reason, never a half-trace.
+    // listener hand-over (issue #6; documented in ADR-0009 follow-ups).
+    // Degrade with the honest reason, never a half-trace.
     error_ = "notify backend with --isolate is not yet supported (use --backend=ptrace)";
     return -kExitUnavailable;
   }

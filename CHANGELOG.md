@@ -76,6 +76,20 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   bit): set via `git update-index --chmod=+x`.
 - CI green on the tag tree (9/9): run 38028552894; tag v0.1.0-alpha.7.
 
+### Fixed (Phase 4 acceptance close-out)
+
+- `proxy_latency` flaked once under `ctest -j16` (median 9.8 ms vs
+  5 ms budget; passes solo): named, not footnoted. The test now
+  retries once on budget-miss only and reports both medians — a real
+  regression fails twice. Retry path proven with an impossible budget.
+- `docs/limitations.md` now states the arch-mismatch consequence
+  explicitly (compat-arch syscalls: lifecycle-only under both
+  backends; notify ALLOWs by rule, ptrace ignores by number-match)
+  and the `--isolate` + notify exit-69 degrade with its issue link.
+- Issue #6 filed (isolate + notify listener hand-over, ADR-0009
+  follow-up); code comments reference it instead of a bare
+  "follow-ups" claim.
+
 ### Added (Phase 4 Block 1 — ADR-0009 + notify skeleton; Phase 3 PRE-ITEM fixes)
 
 - ADR-0009 (seccomp user-notification backend): `run

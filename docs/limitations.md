@@ -19,7 +19,29 @@ delta"; parity relation: `test/parity/check_parity.py`.
 What notify does NOT change: TOCTOU in path resolution (below) is
 identical — entry-time reads race the same way exit-time reads do.
 `--isolate` + notify is rejected (69): the isolate middle needs its own
-listener hand-over first.
+listener hand-over first (issue #6).
+
+## Non-native-arch visibility (both backends, explicit rule under notify)
+
+Neither backend decodes compat-arch (e.g. i386-on-x86_64) syscalls —
+only lifecycle (proc.start/exec/exit) is recorded for such processes:
+
+- ptrace does it implicitly: the decoder keys off native `SYS_*`
+  numbers and never reads the syscall-info `arch` field, so
+  compat-arch numbers match nothing (`Kind::None`) and are ignored
+  silently. Lifecycle still tracked.
+- notify does it explicitly: the BPF filter checks the audit arch
+  first, and a mismatch falls through to `SECCOMP_RET_ALLOW` — the
+  syscalls run untrapped (zero stops) with lifecycle-only tracing.
+  This is a deliberate visibility degrade, not a sandbox deny (the
+  isolate filter kills instead — different tool, different rule;
+  `test_notify.cpp` pins ALLOW-on-mismatch). Same-arch x32 numbers
+  (high bit set) are trapped and observed, never allowed unseen.
+
+In both cases a compat-arch child keeps running with full lifecycle
+tracing; its file/network syscalls are invisible. Rebuild the tracee
+for the native arch if you need its syscalls observed — neither
+backend can do it.
 
 ## Causal attribution anchoring (links.json vs viewer heuristic)
 

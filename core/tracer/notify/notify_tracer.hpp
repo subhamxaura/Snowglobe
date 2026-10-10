@@ -34,7 +34,7 @@ namespace snowglobe::tracer {
 // Filter install runs single-threaded pre-exec (R6: no TSYNC needed;
 // going multithreaded before install without TSYNC is a bug).
 // --isolate + notify is rejected (69): the isolate middle needs its own
-// listener hand-over first (ADR-0009 follow-ups).
+// listener hand-over first (issue #6; ADR-0009 follow-ups).
 class NotifyTracer : public ITracer {
 public:
   static NotifyTracer* create();
