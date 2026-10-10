@@ -121,7 +121,8 @@ if(Python3_FOUND)
   # its own mock on a fixed localhost port (no API keys anywhere).
   set(SG_PROXY_TESTS
     toy_agent:180 latency:300 concurrent:180 disconnect:180 errors:120
-    large:300 redact_argv:120 anthropic:120 error_turn:120 no_tmp:180)
+    large:300 redact_argv:120 anthropic:120 error_turn:120 no_tmp:180
+    notify_toy:180 notify_concurrent:180)
   # Latency budget scales with instrumentation: the 5 ms product budget
   # (AGENTS.md §5) holds on plain builds; ASan/TSan slow the proxy ~5x, so
   # those presets bound the delta at 25 ms instead. Still a bound, still
@@ -155,23 +156,6 @@ if(Python3_FOUND)
       set_tests_properties(proxy_${tname} PROPERTIES ENVIRONMENT "${_sgenv}")
     endif()
   endforeach()
-
-  # Phase 4 Block 2: proxy integration under notify (toy 3-turn flow +
-  # 8-stream concurrency). Same argv shapes as proxy_toy_agent /
-  # proxy_concurrent; both skip (69) without user-notify.
-  add_test(
-    NAME proxy_notify_toy
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/proxy/proxy_notify_toy.py
-            $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/mockllm
-            ${CMAKE_SOURCE_DIR}/examples/toy-agent
-  )
-  set_tests_properties(proxy_notify_toy PROPERTIES TIMEOUT 180)
-  add_test(
-    NAME proxy_notify_concurrent
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/proxy/proxy_notify_concurrent.py
-            $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/mockllm
-  )
-  set_tests_properties(proxy_notify_concurrent PROPERTIES TIMEOUT 180)
 
   # Phase 1C Block 1: view server API (stdlib only, fixture copied to temp).
   add_test(
