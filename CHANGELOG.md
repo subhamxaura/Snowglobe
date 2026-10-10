@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed (bench workflow bot push race)
+
+- The bench workflow's `git push` failed with `[rejected] (fetch
+  first)` whenever main moved mid-run — human push or the sibling
+  bench job pushing its own file (observed in run 38041876971). Both
+  commit steps now `git fetch origin main` + `git rebase origin/main`
+  + `git push origin HEAD:main` with 5 retries; the jobs own disjoint
+  files so the rebase only serializes pushes, and persistent contention
+  still fails loudly. Proven by a forced local race plus a green
+  dispatched run.
+
 All notable changes to this project will be documented in this file.
 Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
