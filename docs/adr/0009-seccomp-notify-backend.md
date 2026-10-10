@@ -121,3 +121,26 @@ Notify beats ptrace on all four. Two honest notes:
   fixed supervisor startup, not per-syscall cost. No npm-install/pytest
   measurement exists yet — no claim is made beyond this table. The
   revert clause above stays open pending wider workload evidence.
+
+CI hardware (Azure 4-core, 6.17-azure,
+`bench/results/backend-comparison-ci-24.04.md`, committed by the bench
+workflow on the same tree):
+
+| workload | ptrace | notify |
+|---|---|---|
+| forkexec-300 | 6.78x (2123 ev) | 7.92x (2123 ev) |
+| python-import | 2.38x (144 ev) | **1.28x** (149 ev) |
+| git-status | 9.72x (52 ev) | **3.69x** (74 ev) |
+| find-usrlib | 35.18x (31 ev) | **2.29x** (31 ev) |
+
+Same shape on both machines except forkexec, where CI shows rough
+parity (notify ~17% slower) instead of the 2x win: per-fork fixed
+costs dominate differently on 4 vs 16 cores, and CI min-max bands are
+tight on both backends, so this is machine shape, not noise. The
+structural story is find-usrlib: `find` is lstat/openat(O_DIRECTORY)
+dense — untrapped syscalls cost ptrace two stops each and notify zero
+(24–31 events either way), hence 35x vs 2.3x on a slow-disk box. The
+conclusion stands as stated: notify wins where trapped-syscall density
+is lowest, ties-or-better on fork storms; the revert clause stays open
+for workload classes outside this table (notably anything network- or
+thread-storm shaped).
