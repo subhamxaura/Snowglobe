@@ -5,6 +5,61 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
 
 ## [Unreleased]
 
+### Added (Phase 4 Block 2 — notify backend real: loop, parity, kill, bench)
+
+- `NotifyTracer` (`core/tracer/notify/notify_tracer.cpp`) is real:
+  fork → child self-stop → supervisor `PTRACE_SEIZE` + TRACE* (no
+  syscall stops, ever) → child installs an ALLOW-by-default BPF filter
+  (`notify_filter.cpp`: USER_NOTIF on exactly the 22 decoded syscalls,
+  x32 range trapped too, arch mismatch degrades to ALLOW) with
+  `SECCOMP_FILTER_FLAG_NEW_LISTENER` pre-exec (single-threaded, R6, no
+  TSYNC) → listener fd over socketpair/SCM_RIGHTS → exec. Supervisor
+  polls the listener (1 ms cap — 20 ms cost 65x on forkexec-300, see
+  ADR-0009 note) alongside waitpid and answers every valid notification
+  exactly once with CONTINUE (ID_VALID first; decode failures emit
+  `trace.decode_error` then answer). Entry-only outcomes carry
+  `result_known:false`; `run.meta` gains `backend`; `proc.exec_failed`
+  never appears under notify (failed execs surface as unknown
+  attempts); `--isolate` + notify exits 69. WUNTRACED is load-bearing
+  pre-seize (probe/wuntraced.c proves untraced self-stops are invisible
+  without it).
+- Shared helpers (`core/tracer/common/trace_helpers.{hpp,cpp}`): vm
+  reads, path canonicalisation, filters, exec-string reads — one
+  implementation for both backends (parity by construction). ptrace
+  migrated mechanically; goldens prove byte-identity.
+- Parity suite (all skip loudly without user-notify): 7
+  `golden_notify_*` (committed `expected-notify.jsonl`: same counts as
+  ptrace on all scenarios — 262/28/22/59/23/38/25, zero extras, zero
+  decode errors) + 7 `parity_*` (`test/parity/check_parity.py`:
+  ptrace-subsequence + result_known shape rules + exec_failed→exec
+  mapping + extras-must-be-open). `test_notify.cpp` proves the BPF
+  verdict table with a cBPF emulator (568 assertions: observed+x32 trap,
+  all else ALLOWs, arch-mismatch ALLOWs).
+- Kill/stress (`notify_kill_a/b/c/d`): supervisor SIGKILL with a
+  fifo-blocked tracee (notification already answered, parked in kernel
+  open) leaves no survivors — unanswered/parked notifications never
+  wedge children (EXITKILL, proven not assumed); storm-loop SIGKILL
+  clean; root-KILL → 137 + finalised manifest; supervisor TERM → 143 +
+  finalised, no orphans. `proxy_notify_toy` (3 pairs + full shape
+  contract + redaction) and `proxy_notify_concurrent` (8 streams
+  byte-exact) green.
+- Bench (`bench/backend_compare.sh`, CI job added): release, WSL2,
+  medians — notify beats ptrace on all four (forkexec 6.81x vs 13.60x,
+  python-import 1.29x vs 3.96x, git-status 3.41x vs 13.96x, find 1.09x
+  vs 2.65x); numbers + the 20 ms→1 ms lesson in ADR-0009 and
+  `bench/results/backend-comparison.md`. No claim beyond the table.
+- Viewer: `resultKnown()`/`outcomeLabel()` in `model.ts` (unknown badge,
+  never ok) + Network uses it + vitest pins the rule.
+- Docs: ADR-0009 follow-up (numbers + lesson), trace-format delta
+  table, limitations delta section, architecture backends, README
+  bullet, `doctor` `notify-backend` row.
+- D1 (builder==reviewer) over `core/tracer/notify`: 0 High, 0 Medium,
+  0 Low fixed (every risk covered by code + named test or identical to
+  ptrace's proven path; full table in session summary). Second-model
+  review requested for `notify_tracer.cpp:135-276` (handshake/install/
+  ioctls) + `:1080-1165` (main loop) + `notify_filter.cpp` (all) —
+  pending, not blocking.
+
 ### Added (Phase 4 Block 1 — ADR-0009 + notify skeleton; Phase 3 PRE-ITEM fixes)
 
 - ADR-0009 (seccomp user-notification backend): `run

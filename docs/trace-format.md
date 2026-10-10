@@ -100,10 +100,10 @@ own tid. Threads that vanish in an exec without an exit stop get
 
 | ev | fields |
 |---|---|
-| `run.meta` | `cmd[], cwd` — plus `isolate:true, masks[]` under `--isolate` (masked secret paths, minus `--allow-path`) |
+| `run.meta` | `cmd[], cwd, backend ("ptrace"\|"notify")` — plus `isolate:true, masks[]` under `--isolate` (masked secret paths, minus `--allow-path`) |
 | `proc.start` | `ppid, root?, thread?` |
 | `proc.exec` | `path, argv[], cwd` — plus `truncated:true` when argv was cut (64-entry cap) |
-| `proc.exec_failed` | `path, errno` |
+| `proc.exec_failed` | `path, errno` — ptrace only (see notify delta below) |
 | `proc.exit` | `code, signal` — or `vanished:true` (exec-vaporised thread) |
 | `fs.open` | `path, write, create, trunc, fd` — plus `tmpfile:true` for O_TMPFILE (path = directory) |
 | `fs.unlink` | `path, ok` |
@@ -119,6 +119,29 @@ own tid. Threads that vanish in an exec without an exit stop get
 | `llm.request` | `id, provider (openai\|anthropic\|gemini\|custom\|unknown), method, path, model (string or null), bytes, stream` — `pid` is the *supervisor* (the proxy lives there), `tid` the handler thread; the stored envelope is `llm/NNNN.req.json` by id convention |
 | `llm.response` | `id, status, bytes, ttfb_ms (first body byte; null when none), total_ms, chunk_count, truncated, req, res, idx` (last three are `llm/…` relative paths) |
 | `trace.decode_error` | `syscall, errno, reason` |
+
+## Notify-backend delta (`--backend=notify`, ADR-0009)
+
+The notify backend observes syscall *entry* only, so outcome events
+carry **`result_known:false`** (additive optional key, schema stays 0)
+instead of outcome keys:
+
+| ptrace event | notify shape |
+|---|---|
+| `fs.open{…, fd, [ok, errno]}` | `fs.open{path, write, create, trunc, [tmpfile], result_known:false}` — no `fd` (unknown at entry), no `ok`/`errno` |
+| `fs.unlink/rmdir/rename/symlink/chmod{…, ok}` | same fields minus `ok`, plus `result_known:false` |
+| `net.connect/sendto/bind/disconnect{…, ok[, initiated]}` | endpoint fields only, plus `result_known:false` |
+| `proc.exec{…}` (success) | same fields, plus `result_known:false` (attempt semantics) |
+| `proc.exec_failed{path, errno}` | **never appears** — a failed exec is indistinguishable at entry, so it surfaces as `proc.exec{result_known:false}` |
+| `fs.mkdir{path}`, `proc.start/exit`, `run.meta`, `llm.*` | identical (no outcome keys in either backend) |
+
+Consequences: default filters apply except the failure-based read-open
+drop (failed probes to non-noisy paths appear as unknown attempts);
+`--isolate` + notify is rejected (69); the viewer renders unknown as an
+explicit badge, never as ok. Parity definition (subsequence + shape
+rules incl. the exec_failed→exec mapping) lives in
+`test/parity/check_parity.py`; pinned streams in
+`test/fixtures/scenarios/*/expected-notify.jsonl`.
 
 `net.dns` (proxy-only mode), `fs.*` (other), `trace.dropped` arrive in
 Phase 2+. `turn`/`tool_call` causal linking arrives in Phase 1D.

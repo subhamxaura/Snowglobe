@@ -78,10 +78,11 @@ by test, not assumed — in particular the supervisor-death case below.
 ## Consequences
 
 - `ITracer` (`core/tracer/common/itracer.hpp`) is the `SyscallBackend`
-  interface both backends implement; `PtraceTracer` is today's code
-  untouched; `NotifyTracer` (`core/tracer/notify/`) lands as a skeleton
-  in Block 1 (capability probe + filter builder + honest EX_UNAVAILABLE
-  until the notification loop lands) and becomes real in Block 2.
+  interface both backends implement; `PtraceTracer` keeps byte-identical
+  semantics (shared helpers only); `NotifyTracer`
+  (`core/tracer/notify/`) landed as a probe-only skeleton in Block 1
+  and became real in Block 2 (seize lifecycle + notification loop +
+  parity suite below).
 - Viewer renders `result_known:false` as an explicit "unknown" badge,
   never as ok (BLOCK 2; Vitest + Playwright pin the unaffected paths).
 - Bench (`bench/`) compares backends on 300×cat, python-import,
@@ -92,3 +93,31 @@ by test, not assumed — in particular the supervisor-death case below.
 - docs: architecture (two backends + when each applies), limitations
   (semantic-delta table, TOCTOU unchanged), trace-format (`result_known`,
   `run.meta.backend`), README — all BLOCK 3 with the measured numbers.
+
+## Follow-up: measured numbers (Block 2, 2026-10-10)
+
+Release binary, WSL2 6.6.87 x86_64 (16 cores), 5 runs, medians
+(`bench/results/backend-comparison.md`):
+
+| workload | ptrace | notify |
+|---|---|---|
+| forkexec-300 (300×cat) | 13.60x (2116 ev) | **6.81x** (2116 ev) |
+| python-import | 3.96x (137 ev) | **1.29x** (142 ev) |
+| git-status | 13.96x (50 ev) | **3.41x** (89 ev) |
+| find-usrlib | 2.65x (24 ev) | **1.09x** (24 ev) |
+
+Notify beats ptrace on all four. Two honest notes:
+
+- The first measured run had notify at **65x on forkexec-300**: the
+  supervisor polled the listener with a 20 ms timeout, and every
+  waitpid event arriving with no concurrent notification (fork-event
+  resumes when the child is slow to exec, exit reaps) slept the whole
+  quantum. Dropping the cap to 1 ms fixed it (6.81x) — same events,
+  same code path. Lesson recorded in-code at the poll call: never let
+  a quiet-event wait sleep a scheduler quantum on a tracing hot path.
+- The 1.15x target (ADR-0001, npm install/pytest) is met on
+  tree-walk-shaped work (find 1.09x) and close on interpreter startup
+  (1.29x); tiny workloads (git-status, 12 ms plain) are dominated by
+  fixed supervisor startup, not per-syscall cost. No npm-install/pytest
+  measurement exists yet — no claim is made beyond this table. The
+  revert clause above stays open pending wider workload evidence.

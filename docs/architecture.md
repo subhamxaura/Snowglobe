@@ -21,11 +21,21 @@
 - **supervisor**: currently folded into `snowglobe run`; splits out when the
   sandbox (Phase 2) needs lifecycle management. Owns proxy startup order:
   proxy listens *before* the child forks, so env injection is inherited.
-- **tracer/ptrace**: syscall enter/exit via `PTRACE_GET_SYSCALL_INFO`;
+- **tracer/ptrace** (default): syscall enter/exit via `PTRACE_GET_SYSCALL_INFO`;
   fork/vfork/clone/exec tracked; strings via `process_vm_readv`.
+- **tracer/notify** (`run --backend=notify`, ADR-0009): lifecycle via
+  `PTRACE_SEIZE` + TRACE* events; observed syscalls via
+  `SECCOMP_RET_USER_NOTIF` (filter in `tracer/notify/`, default ALLOW).
+  The supervisor polls the listener fd alongside waitpid and answers
+  every notification with CONTINUE. Entry-only: outcome events carry
+  `result_known:false`; `run.meta` carries `backend`. When each applies:
+  ptrace is the default (full outcomes, highest overhead); notify is for
+  syscall-dense workloads where entry-only visibility suffices (bench:
+  notify beats ptrace on all four comparison workloads). `--isolate` +
+  notify is rejected (69) until the middle learns the hand-over.
 - **trace/**: `JsonlWriter` — per-event flush, SHA-256 chain from day one.
 - **doctor**: runtime capability table (userns, overlayfs, landlock,
-  seccomp-notify, cgroup v2, pasta/slirp4netns, ptrace scope).
+  seccomp-notify, notify-backend, cgroup v2, pasta/slirp4netns, ptrace scope).
 
 ## LLM proxy (core/proxy, Phase 1B)
 

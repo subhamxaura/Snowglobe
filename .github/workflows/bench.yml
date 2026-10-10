@@ -34,3 +34,28 @@ jobs:
           git add bench/results/ptrace-baseline-ci-24.04.md
           git commit -m "bench: CI 24.04 baseline [skip ci]" || echo "no changes to commit"
           git push
+
+  # Phase 4 Block 2: ptrace-vs-notify on the same CI hardware (release).
+  backend-comparison:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake g++ git python3
+      - name: Configure (release)
+        run: cmake --preset release
+      - name: Build (release)
+        run: cmake --build --preset release
+      - name: Run comparison
+        run: bench/backend_compare.sh ./build/release/core/snowglobe bench/results/backend-comparison-ci-24.04.md "$GITHUB_WORKSPACE"
+      - name: Commit CI comparison separately
+        run: |
+          git config user.name "snowglobe-bench[bot]"
+          git config user.email "snowglobe-bench[bot]@users.noreply.github.com"
+          git add bench/results/backend-comparison-ci-24.04.md
+          git commit -m "bench: CI 24.04 backend comparison [skip ci]" || echo "no changes to commit"
+          git push

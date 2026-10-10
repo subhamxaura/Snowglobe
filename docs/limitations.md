@@ -1,7 +1,25 @@
 # Known limitations (tracer + proxy capture + `--isolate` visibility)
 Snowglobe is *isolation and visibility*, never a security boundary for hostile
 code (see `docs/threat-model.md` in Phase 2). This page lists what the
-ptrace backend cannot see or cannot do, with the mechanism in each case.
+tracer backends cannot see or cannot do, with the mechanism in each case.
+
+## Notify-backend semantic delta (entry-only observation)
+
+`--backend=notify` (ADR-0009) traps syscalls at entry via
+SECCOMP_RET_USER_NOTIF; there are no syscall-exit stops, so outcomes are
+unknown. Outcome events carry `result_known:false` instead of
+`ok`/`errno`/`fd`; `proc.exec_failed` never appears (a failed exec
+surfaces as `proc.exec` with `result_known:false`); `run.meta` carries
+`backend:notify`. The default filters apply except the failure-based
+read-open drop — failed probes to non-noisy paths are recorded as
+unknown attempts. The viewer renders unknown as an explicit badge,
+never as ok. Full table: `docs/trace-format.md` § "Notify-backend
+delta"; parity relation: `test/parity/check_parity.py`.
+
+What notify does NOT change: TOCTOU in path resolution (below) is
+identical — entry-time reads race the same way exit-time reads do.
+`--isolate` + notify is rejected (69): the isolate middle needs its own
+listener hand-over first.
 
 ## Causal attribution anchoring (links.json vs viewer heuristic)
 

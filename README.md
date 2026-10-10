@@ -30,6 +30,10 @@ it; and replays runs deterministically in CI.
   `<run>.sgr/` (events.jsonl + manifest.json + `llm/` blobs, SHA-256
   chained). Propagates the child's exit code. Base-URL injection captures
   OpenAI/Anthropic/Gemini traffic; stored headers redacted.
+- `snowglobe run --backend=notify -- <command>` — seccomp user-notify
+  tracer: same kinds/paths, entry-only outcomes (`result_known:false`,
+  no `ok`/`errno`/`fd`), lower overhead on syscall-dense work. Default
+  stays ptrace; `--isolate` + notify is rejected (69).
 - `snowglobe run --isolate -- <command>` — the above inside user+mount+pid
   namespaces (overlayfs project upper, seccomp + Landlock, hashed
   `baseline.json` snapshot for later diffing).
