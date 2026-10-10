@@ -18,7 +18,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from replay_util import (PROXY_DIR, check_linux, free_port, Mock, tc,
                          toy_scenario, run_sg, run_replay, load_events,
-                         load_report, res_blob_shas)
+                         load_report, print_llm, res_blob_shas)
 
 SNOWGLOBE, MOCKLLM, TOYAGENT = sys.argv[1], sys.argv[2], sys.argv[3]
 AGENT = os.path.join(TOYAGENT, "agent.py")
@@ -90,6 +90,12 @@ def main():
         if rep["turns"] != {"original": 3, "replay": 3, "match": True}:
             print("FAIL: turns: %s" % rep["turns"])
             return 1
+        llm = rep["categories"]["llm"]
+        if llm.get("served_exact") != 3 or llm.get("served_fallback") != 0:
+            print("FAIL: clean replay should serve 3 exact, 0 fallback: %s"
+                  % llm)
+            return 1
+        print_llm(rep, "clean")
         if not rep["order_matches"] or rep["unrecorded"] != 0:
             print("FAIL: order/unrecorded: %s" % rep)
             return 1

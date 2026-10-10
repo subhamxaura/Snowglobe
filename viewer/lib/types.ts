@@ -33,7 +33,10 @@ export interface ReplayReport {
   turns: { original: number; replay: number; match: boolean };
   order_matches: boolean;
   unrecorded: number;
-  categories: Record<string, { status: string; detail: string }>;
+  categories: Record<
+    string,
+    { status: string; detail: string; served_exact?: number; served_fallback?: number }
+  >;
 }
 
 export interface LlmTurn {

@@ -175,6 +175,12 @@ def load_report(new_dir):
         return json.load(f)
 
 
+def print_llm(report, tag):
+    """Paste the llm section for the session record (P2: clean vs forced)."""
+    print("llm-section[%s]: %s"
+          % (tag, json.dumps(report["categories"]["llm"], sort_keys=True)))
+
+
 def sha_file(path):
     import hashlib
     h = hashlib.sha256()

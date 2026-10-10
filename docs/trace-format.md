@@ -198,7 +198,11 @@ the recorded values for forensics).
   `categories:{llm,fs,proc,net,exit}` each
   `{status:identical|diverged|unrecorded, detail, replay_only[],
   original_only[]}` (`unrecorded` only occurs for `llm`; evidence
-  capped at 20 lines per side). Readers must ignore unknown categories.
+  capped at 20 lines per side). The `llm` section additionally carries
+  `served_exact` (turns served by primary hash match) and
+  `served_fallback` (turns served by the order-preserving endpoint
+  fallback); exact + fallback + `unrecorded` always equals the replay
+  turn count. Readers must ignore unknown categories.
 - `<orig-run>/replay.unrecorded.jsonl`: one
   `{"ts_us","method","path","provider","body_sha256","body_bytes",
   "reason":"no-recorded-match"}` per MISS (the original run is never

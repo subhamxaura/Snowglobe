@@ -27,6 +27,12 @@ struct ReplayReport {
   long newTurns = 0;
   bool orderMatches = true;
   long unrecorded = 0;
+  // LLM serve path split (P2): turns whose replayed request hash equals
+  // the recorded one were served exact (primary); the rest were served by
+  // the order-preserving endpoint fallback. exact + fallback +
+  // unrecorded == newTurns, always.
+  long servedExact = 0;
+  long servedFallback = 0;
   std::vector<std::string> ignores;
   CategoryResult llm;
   CategoryResult fs;

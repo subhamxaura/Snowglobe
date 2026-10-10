@@ -217,9 +217,9 @@ long eventId(const JsonValue& v) {
 
 std::string ReplayReport::toJson() const {
   using util::jsonEscape;
-  auto cat = [&](const CategoryResult& c) {
+  auto cat = [&](const CategoryResult& c, const std::string& extra) {
     std::string s = "{\"status\":" + jsonEscape(c.status) + ",\"detail\":" + jsonEscape(c.detail) +
-                    ",\"replay_only\":[";
+                    extra + ",\"replay_only\":[";
     for (size_t k = 0; k < c.replayOnly.size(); ++k) {
       s += (k > 0 ? "," : "") + jsonEscape(c.replayOnly[k]);
     }
@@ -229,6 +229,10 @@ std::string ReplayReport::toJson() const {
     }
     return s + "]}";
   };
+  // P2: the llm section carries the serve-path split (exact = primary
+  // hash hit; fallback = order-preserving endpoint serve).
+  const std::string llmExtra = ",\"served_exact\":" + std::to_string(servedExact) +
+                               ",\"served_fallback\":" + std::to_string(servedFallback);
   std::string s = "{\"version\":1,\"original\":" + jsonEscape(original) +
                   ",\"replay\":" + jsonEscape(replay) +
                   ",\"original_exit\":" + std::to_string(originalExit) +
@@ -241,8 +245,9 @@ std::string ReplayReport::toJson() const {
   for (size_t k = 0; k < ignores.size(); ++k) {
     s += (k > 0 ? "," : "") + jsonEscape(ignores[k]);
   }
-  s += "],\"categories\":{\"llm\":" + cat(llm) + ",\"fs\":" + cat(fs) + ",\"proc\":" + cat(proc) +
-       ",\"net\":" + cat(net) + ",\"exit\":" + cat(exitCat) + "}}";
+  s += "],\"categories\":{\"llm\":" + cat(llm, llmExtra) + ",\"fs\":" + cat(fs, "") +
+       ",\"proc\":" + cat(proc, "") + ",\"net\":" + cat(net, "") + ",\"exit\":" + cat(exitCat, "") +
+       "}}";
   return s;
 }
 
@@ -430,16 +435,20 @@ bool compareReplay(const std::string& origDir, const std::string& newDir,
     }
     // NOTE: base64-wrapped bodies hash in wrapped form (both sides wrap
     // identically, so equality is preserved without a decode step).
-    std::string provider, path;
+    std::string provider, method, path;
     const auto p = env.fields.find("provider");
     if (p != env.fields.end() && p->second.type == JsonValue::Type::String) {
       provider = p->second.str;
+    }
+    const auto m = env.fields.find("method");
+    if (m != env.fields.end() && m->second.type == JsonValue::Type::String) {
+      method = m->second.str;
     }
     const auto pa = env.fields.find("path");
     if (pa != env.fields.end() && pa->second.type == JsonValue::Type::String) {
       path = pa->second.str;
     }
-    return requestHash(provider, path, body);
+    return requestHash(provider, method, path, body);
   };
   std::map<long, std::string> oHash, nHash;
   for (const auto& e : oResp) {
@@ -455,6 +464,7 @@ bool compareReplay(const std::string& origDir, const std::string& newDir,
     }
   }
   long unrec = 0;
+  long exact = 0, fallback = 0;
   std::vector<long> serveOrder;
   std::vector<std::string> problems;
   // Response parity keyed by serve mapping (status/bytes/truncated vs the
@@ -488,7 +498,17 @@ bool compareReplay(const std::string& origDir, const std::string& newDir,
     if (oit == oById.end()) {
       problems.push_back("turn new-" + std::to_string(nid) +
                          ": replay_of=" + std::to_string(mapped) + " has no original");
+      ++fallback; // served, but maps nowhere — cannot be exact
       continue;
+    }
+    // Serve-path split (P2): equal normalized hashes mean the primary
+    // hash match served this turn (the matcher tries primary first, so a
+    // fallback-found entry always differs); anything else — including an
+    // unreadable envelope — counts as fallback.
+    if (!nHash[nid].empty() && nHash[nid] == oHash[mapped]) {
+      ++exact;
+    } else {
+      ++fallback;
     }
     if (nHash[nid].empty() || oHash[mapped].empty()) {
       problems.push_back("turn " + std::to_string(mapped) + ": envelope unreadable");
@@ -505,6 +525,8 @@ bool compareReplay(const std::string& origDir, const std::string& newDir,
     }
   }
   out.unrecorded = unrec;
+  out.servedExact = exact;
+  out.servedFallback = fallback;
   // Serve order: every recorded turn served exactly once (consumption
   // guarantees the multiset), plus relative order preserved wherever the
   // recorded requests DIFFER. Identical requests (same canonical hash)

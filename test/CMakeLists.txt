@@ -165,7 +165,8 @@ if(Python3_FOUND)
   # (tests that need no toy agent ignore the third argument).
   set(SG_REPLAY_TESTS
     replay_clean:300 replay_toolchange:300 replay_extrawrite:300
-    replay_unrecorded:300 replay_error:300 replay_concurrent:300)
+    replay_unrecorded:300 replay_error:300 replay_concurrent:300
+    replay_fallback:300)
   foreach(pair IN ITEMS ${SG_REPLAY_TESTS})
     string(REPLACE ":" ";" parts "${pair}")
     list(GET parts 0 tname)
