@@ -21,7 +21,9 @@ import re
 import sys
 
 STRIP = {"seq", "ts_us", "t_ms", "t_us", "prev_hash", "hash", "fd", "backend"}
-TMP_RE = re.compile(r"/tmp/tmp\.[A-Za-z0-9]+")
+# Python mkdtemp/mktemp suffixes draw from [a-z0-9_] (underscore included:
+# "tmp.AB_CD" must fold wholly to $TMP, never strand "_CD" as residue).
+TMP_RE = re.compile(r"/tmp/tmp\.[A-Za-z0-9_]+")
 PYVER_RE = re.compile(r"python3\.\d+")
 CPYTHON_RE = re.compile(r"cpython-3\d+")
 # Ephemeral loopback ports (bind :0, freed-port reconnects): stable per run,
