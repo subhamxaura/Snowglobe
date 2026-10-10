@@ -32,8 +32,29 @@ jobs:
           git config user.name "snowglobe-bench[bot]"
           git config user.email "snowglobe-bench[bot]@users.noreply.github.com"
           git add bench/results/ptrace-baseline-ci-24.04.md
-          git commit -m "bench: CI 24.04 baseline [skip ci]" || echo "no changes to commit"
-          git push
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git commit -m "bench: CI 24.04 baseline [skip ci]"
+          # Push-race safe: main can move under us (human push, or the
+          # sibling backend-comparison job pushing its own file). Rebase
+          # onto the new head and retry; each job owns a disjoint file,
+          # so the rebase cannot conflict — it just serializes the pushes.
+          for i in 1 2 3 4 5; do
+            git fetch origin main || continue
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+            else
+              git rebase --abort || true
+            fi
+            echo "push raced with main, retry $i/5"
+            sleep 10
+          done
+          echo "push kept racing; failing loudly"
+          exit 1
 
   # Phase 4 Block 2: ptrace-vs-notify on the same CI hardware (release).
   backend-comparison:
@@ -57,5 +78,25 @@ jobs:
           git config user.name "snowglobe-bench[bot]"
           git config user.email "snowglobe-bench[bot]@users.noreply.github.com"
           git add bench/results/backend-comparison-ci-24.04.md
-          git commit -m "bench: CI 24.04 backend comparison [skip ci]" || echo "no changes to commit"
-          git push
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git commit -m "bench: CI 24.04 backend comparison [skip ci]"
+          # Push-race safe: same rebase-and-retry as the baseline job
+          # (the two jobs push different files and must not fail each
+          # other). See the comment there.
+          for i in 1 2 3 4 5; do
+            git fetch origin main || continue
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+            else
+              git rebase --abort || true
+            fi
+            echo "push raced with main, retry $i/5"
+            sleep 10
+          done
+          echo "push kept racing; failing loudly"
+          exit 1
