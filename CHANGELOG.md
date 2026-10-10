@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+### Fixed (x32 parity — ptrace stripped like notify)
+
+- The ptrace backend never stripped the x32 high bit before
+  number-match (`pi.entryNr = info.entry.nr` raw), so x32 syscalls fell
+  to `Kind::None` and went silently unobserved while notify observed
+  them. Both backends now strip via the shared `stripX32Nr` helper
+  (identity for native nrs). Pinned by a new `x32` golden scenario
+  (`sg_x32` helper: one x32 mkdirat — mkdir carries no outcome keys in
+  either backend, so the pin is immune to whether the kernel dispatches
+  the high-bit nr natively (success) or as strict x32 (EFAULT); an
+  openat pin would flake across those kernels). Negative control
+  included: pre-fix ptrace drops exactly the mkdir line.
+  `docs/limitations.md` now separates the x32 case (observed
+  identically) from the compat-arch case (lifecycle-only both
+  backends, unchanged).
+
 ### Fixed (bench workflow bot push race)
 
 - The bench workflow's `git push` failed with `[rejected] (fetch

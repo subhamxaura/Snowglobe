@@ -117,10 +117,8 @@ int NotifyTracer::run(const std::vector<std::string>&, const TraceOptions&) {
 namespace snowglobe::tracer {
 namespace {
 
-// x32 ABI high bit (R5 class): stripped before classifying so x32 stays
-// observed. Matches the filter's JGE trap rule.
-constexpr uint64_t kX32Bit = 0x40000000U;
-
+// x32 stripping is the shared helper (trace_helpers.hpp), matching the
+// filter's JGE trap rule so x32 stays observed, never invisible.
 std::atomic<int> gStop{0};
 void onSignal(int) {
   gStop.fetch_add(1);
@@ -545,10 +543,7 @@ int NotifyTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
     if (procs.find(pid) == procs.end()) {
       procs[pid].ppid = -1; // fork-race: reconcile at the parent's event
     }
-    uint64_t nr = rawNr;
-    if ((nr & kX32Bit) != 0) {
-      nr &= ~kX32Bit; // x32 shares the arch: strip the bit, stay observed
-    }
+    uint64_t nr = stripX32Nr(rawNr); // x32 shares the arch: strip the bit, stay observed
     enum class Kind {
       None,
       Exec,

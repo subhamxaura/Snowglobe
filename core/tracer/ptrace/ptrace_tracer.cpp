@@ -490,14 +490,19 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       ProcInfo& pi = procs[pid];
       if (info.op == PTRACE_SYSCALL_INFO_ENTRY) {
         pi.inSyscall = true;
-        pi.entryNr = info.entry.nr;
+        // Strip the x32 high bit (R5 class) so x32 syscalls classify
+        // identically to native in both backends (trace_helpers.hpp;
+        // identity for native nrs). Unstripped, an x32 nr matches no
+        // SYS_* guard and the call goes silently unobserved.
+        pi.entryNr = stripX32Nr(info.entry.nr);
         for (int i = 0; i < 6; ++i) {
           pi.entryArgs[i] = info.entry.args[i];
         }
         pi.hasPendingExec = false;
         // Cache execve path+argv NOW: after a successful exec the old image
-        // (and these pointers) are gone by EXIT time.
-        const uint64_t enr = info.entry.nr;
+        // (and these pointers) are gone by EXIT time. Same x32 strip: an
+        // x32 execve must hit the exec cache like a native one.
+        const uint64_t enr = stripX32Nr(info.entry.nr);
         bool isExec = false;
 #ifdef SYS_execve
         isExec = isExec || (enr == static_cast<uint64_t>(SYS_execve));

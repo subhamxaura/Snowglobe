@@ -23,8 +23,9 @@ listener hand-over first (issue #6).
 
 ## Non-native-arch visibility (both backends, explicit rule under notify)
 
-Neither backend decodes compat-arch (e.g. i386-on-x86_64) syscalls —
-only lifecycle (proc.start/exec/exit) is recorded for such processes:
+Compat-arch syscalls (e.g. i386-on-x86_64, different audit arch AND
+different numbers) are lifecycle-only under both backends — only
+proc.start/exec/exit is recorded for such processes:
 
 - ptrace does it implicitly: the decoder keys off native `SYS_*`
   numbers and never reads the syscall-info `arch` field, so
@@ -35,13 +36,26 @@ only lifecycle (proc.start/exec/exit) is recorded for such processes:
   syscalls run untrapped (zero stops) with lifecycle-only tracing.
   This is a deliberate visibility degrade, not a sandbox deny (the
   isolate filter kills instead — different tool, different rule;
-  `test_notify.cpp` pins ALLOW-on-mismatch). Same-arch x32 numbers
-  (high bit set) are trapped and observed, never allowed unseen.
+  `test_notify.cpp` pins ALLOW-on-mismatch).
 
 In both cases a compat-arch child keeps running with full lifecycle
 tracing; its file/network syscalls are invisible. Rebuild the tracee
 for the native arch if you need its syscalls observed — neither
 backend can do it.
+
+## x32 numbers are observed identically in both backends
+
+Same-arch x32 syscalls (native audit arch, bit 30 set in nr) are NOT a
+visibility gap: both backends strip the bit before classifying
+(shared `stripX32Nr`, identity for native nrs), so an x32 openat
+decodes exactly like a native openat — same event kinds, same paths,
+same filters, with only the documented entry/exit delta between them
+(`result_known:false` under notify). The notify BPF traps the high
+range (`JGE`, pinned by the `test_notify.cpp` emulator) so x32 stays
+observed, never allowed unseen; the `x32` golden scenario pins one
+x32 mkdirat end to end in both streams (outcome-free by design — see
+`sg_x32.c` for why openat would flake across kernels with and without
+a strict x32 ABI).
 
 ## Causal attribution anchoring (links.json vs viewer heuristic)
 

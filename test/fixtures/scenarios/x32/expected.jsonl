@@ -1,0 +1,17 @@
+{"cmd": ["$REPO/test/fixtures/scenarios/x32/run.sh"], "cwd": "$REPO/test/fixtures/scenarios/x32", "ev": "run.meta", "pid": "P1", "tid": "T1"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P2", "root": true, "tid": "T1"}
+{"argv": ["$REPO/test/fixtures/scenarios/x32/run.sh"], "cwd": "$REPO/test/fixtures/scenarios/x32", "ev": "proc.exec", "path": "$REPO/test/fixtures/scenarios/x32/run.sh", "pid": "P1", "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/scenarios/x32/run.sh", "pid": "P1", "tid": "T1", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P3", "ppid": "P1", "tid": "T2"}
+{"argv": ["mktemp", "-d"], "cwd": "$REPO/test/fixtures/scenarios/x32", "ev": "proc.exec", "path": "/usr/bin/mktemp", "pid": "P3", "tid": "T2"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P3", "tid": "T2", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P3", "tid": "T2", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "$TMP", "pid": "P3", "tid": "T2"}
+{"code": 0, "ev": "proc.exit", "pid": "P3", "signal": 0, "tid": "T2"}
+{"ev": "proc.start", "pid": "P4", "ppid": "P1", "tid": "T3"}
+{"argv": ["$HELPERS/sg_x32", "$TMP"], "cwd": "$REPO/test/fixtures/scenarios/x32", "ev": "proc.exec", "path": "$HELPERS/sg_x32", "pid": "P4", "tid": "T3"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P4", "tid": "T3", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "$TMP/x32dir", "pid": "P4", "tid": "T3"}
+{"code": 0, "ev": "proc.exit", "pid": "P4", "signal": 0, "tid": "T3"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T1"}

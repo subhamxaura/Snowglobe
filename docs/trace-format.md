@@ -138,7 +138,9 @@ instead of outcome keys:
 Consequences: default filters apply except the failure-based read-open
 drop (failed probes to non-noisy paths appear as unknown attempts);
 `--isolate` + notify is rejected (69); the viewer renders unknown as an
-explicit badge, never as ok. Parity definition (subsequence + shape
+explicit badge, never as ok. x32-ABI numbers (high bit set) classify
+identically to native in both backends (bit stripped before match;
+pinned by the `x32` scenario). Parity definition (subsequence + shape
 rules incl. the exec_failed→exec mapping) lives in
 `test/parity/check_parity.py`; pinned streams in
 `test/fixtures/scenarios/*/expected-notify.jsonl`.

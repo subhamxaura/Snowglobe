@@ -20,6 +20,18 @@ namespace snowglobe::tracer {
 
 std::string errnoText(int e);
 
+// x32 ABI high bit (R5 class): x32 syscalls reuse the native audit arch
+// with bit 30 set in nr. stripX32Nr maps them back to the native number
+// so both backends classify x32 identically to native (identity for
+// native nrs, which never reach the bit). Used by the ptrace ENTRY path
+// and the notify decode path; the notify BPF traps the high range so
+// x32 stays observed, never invisible.
+constexpr uint64_t kX32Bit = 0x40000000U;
+
+inline uint64_t stripX32Nr(uint64_t nr) {
+  return nr & ~kX32Bit;
+}
+
 uint64_t clockUs(int clk);
 
 // Read up to maxLen bytes from remote address; bytes read or -1.
