@@ -62,6 +62,11 @@ def backend_available(sg):
 def run_backend(sg, scn, repo, helpers, backend, work):
     out = os.path.join(work, backend + ".sgr")
     env = dict(os.environ, SG_HELPERS=helpers)
+    # Same hermetic loader env as golden.py (see there): parity compares
+    # live runs, so pollution would cancel out — but the runs must also
+    # match the committed hermetic goldens, so scrub here too.
+    for var in ("LD_LIBRARY_PATH", "LD_PRELOAD", "LD_AUDIT", "LD_DEBUG"):
+        env.pop(var, None)
     r = sh([sg, "run", "--out=" + out, "--backend=" + backend, "--",
             os.path.join(scn, "run.sh")],
            cwd=scn, env=env)

@@ -78,6 +78,15 @@ def main():
     run_sh = os.path.join(scn, "run.sh")
     try:
         env = dict(os.environ, SG_HELPERS=helpers)
+        # Hermetic loader behavior: CI images export LD_LIBRARY_PATH
+        # (e.g. setup-python's hostedtoolcache) whose failing glibc-hwcaps
+        # probes the ptrace backend filters but notify records as
+        # unknown attempts — environment-specific goldens. Scrub the
+        # loader search path for BOTH backends (ptrace streams are
+        # unaffected: only failing probes vanish, which ptrace drops
+        # anyway).
+        for var in ("LD_LIBRARY_PATH", "LD_PRELOAD", "LD_AUDIT", "LD_DEBUG"):
+            env.pop(var, None)
         r = subprocess.run(
             [sg, "run", "--out=" + out, "--backend=" + backend, "--", run_sh],
             cwd=scn,
