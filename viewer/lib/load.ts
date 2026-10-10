@@ -4,7 +4,7 @@
 // older binary. No full-file JSON.parse: each page parses small.
 import { MAX_PAGE } from "./model";
 import type { LinksDoc } from "./model";
-import type { Manifest, TraceEvent } from "./types";
+import type { Manifest, ReplayReport, TraceEvent } from "./types";
 
 export interface LoadProgress {
   bytes: number;
@@ -135,6 +135,40 @@ export async function loadText(rel: string): Promise<string> {
   const r = await fetch(`/trace/${clean}`);
   if (!r.ok) throw new Error(`${rel}: HTTP ${r.status}`);
   return r.text();
+}
+
+// Replay verdict (core/replay, ADR-0010): null when the run is not a
+// replay (404) or the report is unreadable — the viewer then shows the
+// replay_of badge without a verdict. Non-v1 versions also fall back.
+export async function loadReport(): Promise<ReplayReport | null> {
+  const r = await fetch("/api/replay");
+  if (!r.ok) return null;
+  try {
+    const d = (await r.json()) as ReplayReport;
+    if (d && d.version === 1 && d.categories) return d;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// One-line Replay badge for the run header. Null when the manifest
+// carries no replay_of link (not a replay run).
+export function replayBadge(
+  manifest: Manifest,
+  report: ReplayReport | null,
+): string | null {
+  const of = manifest.replay_of;
+  if (typeof of !== "string" || !of) return null;
+  let s = `Replay of ${of}`;
+  if (report) {
+    const bad = Object.entries(report.categories)
+      .filter(([, c]) => c.status !== "identical")
+      .map(([k]) => k);
+    s += bad.length === 0 ? " · verdict: clean" : ` · verdict: DIVERGED (${bad.join(",")})`;
+    if (report.unrecorded > 0) s += ` · ${report.unrecorded} unrecorded`;
+  }
+  return s;
 }
 
 // Causal sidecar (core/link, ADR-0006): null when the run has no

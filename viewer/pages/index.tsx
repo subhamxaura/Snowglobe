@@ -5,13 +5,14 @@ import Processes from "../components/Processes";
 import Files from "../components/Files";
 import Network from "../components/Network";
 import Search from "../components/Search";
-import { loadEvents, loadManifest } from "../lib/load";
-import type { Manifest, TraceEvent } from "../lib/types";
+import { loadEvents, loadManifest, loadReport, replayBadge } from "../lib/load";
+import type { Manifest, ReplayReport, TraceEvent } from "../lib/types";
 
 const TABS = ["turns", "timeline", "processes", "files", "network", "search"] as const;
 
 export default function Home() {
   const [manifest, setManifest] = useState<Manifest | null>(null);
+  const [report, setReport] = useState<ReplayReport | null>(null);
   const [events, setEvents] = useState<TraceEvent[]>([]);
   const [status, setStatus] = useState("loading manifest…");
   const [tab, setTab] = useState<(typeof TABS)[number]>("turns");
@@ -22,6 +23,8 @@ export default function Home() {
       try {
         const m = await loadManifest();
         setManifest(m);
+        // Replay verdict is best-effort (404 on live runs): never blocks.
+        loadReport().then(setReport, () => {});
         setStatus("loading events…");
         const evs = await loadEvents((p) => {
           if (!p.done) setStatus(`loading… ${p.events} events`);
@@ -43,6 +46,9 @@ export default function Home() {
           {manifest.cmd.join(" ")} · {manifest.event_count} events ·{" "}
           {manifest.snowglobe_version}
         </p>
+      )}
+      {manifest && replayBadge(manifest, report) && (
+        <p data-testid="replay-badge">{replayBadge(manifest, report)}</p>
       )}
       {status && <p data-testid="status">{status}</p>}
       {error && <p data-testid="error">{error}</p>}

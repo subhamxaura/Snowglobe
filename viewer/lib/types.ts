@@ -19,7 +19,21 @@ export interface Manifest {
   cwd: string;
   event_count: number;
   last_hash: string;
+  replay_of?: string;
   [k: string]: unknown;
+}
+
+// Derived replay verdict (core/replay, ADR-0010). Unknown fields ignored.
+export interface ReplayReport {
+  version: number;
+  original: string;
+  replay: string;
+  original_exit: number;
+  replay_exit: number;
+  turns: { original: number; replay: number; match: boolean };
+  order_matches: boolean;
+  unrecorded: number;
+  categories: Record<string, { status: string; detail: string }>;
 }
 
 export interface LlmTurn {

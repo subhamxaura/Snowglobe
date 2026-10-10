@@ -165,6 +165,24 @@ def main():
         ok &= check(s == 200 and lm.get("version") == 1
                     and len(lm.get("turns", [])) == 3,
                     "links 3 turns: %s" % b[:200])
+
+        # /api/replay: 404 without replay-report.json, 200 after one is
+        # planted (read per request, no restart needed).
+        s, _, _ = get(u + "/api/replay")
+        ok &= check(s == 404, "replay absent must 404, got %d" % s)
+        with open(os.path.join(run, "replay-report.json"), "w") as f:
+            json.dump({"version": 1, "original": run, "replay": run,
+                       "original_exit": 0, "replay_exit": 0,
+                       "turns": {"original": 3, "replay": 3, "match": True},
+                       "order_matches": True, "unrecorded": 0,
+                       "ignores": [],
+                       "categories": {"llm": {"status": "identical",
+                                              "detail": "t"}}}, f)
+        s, _, b = get(u + "/api/replay")
+        rm = json.loads(b) if s == 200 else {}
+        ok &= check(s == 200 and rm.get("version") == 1
+                    and rm["categories"]["llm"]["status"] == "identical",
+                    "replay report: %s" % b[:200])
         srv.stop()
         srv = None
 

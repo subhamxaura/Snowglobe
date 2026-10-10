@@ -693,6 +693,21 @@ int cmdView(const std::vector<std::string>& args) {
       res.set_content("no links.json (run snowglobe link <run>)", "text/plain");
       return;
     }
+    if (p == "/api/replay") {
+      // replay-report.json is derived (ADR-0010) and appears only on
+      // replay runs; absent → 404 and the viewer shows no badge.
+      std::string report;
+      const std::string reportPath =
+          rs.isFile ? "" : (fs::path(rs.runDir) / "replay-report.json").string();
+      if (!reportPath.empty() && readFile(reportPath, report)) {
+        res.set_header("Cache-Control", "no-store");
+        res.set_content(report, "application/json");
+        return;
+      }
+      res.status = 404;
+      res.set_content("no replay-report.json (not a replay run)", "text/plain");
+      return;
+    }
     if (startsWith(p, "/api/blob/")) {
       const std::string rel = p.substr(10);
       std::string abs;
