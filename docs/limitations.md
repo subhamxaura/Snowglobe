@@ -249,9 +249,45 @@ ssh-based git remotes need `--allow-path ~/.ssh` (else `git fetch` over ssh
 sees an empty `.ssh` and fails auth, by design).
 
 ## prlimit fallback (no cgroup delegation)
-
 When cgroup v2 delegation is denied, the child still gets `RLIMIT_NPROC=512`
 (`ulimit -u`), `RLIMIT_NOFILE=1024` (`ulimit -n`) always, and `RLIMIT_AS`
 only when `--memory-max` was explicit (`ulimit -v` finite; unlimited
 otherwise — AS limits break Bun/Node). `doctor --isolate` shows
 `cgroup: no (prlimit fallback active)` and the run log notes it.
+
+## Replay honest wall (Phase 5, ADR-0010)
+
+Replay is honest re-execution, never claimed bit-determinism. Read this
+before trusting a green replay:
+
+- **External non-LLM traffic is NOT stubbed.** There is no netns yet,
+  so the agent's direct network calls re-execute for real against
+  whatever listens now. The toy agent's `http_get` fetches the URL the
+  *recorded* model wrote into the tool args — replaying against a
+  different server (or none) fails or diverges by design. Keep recorded
+  sidecar services running on their recorded ports for clean replays;
+  the mutation suite pins the diverged case on purpose.
+- **Wall-clock and randomness in agent code re-execute for real.**
+  `--freeze-time` does not exist; timestamps, backoff sleeps, and
+  `random()` run live. Agents that branch on time will diverge (and say
+  so in the report).
+- **Replay validates observable behavior, not bit-identity.** The
+  compare is order-insensitive multisets (fs paths, exec argv sets, net
+  endpoints) plus LLM turn parity. A request-order swap of two turns
+  with *distinct* bodies is flagged via serve order; a swap of two
+  turns with *identical* canonical bodies is interchangeable by
+  construction and passes. Non-isolate fs compare is path-level: a
+  same-path different-bytes rewrite is invisible without both uppers.
+- **Replayed response headers are content-type-only.** Response headers
+  were never stored; replay serves status + Content-Type (from the blob
+  extension) + byte-exact body. Agents that branch on upstream headers
+  (rate-limit, request-id) see defaults, not history.
+- **Replays run unisolated.** `--isolate` replay is rejected; isolate
+  originals compare on event-observable behavior only (upper content
+  parity needs a future isolate-aware replay).
+- **Recorded secrets stay redacted.** `run.meta` cmd may carry
+  `REDACTED` tokens (ADR-0003); such a cmd cannot replay against a live
+  provider — pass a `--` override instead.
+- **`--policy/--fast/--freeze-time` do not exist.** Divergence policies
+  (`fuzzy`/`live`), fast-forward, and frozen time are future work; the
+  CLI rejects the flags loudly rather than half-honoring them.

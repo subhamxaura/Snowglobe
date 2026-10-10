@@ -151,3 +151,49 @@ hand-rolled Hirschberg diff); `apply` validates everything (conflicts +
 symlink/`.git` safety) then writes all-or-nothing (exit 65, zero writes,
 on abort); `compare` joins two raw sets. The tracer never learns about
 any of this — diff/apply/compare read run artifacts + host files only.
+
+## Replay (Phase 5, ADR-0010)
+
+```
+original <run>.sgr ──ReplayStore.load──► matched turns (hash primary,
+  endpoint-order fallback, consume-once) ──► replay proxy ──► agent
+  (re-executed under the tracer, same env injection, upstream never
+  contacted) ──► new <run>.sgr ──compare──► replay-report.json
+```
+
+- **core/replay/replay_match**: hand-rolled JSON parse (no new dep),
+  canonical serialization, volatile scrub (ports of
+  `test/normalize.py` plus recursive request-key stripping), sha256
+  request hashing. Stateless, thread-safe.
+- **core/replay/replay_store**: loads one run's LLM layer from
+  `events.jsonl` (`llm.response` id/status/req/res/idx) joined to the
+  stored envelopes + blobs pre-sliced at `.idx` `off` bounds (`off` =
+  bytes received *before* that chunk — verified against `proxy.cpp`).
+  `match()` is mutex-guarded; MISS appends to
+  `<orig>/replay.unrecorded.jsonl` and the client gets 502.
+- **core/proxy replay mode**: `handleReplay` streams recorded chunks
+  through the same chunked provider as live (default fast; `--realtime`
+  sleeps recorded gaps in ≤1s slices). Status comes from the recorded
+  event, Content-Type from the blob extension (headers were never
+  stored — the re-served *body* is byte-exact, the envelope is not).
+  HEAD re-serves status-faithfully with an empty wire body (HTTP
+  semantics; httplib suppresses it). Every served response carries
+  `replay_of` (the recorded turn id) for the compare join.
+- **core/replay/replay_compare**: normalizes both runs' events with the
+  normalize.py rules, compares `llm` (turn counts, per-turn body
+  equality through the serve mapping, serve-order rule, response
+  status/bytes parity), `fs`/`proc.exec`/`net` (order-insensitive
+  multisets), `exit` (root exit-code equality). Timing fields and
+  `replay_of` are volatile-by-construction and excluded; everything
+  else that differs lands in the report as evidence.
+- **CLI**: `snowglobe replay-proxy <run> [--realtime]` (stub server to
+  SIGINT/SIGTERM, scratch dir for its own copies, `offline: N served, M
+  unrecorded` epilogue); `snowglobe replay <run> [--out] [--realtime]
+  [--ignore]... [-- override]` re-runs the recorded `run.meta` cmd (or
+  the override) into a new run (`manifest.replay_of` links them) and
+  auto-compares. Exits 0 clean (incl. same-failure) / 65
+  diverged-or-unrecorded / 69 replay impossible / 70 internal. The agent
+  exit code is compared, never propagated (unlike `run`).
+- **viewer**: `/api/replay` serves the report (404 on live runs); the
+  header shows a `Replay of <original> · verdict: …` badge from
+  `manifest.replay_of`. No playback animation (out of scope).

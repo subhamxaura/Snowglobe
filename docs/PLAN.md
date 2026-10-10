@@ -57,9 +57,10 @@ threat-model.md. Acceptance per sub-task; tag v0.2.0.
 
 ## Phase 3 — Replay/CI/SDKs/share (weeks 16–23)
 
-Canonical request hashing, replay proxy modes, divergence policies + exit
-3/4, --freeze-time shim, `compare`, replay GitHub Action, Python/TS SDKs,
-opt-in `share`. Acceptance: mutated tool → `replay --policy=fail` exits 3 with
+Canonical request hashing, replay proxy modes, divergence report + exit
+0/65/69/70 (ADR-0010 supersedes the old --policy/3/4 sketch: no
+fuzzy/live policies, no --freeze-time yet), `compare`, replay GitHub Action, Python/TS SDKs,
+opt-in `share`. Acceptance: mutated tool → `replay` exits 65 with
 readable report; Action comments on PR. Tag v0.3.0.
 
 ## Phase 4 — Perf & hardening (weeks 24–29)

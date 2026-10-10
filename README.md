@@ -9,11 +9,11 @@
 > A Linux-first systems platform for observing, tracing, isolating,
 > diffing, and deterministically replaying AI agent execution.
 
-> **Status: pre-alpha, not yet usable.** Phases 0–1B done: `run` (ptrace
-> process/file/network tracing + LLM recording proxy with mock-tested
-> redaction) + `view` (embedded offline trace viewer) + `doctor` +
-> `ls`/`rm`/`version`. No sandbox, no replay yet. See STATUS.md and
-> docs/PLAN.md.
+> **Status: pre-alpha, not yet usable.** `run` (ptrace/notify tracing +
+> LLM recording proxy with mock-tested redaction) + `view` (embedded
+> offline trace viewer) + `doctor` + `ls`/`rm`/`version` + `link` +
+> `run --isolate` + `diff`/`apply`/`compare` + `replay`/`replay-proxy`.
+> No `share` yet. See STATUS.md and docs/PLAN.md.
 
 **Tagline.** *Langfuse tells you what the model said. Snowglobe tells you what the agent did.*
 
@@ -24,7 +24,7 @@ observable environment; records every LLM call **and** every process/file/networ
 side effect, causally linked; lets you review the filesystem diff before applying
 it; and replays runs deterministically in CI.
 
-## What exists today (run/isolate/link/diff/apply/compare + viewer)
+## What exists today (run/isolate/link/diff/apply/compare/replay + viewer)
 
 - `snowglobe run -- <command>` — ptrace tracer + LLM recording proxy →
   `<run>.sgr/` (events.jsonl + manifest.json + `llm/` blobs, SHA-256
@@ -43,6 +43,14 @@ it; and replays runs deterministically in CI.
 - `snowglobe apply <run> [--dry-run] [--yes]` — validated all-or-nothing
   write-back (exit 65, zero writes, on conflict/rejection).
 - `snowglobe compare <runA> <runB> [--stat] [--json]` — change-set join.
+- `snowglobe replay-proxy <run> [--realtime]` — stub server: serves the
+  run's recorded LLM responses offline (502 + log on unrecorded calls).
+- `snowglobe replay <run> [--out=DIR] [--realtime] [--ignore=FIELD]... [-- <command override>]` —
+  re-executes the recorded command against the stub, records a new run,
+  auto-compares (LLM turns, fs, proc.exec argv, net, exit) into
+  `replay-report.json`. Exits 0 clean (same failure counts as clean) /
+  65 diverged-or-unrecorded / 69 replay impossible / 70 internal.
+  Honest wall: non-LLM traffic is not stubbed (docs/limitations.md).
 - `snowglobe view <run> [--port=7777] [--open]` — embedded offline viewer
   (Next.js static export, no network calls) on localhost: timeline,
   turns (OpenAI/Anthropic parsing + cost), processes, files, network,

@@ -159,7 +159,6 @@ Phase 2+. `turn`/`tool_call` causal linking arrives in Phase 1D.
 ## LLM blobs (`llm/`, Phase 1B)
 
 `NNNN` = zero-padded request `id` (`%04d`).
-
 - `NNNN.req.json`: `{"method","path","provider","headers":{…},"body","body_encoding"}`
   — headers stored redacted (`Authorization` → `REDACTED`; forwarding is a
   separate, byte-identical path). `body` is the verbatim request bytes as
@@ -176,6 +175,42 @@ Phase 2+. `turn`/`tool_call` causal linking arrives in Phase 1D.
   upstream broke mid-stream after a complete head — the stored prefix is
   partial. A clean empty body (204, empty error page) is *not* truncated.
 - The run epilogue's "N LLM turns" counts 2xx responses only.
+
+## Replay sidecars (Phase 5, ADR-0010 — schema stays 0)
+
+Replay re-serves the blobs above; response *headers* were never stored,
+so a replayed response carries status (from its `llm.response` event)
++ Content-Type (from the blob extension) + the byte-exact body, sliced
+at the recorded `.idx` `off` bounds. `off` is bytes received *before*
+that chunk; an empty `.idx` serves the whole body as one chunk. HEAD
+requests re-serve status-faithfully with an empty wire body (HTTP
+suppresses HEAD bodies; the stored bytes and the event's `bytes` keep
+the recorded values for forensics).
+
+- Manifest gains `"replay_of":"<abs original run>"` on replay runs
+  only (additive; live-run manifests are byte-identical to before).
+- `llm.response` gains `"replay_of":<recorded turn id>` on replayed
+  responses only (the compare join key; live runs never carry it).
+- `<new-run>/replay-report.json` (`version:1`): `original`, `replay`,
+  `original_exit`/`replay_exit` (the agent exit is *compared*, and the
+  same nonzero exit is clean), `turns:{original,replay,match}`,
+  `order_matches`, `unrecorded` (loud-502 count), `ignores[]`, and
+  `categories:{llm,fs,proc,net,exit}` each
+  `{status:identical|diverged|unrecorded, detail, replay_only[],
+  original_only[]}` (`unrecorded` only occurs for `llm`; evidence
+  capped at 20 lines per side). Readers must ignore unknown categories.
+- `<orig-run>/replay.unrecorded.jsonl`: one
+  `{"ts_us","method","path","provider","body_sha256","body_bytes",
+  "reason":"no-recorded-match"}` per MISS (the original run is never
+  otherwise modified by replay).
+- Volatility excluded from the compare (documented, never silent):
+  `seq/ts_us/t_ms/t_us/prev_hash/hash/fd/backend`, pid→Pn/tid→Tn,
+  ports→PORT, `/tmp/tmp.*`→`$TMP` (incl. mkdtemp `_` suffixes),
+  `127.0.0.1:N`/`[::1]:N`→PORT, python-version folds (the
+  `test/normalize.py` rules), request keys
+  `id/tool_call_id/tool_use_id/created/timestamp/ts/user/request_id/
+  session_id`, and timing fields `ttfb_ms/total_ms` + the join key
+  `replay_of`. `--ignore FIELD` strips extra event fields.
 
 ## Filtering (default; `-a`/`--all-opens` disables)
 

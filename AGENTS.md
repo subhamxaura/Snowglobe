@@ -74,15 +74,20 @@ snowglobe run     [--isolate] [--net=host|proxy-only|none] [--allow-host=HOST[:P
 snowglobe view    <run> [--port=7777] [--open]
 snowglobe diff    <run> [--stat] [--patch=FILE]
 snowglobe apply   <run> [--dry-run] [--yes]
-snowglobe replay  <run> [--policy=fail|fuzzy|live] [--fast] [--freeze-time] [--out=DIR] [-- <command override>]
+snowglobe replay-proxy <run> [--realtime]
+snowglobe replay  <run> [--out=DIR] [--realtime] [--ignore=FIELD]...
+                  [--backend=auto|ptrace|notify] [-a|--all-opens] [--json]
+                  [-- <command override>]
 snowglobe compare <runA> <runB> [--json]
 snowglobe share   <run> [--public|--team] [--yes]
 snowglobe ls | rm <run> | doctor | version
 ```
 
 Rules: `run` propagates the agent's exit code; Snowglobe's own failures use 64+ (`EX_USAGE`=64,
-`EX_UNAVAILABLE`=69 for missing kernel features, `EX_SOFTWARE`=70). `replay`: 0 = no divergence,
-3 = divergence, 4 = replay infrastructure error. Default run dir: `./.snowglobe/runs/<UTC-ts>-<6 chars>.sgr`
+`EX_UNAVAILABLE`=69 for missing kernel features, `EX_SOFTWARE`=70). `replay`: 0 = clean
+(all identical, including the same failure), 65 = diverged-or-unrecorded, 69 = replay
+impossible (original has no `llm/` blobs), 70 = internal error (ADR-0010; supersedes the
+old 3/4 sketch — the agent exit code is compared, never propagated). Default run dir: `./.snowglobe/runs/<UTC-ts>-<6 chars>.sgr`
 (`--out` overrides; `SNOWGLOBE_HOME` for global). The `run` epilogue is a compact summary
 (turns, cost, processes, files changed, new egress hosts) followed by the next-step hints
 (`diff | apply | view | share | replay`). Human output goes to stderr; machine output (`--json`) to stdout.

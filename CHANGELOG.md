@@ -2,6 +2,59 @@
 
 ## [Unreleased]
 
+### Added (Phase 5 — deterministic replay at the LLM layer, ADR-0010)
+
+- `snowglobe replay-proxy <run> [--realtime]`: stub server that serves
+  the run's recorded `llm/*` blobs instead of upstream (upstream never
+  contacted — no API key needed). Matching is hash-primary (normalized
+  request: provider + path + canonical body with volatile keys/patterns
+  stripped) with a same-endpoint sequential fallback; each recorded turn
+  is consumed once. MISS is loud: the request lands in
+  `<run>/replay.unrecorded.jsonl` and the client gets 502
+  `{"error":"snowglobe replay: unrecorded call"}`. Bodies re-stream at
+  the recorded `.idx` bounds (byte-exact by construction; `--realtime`
+  honors the gaps, default is fast). Shutdown epilogue prints
+  `offline: N responses served, M unrecorded`.
+- `snowglobe replay <run> [--out=DIR] [--realtime] [--ignore=FIELD]...
+  [-- <command override>]`: re-executes the recorded `run.meta` cmd (or
+  the override) under the tracer with the replay proxy injected, into a
+  new run (`manifest.replay_of` links them; the original is never
+  modified except the unrecorded log), then auto-compares `llm` (turn
+  counts, per-turn body equality through the serve mapping, serve-order
+  rule, status/bytes parity), `fs` / `proc.exec argv` / `net`
+  (order-insensitive normalized multisets with the `test/normalize.py`
+  rules) and `exit` (root exit-code equality) into
+  `<new-run>/replay-report.json` (per-category
+  identical|diverged|unrecorded with capped evidence). The agent exit
+  code is compared, never propagated: the same failure is clean.
+  Exits 0 / 65 diverged-or-unrecorded / 69 replay impossible (no `llm/`
+  blobs) / 70 internal — supersedes the old 0/3/4 sketch (AGENTS.md §2
+  and PLAN.md updated via this ADR).
+- Tests: 6 replay integration tests (clean toy 3-turn exit 0 with
+  byte-exact blobs; tool-output mutation names turn 2; extra-file
+  mutation names the path; unrecorded 4th call 502s with log + report
+  entry; claude-code-1-error fixture re-serves 1×502 probe + 11×401
+  byte-exact offline plus a fresh-401 same-failure-clean; 8-stream
+  concurrency byte-exact) + Catch2 units (JSON parse/canonical,
+  scrubbing incl. mkdtemp `_` suffixes, request hashing, store
+  load/match/consume/chunk bounds, torn-input rejection). Two real
+  behaviors found by the tests and fixed: mkdtemp `_` suffixes escape
+  `TMP_RE` (fixed in both `test/normalize.py` and the C++ port — no
+  golden residue anywhere, suite green), and HEAD re-serves carry an
+  empty wire body (HTTP semantics; status-faithful, event bytes kept).
+- Viewer: `/api/replay` (report or 404) + a `Replay of <original> ·
+  verdict: …` header badge from `manifest.replay_of` (vitest 4/4).
+- Docs: ADR-0010, architecture (replay flow), trace-format
+  (replay-report.json, unrecorded log, `replay_of` keys, HEAD note),
+  limitations (the honest wall), README command list.
+- Second-model review requested (ranges below); builder==reviewer D1 in
+  Block 3. Review targets — matching + unrecorded paths:
+  `core/replay/replay_match.cpp` (full file: parser + canonical +
+  scrub), `core/replay/replay_store.cpp` (load + match + consume +
+  log), `core/proxy/proxy.cpp:handleReplay` + `emitResponseEvent`
+  `replay_of` (serve + join key), `core/replay/replay_compare.cpp`
+  (normalizer + order rule + report).
+
 ### Fixed (x32 parity — ptrace stripped like notify)
 
 - The ptrace backend never stripped the x32 high bit before
