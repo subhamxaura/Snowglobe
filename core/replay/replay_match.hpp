@@ -42,10 +42,11 @@ std::string scrubString(const std::string& s);
 // non-JSON bodies hash raw ("raw:<sha256hex>").
 std::string normalizeBody(const std::string& body);
 
-// Canonical request hash: sha256hex(provider + "\n" + path + "\n" +
-// normalizeBody(body)). Provider/path are matched verbatim (an endpoint
-// change is a different call, never normalized away).
-std::string requestHash(const std::string& provider, const std::string& path,
-                        const std::string& body);
+// Canonical request hash: sha256hex(provider + "\n" + method + "\n" +
+// path + "\n" + normalizeBody(body)). Provider/method/path are matched
+// verbatim (an endpoint or verb change is a different call, never
+// normalized away).
+std::string requestHash(const std::string& provider, const std::string& method,
+                        const std::string& path, const std::string& body);
 
 } // namespace snowglobe::replay

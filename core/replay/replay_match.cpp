@@ -475,9 +475,9 @@ std::string normalizeBody(const std::string& body) {
   return canonicalJson(v);
 }
 
-std::string requestHash(const std::string& provider, const std::string& path,
-                        const std::string& body) {
-  return util::sha256Hex(provider + "\n" + path + "\n" + normalizeBody(body));
+std::string requestHash(const std::string& provider, const std::string& method,
+                        const std::string& path, const std::string& body) {
+  return util::sha256Hex(provider + "\n" + method + "\n" + path + "\n" + normalizeBody(body));
 }
 
 } // namespace snowglobe::replay

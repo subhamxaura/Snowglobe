@@ -28,13 +28,19 @@ and replaces the Phase-3 sketch codes (0/3/4) with 0/65/69/70.
   responses carry content-type only (documented, not silent: the
   re-served *body* is byte-exact, the envelope is not).
 - **Matching** per incoming request, first unused wins, thread-safe:
-  (a) primary — sha256 of the *normalized* request (provider + path +
-  canonical JSON body with volatile keys stripped and volatile string
-  patterns scrubbed) matches a recorded request hash; (b) fallback —
-  next unused recorded request for the same endpoint (provider + path)
-  in record order. Each recorded response is served **once**
-  (consumed); an agent retry of an identical request is therefore a
-  MISS, not a free replay — retries are observable behavior.
+  (a) primary — sha256 of the *normalized* request (provider + method +
+  path + canonical JSON body with volatile keys stripped and volatile
+  string patterns scrubbed) matches a recorded request hash;
+  (b) fallback — next unused recorded request for the same endpoint
+  (provider + method + path) in record order. Method gates both levels:
+  a verb change is a different call at the hash AND at the fallback, so
+  a GET probe can never borrow a POST turn on the same route (P1). Each
+  recorded response is served **once** (consumed); an agent retry of an
+  identical request is therefore a MISS, not a free replay — retries
+  are observable behavior. Volatile request strings (timestamps) push
+  every turn onto the fallback; concurrently-issued identical requests
+  may then serve swapped, which the compare's serve-order rule flags
+  for distinct turns (P3).
 - **MISS is loud, never invented.** No candidate → request appended to
   `<orig-run>/replay.unrecorded.jsonl`, client receives 502
   `{"error":"snowglobe replay: unrecorded call"}`, counters increment.

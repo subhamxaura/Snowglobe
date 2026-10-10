@@ -92,19 +92,24 @@ TEST_CASE("replay normalizeBody strips volatile keys", "[replay]") {
   CHECK(raw != normalizeBody(bin2));
 }
 
-TEST_CASE("replay requestHash endpoint sensitivity", "[replay]") {
+TEST_CASE("replay requestHash endpoint + method sensitivity", "[replay]") {
   using snowglobe::replay::requestHash;
   const std::string body = "{\"model\":\"m\",\"messages\":[]}";
-  const std::string h = requestHash("openai", "/openai/v1/chat/completions", body);
+  const std::string h = requestHash("openai", "POST", "/openai/v1/chat/completions", body);
   CHECK(h.size() == 64);
-  CHECK(requestHash("openai", "/openai/v1/chat/completions", body) == h);
-  CHECK(requestHash("anthropic", "/openai/v1/chat/completions", body) != h);
-  CHECK(requestHash("openai", "/openai/v1/other", body) != h);
-  CHECK(requestHash("openai", "/openai/v1/chat/completions", "{\"model\":\"n\"}") != h);
+  CHECK(requestHash("openai", "POST", "/openai/v1/chat/completions", body) == h);
+  CHECK(requestHash("anthropic", "POST", "/openai/v1/chat/completions", body) != h);
+  CHECK(requestHash("openai", "POST", "/openai/v1/other", body) != h);
+  CHECK(requestHash("openai", "POST", "/openai/v1/chat/completions", "{\"model\":\"n\"}") != h);
+  // Same path, different verb: a GET health probe must never match the
+  // POST that shares its route (P1 — method is load-bearing).
+  CHECK(requestHash("openai", "GET", "/openai/v1/chat/completions", body) != h);
+  CHECK(requestHash("openai", "HEAD", "/openai/v1/chat/completions", "") !=
+        requestHash("openai", "POST", "/openai/v1/chat/completions", ""));
   // Tool-output paths under different tmp dirs still match (volatile).
   const std::string b1 = "{\"model\":\"m\",\"messages\":[{\"content\":\"/tmp/tmp.AAA\"}]}";
   const std::string b2 = "{\"model\":\"m\",\"messages\":[{\"content\":\"/tmp/tmp.BBB\"}]}";
-  CHECK(requestHash("openai", "/p", b1) == requestHash("openai", "/p", b2));
+  CHECK(requestHash("openai", "POST", "/p", b1) == requestHash("openai", "POST", "/p", b2));
 }
 
 TEST_CASE("replay store load + match + chunks", "[replay]") {
@@ -170,12 +175,63 @@ TEST_CASE("replay store fallback is endpoint-ordered", "[replay]") {
   CHECK(m.hit);
   CHECK(!m.primary);
   CHECK(m.recordedId == 0);
+  // Same path + body but different verb -> miss, never fallback (P1:
+  // method gates both levels, so a GET probe cannot borrow a POST turn).
+  ReplayStore st3;
+  REQUIRE(st3.load(dir, err));
+  auto m3 = st3.match("openai", "GET", "/openai/v1/chat/completions", "{\"model\":\"m\"}");
+  CHECK(!m3.hit);
+  CHECK(st3.unrecorded() == 1);
   // Different endpoint -> miss.
   ReplayStore st2;
   REQUIRE(st2.load(dir, err));
   auto m2 = st2.match("anthropic", "POST", "/anthropic/v1/messages", "{}");
   CHECK(!m2.hit);
   CHECK(st2.unrecorded() == 1);
+  fs::remove_all(dir);
+}
+
+TEST_CASE("replay store consumes identical bodies in order", "[replay]") {
+  using snowglobe::replay::ReplayStore;
+  // P3: two recorded turns with byte-identical requests. Each incoming
+  // match consumes one entry — both serve primary with distinct turn
+  // ids; the third identical request is a loud miss (a retry storm
+  // drains the queue into 502s, never loops one response).
+  const std::string dir = tmpRun();
+  writeFile(dir + "/events.jsonl", "{\"ev\":\"llm.response\",\"id\":0,\"status\":200,\"bytes\":1,"
+                                   "\"req\":\"llm/0000.req.json\",\"res\":\"llm/0000.res.json\","
+                                   "\"idx\":\"llm/0000.res.idx\"}\n"
+                                   "{\"ev\":\"llm.response\",\"id\":1,\"status\":200,\"bytes\":1,"
+                                   "\"req\":\"llm/0001.req.json\",\"res\":\"llm/0001.res.json\","
+                                   "\"idx\":\"llm/0001.res.idx\"}\n");
+  for (const char* n : {"0000", "0001"}) {
+    writeFile(dir + "/llm/" + n + ".req.json",
+              "{\"method\":\"POST\",\"path\":\"/openai/v1/chat/completions\","
+              "\"provider\":\"openai\",\"headers\":{},\"body\":\"{\\\"model\\\":\\\"m\\\"}\","
+              "\"body_encoding\":\"utf8\"}");
+    writeFile(dir + "/llm/" + n + ".res.idx", "");
+  }
+  writeFile(dir + "/llm/0000.res.json", "x");
+  writeFile(dir + "/llm/0001.res.json", "y");
+  ReplayStore st;
+  std::string err;
+  REQUIRE(st.load(dir, err));
+  REQUIRE(st.size() == 2);
+  auto m1 = st.match("openai", "POST", "/openai/v1/chat/completions", "{\"model\":\"m\"}");
+  auto m2 = st.match("openai", "POST", "/openai/v1/chat/completions", "{\"model\":\"m\"}");
+  CHECK(m1.hit);
+  CHECK(m1.primary);
+  CHECK(m2.hit);
+  CHECK(m2.primary);
+  CHECK(m1.recordedId == 0);
+  CHECK(m2.recordedId == 1);
+  CHECK(m1.recordedId != m2.recordedId);
+  CHECK(st.turn(m1.slot).resBody == "x");
+  CHECK(st.turn(m2.slot).resBody == "y");
+  CHECK(st.served() == 2);
+  auto m3 = st.match("openai", "POST", "/openai/v1/chat/completions", "{\"model\":\"m\"}");
+  CHECK(!m3.hit);
+  CHECK(st.unrecorded() == 1);
   fs::remove_all(dir);
 }
 

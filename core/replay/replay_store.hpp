@@ -28,7 +28,7 @@ struct RecordedTurn {
   std::string method;
   std::string path;    // proxy path as recorded (e.g. /openai/v1/chat/...)
   std::string reqBody; // verbatim request bytes
-  std::string hash;    // requestHash(provider, path, reqBody)
+  std::string hash;    // requestHash(provider, method, path, reqBody)
   std::string resExt;  // .json | .sse | .bin (drives replay Content-Type)
   int status = 0;      // recorded HTTP status, re-served verbatim
   std::string resBody; // full recorded response bytes

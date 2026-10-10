@@ -255,7 +255,7 @@ bool ReplayStore::load(const std::string& runDir, std::string& err) {
         t.gapsUs.push_back(stamps[k] > stamps[k - 1] ? stamps[k] - stamps[k - 1] : 0);
       }
     }
-    t.hash = requestHash(t.provider, t.path, t.reqBody);
+    t.hash = requestHash(t.provider, t.method, t.path, t.reqBody);
     turns_.push_back(std::move(t));
   }
   return true;
@@ -263,7 +263,7 @@ bool ReplayStore::load(const std::string& runDir, std::string& err) {
 
 ReplayMatch ReplayStore::match(const std::string& provider, const std::string& method,
                                const std::string& path, const std::string& body) {
-  const std::string h = requestHash(provider, path, body);
+  const std::string h = requestHash(provider, method, path, body);
   std::lock_guard<std::mutex> lk(mu_);
   // (a) primary: first unused recorded request with the same hash.
   for (size_t k = 0; k < turns_.size(); ++k) {
@@ -273,11 +273,14 @@ ReplayMatch ReplayStore::match(const std::string& provider, const std::string& m
       return ReplayMatch{true, true, turns_[k].id, k};
     }
   }
-  // (b) fallback: next unused recorded request for the same endpoint, in
-  // record order. Order-preserving by construction; the body mismatch is
-  // surfaced by the replay compare (never silent).
+  // (b) fallback: next unused recorded request for the same endpoint
+  // (provider + method + path), in record order. Order-preserving by
+  // construction; the body mismatch is surfaced by the replay compare
+  // (never silent). Method is load-bearing here too: a GET probe must
+  // not fall back onto a POST's response on the same route (P1).
   for (size_t k = 0; k < turns_.size(); ++k) {
-    if (!turns_[k].used && turns_[k].provider == provider && turns_[k].path == path) {
+    if (!turns_[k].used && turns_[k].provider == provider && turns_[k].method == method &&
+        turns_[k].path == path) {
       turns_[k].used = true;
       served_.fetch_add(1);
       return ReplayMatch{true, false, turns_[k].id, k};

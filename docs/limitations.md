@@ -276,8 +276,15 @@ before trusting a green replay:
   endpoints) plus LLM turn parity. A request-order swap of two turns
   with *distinct* bodies is flagged via serve order; a swap of two
   turns with *identical* canonical bodies is interchangeable by
-  construction and passes. Non-isolate fs compare is path-level: a
-  same-path different-bytes rewrite is invisible without both uppers.
+  construction and passes. Volatile request content (timestamps, nonces)
+  defeats the hash and drops every turn onto the order-preserving
+  endpoint fallback — concurrently-issued identical requests may then
+  serve swapped, and the compare catches it for distinct turns via serve
+  order. Each recorded response serves exactly once: identical retries
+  consume successive entries (pinned by unit), so a retry storm drains
+  into loud 502s rather than looping one response. Non-isolate fs
+  compare is path-level: a same-path different-bytes rewrite is
+  invisible without both uppers.
 - **Replayed response headers are content-type-only.** Response headers
   were never stored; replay serves status + Content-Type (from the blob
   extension) + byte-exact body. Agents that branch on upstream headers
