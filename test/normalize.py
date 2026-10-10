@@ -5,7 +5,9 @@ Rules (Phase 1A Block 2, extended Phase 1B):
 - pid/tid/ppid replaced by stable ids of first appearance (P1, P2, ... /
   T1, T2, ...). ppid maps through the pid namespace (the supervisor pid,
   which never has its own event, still gets a stable id).
-- stripped keys: seq, ts_us, t_ms, t_us, prev_hash, hash, fd.
+- stripped keys: seq, ts_us, t_ms, t_us, prev_hash, hash, fd, backend
+  (backend is run.meta's tracer name — ptrace goldens predate it and stay
+  byte-identical; notify goldens pin result_known, never stripped).
 - numeric "port" fields (net.* endpoints) become "PORT" (ephemeral).
 - every string has the scenario temp dir replaced with $TMP, the repo path
   with $REPO, and interpreter-version path components normalised
@@ -18,7 +20,7 @@ import json
 import re
 import sys
 
-STRIP = {"seq", "ts_us", "t_ms", "t_us", "prev_hash", "hash", "fd"}
+STRIP = {"seq", "ts_us", "t_ms", "t_us", "prev_hash", "hash", "fd", "backend"}
 TMP_RE = re.compile(r"/tmp/tmp\.[A-Za-z0-9]+")
 PYVER_RE = re.compile(r"python3\.\d+")
 CPYTHON_RE = re.compile(r"cpython-3\d+")

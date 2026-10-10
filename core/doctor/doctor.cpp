@@ -163,6 +163,25 @@ Capability checkSeccompNotif() {
   return {"seccomp-notify", false, std::string("unavailable: ") + errnoText((int)-r)};
 }
 
+// Notify-backend usability (ADR-0009, Phase 4 Block 3): same kernel
+// capability as seccomp-notify, phrased as the feature it gates
+// (`run --backend=notify`). Honest yes/no; --isolate + notify stays
+// unsupported regardless (tracer-level 69, not a kernel lack).
+Capability checkNotifyBackend() {
+  const long r = seccompNotifAvail();
+  if (r == 0) {
+    return {"notify-backend", true, "--backend=notify usable (user-notify available)"};
+  }
+  if (r == -EINVAL) {
+    return {"notify-backend", false, "--backend=notify unavailable: kernel < 5.11"};
+  }
+  if (r == -ENOSYS) {
+    return {"notify-backend", false, "--backend=notify unavailable: no seccomp(2)"};
+  }
+  return {"notify-backend", false,
+          std::string("--backend=notify unavailable: ") + errnoText((int)-r)};
+}
+
 // Write whole file with plain O_WRONLY (right for /proc map files).
 bool procPut(const std::string& path, const std::string& content) {
   const int fd = ::open(path.c_str(), O_WRONLY);
@@ -448,6 +467,7 @@ std::vector<Capability> checkAll() {
   out.push_back(checkOverlayUserns());
   out.push_back(checkLandlock());
   out.push_back(checkSeccompNotif());
+  out.push_back(checkNotifyBackend());
 
   const std::string cgroup = readFile("/proc/self/cgroup");
   out.push_back({"cgroup-v2", cgroup.find("0::") != std::string::npos,
@@ -467,6 +487,7 @@ std::vector<Capability> checkAll() {
   out.push_back({"overlayfs", false, "requires Linux"});
   out.push_back({"landlock", false, "requires Linux"});
   out.push_back({"seccomp-notify", false, "requires Linux >= 5.11"});
+  out.push_back({"notify-backend", false, "requires Linux >= 5.11"});
   out.push_back({"cgroup-v2", false, "requires Linux"});
   out.push_back({"pasta/slirp4netns", false, "requires Linux user-mode networking"});
   out.push_back({"ptrace", false, "requires Linux"});

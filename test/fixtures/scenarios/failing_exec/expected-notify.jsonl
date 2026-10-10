@@ -1,0 +1,38 @@
+{"cmd": ["$REPO/test/fixtures/scenarios/failing_exec/run.sh"], "cwd": "$REPO/test/fixtures/scenarios/failing_exec", "ev": "run.meta", "pid": "P1", "tid": "T1"}
+{"ev": "proc.start", "pid": "P1", "ppid": "P2", "root": true, "tid": "T1"}
+{"argv": ["$REPO/test/fixtures/scenarios/failing_exec/run.sh"], "cwd": "$REPO/test/fixtures/scenarios/failing_exec", "ev": "proc.exec", "path": "$REPO/test/fixtures/scenarios/failing_exec/run.sh", "pid": "P1", "result_known": false, "tid": "T1"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P1", "result_known": false, "tid": "T1", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "$REPO/test/fixtures/scenarios/failing_exec/run.sh", "pid": "P1", "result_known": false, "tid": "T1", "trunc": false, "write": false}
+{"ev": "proc.start", "pid": "P3", "ppid": "P1", "tid": "T2"}
+{"argv": ["mktemp", "-d"], "cwd": "$REPO/test/fixtures/scenarios/failing_exec", "ev": "proc.exec", "path": "/usr/bin/mktemp", "pid": "P3", "result_known": false, "tid": "T2"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P3", "result_known": false, "tid": "T2", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P3", "result_known": false, "tid": "T2", "trunc": false, "write": false}
+{"ev": "fs.mkdir", "path": "$TMP", "pid": "P3", "tid": "T2"}
+{"code": 0, "ev": "proc.exit", "pid": "P3", "signal": 0, "tid": "T2"}
+{"ev": "proc.start", "pid": "P4", "ppid": "P1", "tid": "T3"}
+{"argv": ["sh", "-c", "exec definitely-not-a-real-binary-xyz"], "cwd": "$REPO/test/fixtures/scenarios/failing_exec", "ev": "proc.exec", "path": "/usr/bin/sh", "pid": "P4", "result_known": false, "tid": "T3"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P4", "result_known": false, "tid": "T3", "trunc": false, "write": false}
+{"argv": ["definitely-not-a-real-binary-xyz"], "cwd": "$REPO/test/fixtures/scenarios/failing_exec", "ev": "proc.exec", "path": "/usr/bin/definitely-not-a-real-binary-xyz", "pid": "P4", "result_known": false, "tid": "T3"}
+{"argv": ["definitely-not-a-real-binary-xyz"], "cwd": "$REPO/test/fixtures/scenarios/failing_exec", "ev": "proc.exec", "path": "/bin/definitely-not-a-real-binary-xyz", "pid": "P4", "result_known": false, "tid": "T3"}
+{"code": 127, "ev": "proc.exit", "pid": "P4", "signal": 0, "tid": "T3"}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P1", "result_known": false, "tid": "T1", "trunc": true, "write": true}
+{"ev": "proc.start", "pid": "P5", "ppid": "P1", "tid": "T4"}
+{"argv": ["ls", "$TMP"], "cwd": "$REPO/test/fixtures/scenarios/failing_exec", "ev": "proc.exec", "path": "/usr/bin/ls", "pid": "P5", "result_known": false, "tid": "T4"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libselinux.so.1", "pid": "P5", "result_known": false, "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P5", "result_known": false, "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpcre2-8.so.0", "pid": "P5", "result_known": false, "tid": "T4", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P5", "result_known": false, "tid": "T4", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P5", "signal": 0, "tid": "T4"}
+{"create": true, "ev": "fs.open", "path": "/dev/null", "pid": "P1", "result_known": false, "tid": "T1", "trunc": true, "write": true}
+{"ev": "proc.start", "pid": "P6", "ppid": "P1", "tid": "T5"}
+{"argv": ["/usr/bin/passwd", "--help"], "cwd": "$REPO/test/fixtures/scenarios/failing_exec", "ev": "proc.exec", "path": "/usr/bin/passwd", "pid": "P6", "result_known": false, "tid": "T5"}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpam.so.0", "pid": "P6", "result_known": false, "tid": "T5", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpam_misc.so.0", "pid": "P6", "result_known": false, "tid": "T5", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libaudit.so.1", "pid": "P6", "result_known": false, "tid": "T5", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libselinux.so.1", "pid": "P6", "result_known": false, "tid": "T5", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libc.so.6", "pid": "P6", "result_known": false, "tid": "T5", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libcap-ng.so.0", "pid": "P6", "result_known": false, "tid": "T5", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/lib/x86_64-linux-gnu/libpcre2-8.so.0", "pid": "P6", "result_known": false, "tid": "T5", "trunc": false, "write": false}
+{"create": false, "ev": "fs.open", "path": "/usr/lib/x86_64-linux-gnu/gconv/gconv-modules.cache", "pid": "P6", "result_known": false, "tid": "T5", "trunc": false, "write": false}
+{"code": 0, "ev": "proc.exit", "pid": "P6", "signal": 0, "tid": "T5"}
+{"code": 0, "ev": "proc.exit", "pid": "P1", "signal": 0, "tid": "T1"}

@@ -18,6 +18,7 @@
 //  - Signals: first SIGINT/SIGTERM SIGTERMs the root only and keeps tracing
 //    until the tree drains (manifest finalised); the second SIGKILLs all.
 #include "ptrace_tracer.hpp"
+#include "../common/trace_helpers.hpp"
 #include "open_flags.hpp"
 
 #include "../../redact/redact.hpp"
@@ -119,150 +120,6 @@ namespace {
 std::atomic<int> gStop{0};
 void onSignal(int) {
   gStop.fetch_add(1);
-}
-
-uint64_t clockUs(clockid_t clk) {
-  struct timespec ts = {};
-  clock_gettime(clk, &ts);
-  return static_cast<uint64_t>(ts.tv_sec) * 1000000ULL +
-         static_cast<uint64_t>(ts.tv_nsec) / 1000ULL;
-}
-
-std::string errnoText(int e) {
-  char buf[128] = {};
-  // GNU strerror_r returns char*.
-  const char* m = strerror_r(e, buf, sizeof(buf));
-  return m != nullptr ? std::string(m) : ("errno " + std::to_string(e));
-}
-
-// Read up to maxLen bytes from remote address; returns bytes read or -1.
-long vmRead(pid_t pid, uint64_t remote, char* out, std::size_t maxLen) {
-  struct iovec local = {out, maxLen};
-  struct iovec remoteIov = {reinterpret_cast<void*>(static_cast<uintptr_t>(remote)), maxLen};
-  const ssize_t n = process_vm_readv(pid, &local, 1, &remoteIov, 1, 0);
-  return n < 0 ? -1 : static_cast<long>(n);
-}
-
-// Read a NUL-terminated string from the tracee (up to 4096+256 bytes).
-bool vmReadStr(pid_t pid, uint64_t remote, std::string& out, std::string& errDetail) {
-  out.clear();
-  if (remote == 0) {
-    errDetail = "null pointer";
-    return false;
-  }
-  char buf[512];
-  std::size_t total = 0;
-  uint64_t cur = remote;
-  while (total < 4352) {
-    const long n = vmRead(pid, cur, buf, sizeof(buf));
-    if (n <= 0) {
-      errDetail = std::string("process_vm_readv: ") + errnoText(errno);
-      return false;
-    }
-    for (long i = 0; i < n; ++i) {
-      if (buf[i] == '\0') {
-        out.append(buf, static_cast<std::size_t>(i));
-        return true;
-      }
-    }
-    out.append(buf, static_cast<std::size_t>(n));
-    cur += static_cast<uint64_t>(n);
-    total += static_cast<std::size_t>(n);
-    if (n < static_cast<long>(sizeof(buf))) {
-      break; // short read without NUL: string is truncated/unmapped
-    }
-  }
-  errDetail = "string too long or unterminated";
-  return false;
-}
-
-bool vmReadU64(pid_t pid, uint64_t remote, uint64_t& out) {
-  uint64_t v = 0;
-  const long n = vmRead(pid, remote, reinterpret_cast<char*>(&v), sizeof(v));
-  if (n != static_cast<long>(sizeof(v))) {
-    return false;
-  }
-  out = v;
-  return true;
-}
-
-std::string readLink(const std::string& path) {
-  char buf[4096] = {};
-  const ssize_t n = ::readlink(path.c_str(), buf, sizeof(buf) - 1);
-  if (n < 0) {
-    return "";
-  }
-  return std::string(buf, static_cast<std::size_t>(n));
-}
-
-// Resolve a tid's thread-group id via /proc. Leaders resolve to themselves;
-// unreadable (already gone) resolves to tid — the tid attribution survives,
-// the tgid may be approximate for flash-lived threads.
-pid_t threadGroupId(pid_t tid) {
-  char path[64];
-  std::snprintf(path, sizeof(path), "/proc/%d/status", (int)tid);
-  std::ifstream f(path);
-  std::string line;
-  while (std::getline(f, line)) {
-    if (line.compare(0, 5, "Tgid:") == 0) {
-      const int tgid = std::atoi(line.c_str() + 5);
-      return tgid > 0 ? (pid_t)tgid : tid;
-    }
-  }
-  return tid;
-}
-
-// Normalise an absolute path lexically (no filesystem access).
-std::string normaliseAbs(const std::string& p) {
-  std::vector<std::string> parts;
-  std::string cur;
-  const bool rooted = !p.empty() && p[0] == '/';
-  for (std::size_t i = 0; i <= p.size(); ++i) {
-    const char c = i < p.size() ? p[i] : '/';
-    if (c == '/') {
-      if (cur.empty() || cur == ".") {
-        // skip
-      } else if (cur == "..") {
-        if (!parts.empty()) {
-          parts.pop_back();
-        }
-      } else {
-        parts.push_back(cur);
-      }
-      cur.clear();
-    } else {
-      cur.push_back(c);
-    }
-  }
-  std::string out = rooted ? "/" : "";
-  for (std::size_t i = 0; i < parts.size(); ++i) {
-    if (i > 0) {
-      out += "/";
-    }
-    out += parts[i];
-  }
-  if (out.empty()) {
-    out = rooted ? "/" : ".";
-  }
-  return out;
-}
-
-bool isNoisyPath(const std::string& p) {
-  // Mirrors docs/trace-format.md §filtering: proc/sys/dev + loader/locale noise.
-  static const char* kPrefixes[] = {"/proc/",
-                                    "/sys/",
-                                    "/dev/",
-                                    "/etc/ld.so",
-                                    "/etc/passwd",
-                                    "/etc/nsswitch",
-                                    "/usr/share/locale",
-                                    "/usr/lib/locale"};
-  for (const char* pre : kPrefixes) {
-    if (p.compare(0, std::strlen(pre), pre) == 0) {
-      return true;
-    }
-  }
-  return p == "/proc" || p == "/sys" || p == "/dev";
 }
 
 struct ProcInfo {
@@ -398,10 +255,13 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
       }
       masksJson += "]";
     }
+    // backend key (ADR-0009): which tracer backend recorded this run.
+    // Additive (schema stays 0); the golden normaliser strips it, so
+    // existing ptrace goldens stay byte-identical.
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
            ",\"ev\":\"run.meta\",\"pid\":" + std::to_string(child) + ",\"tid\":" +
            std::to_string(child) + ",\"cmd\":[" + cmdJson + "],\"cwd\":" + jsonEscape(cwdStr) +
-           (opts.isolate ? ",\"isolate\":true" + masksJson + "}" : "}"));
+           (opts.isolate ? ",\"isolate\":true" + masksJson : "") + ",\"backend\":\"ptrace\"}");
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
            ",\"ev\":\"proc.start\",\"pid\":" + std::to_string(child) + ",\"tid\":" +
            std::to_string(child) + ",\"ppid\":" + std::to_string(::getpid()) + ",\"root\":true}");
@@ -436,73 +296,17 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
            ",\"errno\":" + std::to_string(e) + ",\"reason\":" + jsonEscape(reason) + "}");
   };
 
-  auto canonicalPath = [&](pid_t pid, long dirfd, const std::string& raw) -> std::string {
-    std::string base;
-    if (!raw.empty() && raw[0] == '/') {
-      base = raw;
-    } else if (dirfd != AT_FDCWD) {
-      const std::string fdLink = "/proc/" + std::to_string(pid) + "/fd/" + std::to_string(dirfd);
-      base = readLink(fdLink);
-      if (base.empty()) {
-        base = readLink("/proc/" + std::to_string(pid) + "/cwd");
-      }
-      base += "/" + raw;
-    } else {
-      base = readLink("/proc/" + std::to_string(pid) + "/cwd");
-      base += "/" + raw;
-    }
-    return normaliseAbs(base);
-  };
+  // Path canonicalisation is the shared helper (trace_helpers.hpp):
+  // identical by construction across backends. Call sites below resolve
+  // to it directly.
 
-  // Read an execve/execveat path+argv from the tracee *now* (valid only while
-  // the calling image is still mapped — i.e. at ENTRY, or at EXIT on failure).
-  // truncatedOut is set when argv was cut (64-entry cap or mid-array read
-  // failure): callers report truncated:true rather than dropping silently.
-  // Every argv element is secret-redacted (ADR-0003) before escaping.
+  // Exec path+argv reads are the shared helper (trace_helpers.hpp), fed
+  // secretEnv_ for argv redaction (ADR-0003).
   auto readExecStrings = [&](pid_t tpid, long dirfd, uint64_t pathAddr, uint64_t argvAddr,
                              std::string& canonOut, std::string& argvJsonOut,
                              std::string& detailOut, bool& truncatedOut) -> bool {
-    std::string path;
-    if (!vmReadStr(tpid, pathAddr, path, detailOut)) {
-      return false;
-    }
-    std::vector<std::string> rawArgs;
-    bool done = false;
-    int got = 0;
-    for (int i = 0; i < 64; ++i) {
-      uint64_t p = 0;
-      if (!vmReadU64(tpid, argvAddr + static_cast<uint64_t>(i) * 8, p)) {
-        break; // unreadable pointer slot: truncated
-      }
-      if (p == 0) {
-        done = true; // argv terminator: complete
-        break;
-      }
-      std::string s, d2;
-      if (!vmReadStr(tpid, p, s, d2)) {
-        break; // unreadable string: truncated, keep the prefix
-      }
-      rawArgs.push_back(std::move(s));
-      ++got;
-    }
-    truncatedOut = !done;
-    if (truncatedOut && got == 64) {
-      // Boundary check: exactly 64 args plus terminator is complete, not cut.
-      uint64_t p = 1;
-      if (vmReadU64(tpid, argvAddr + 64 * 8, p) && p == 0) {
-        truncatedOut = false;
-      }
-    }
-    std::string argvJson;
-    for (const std::string& raw : rawArgs) {
-      if (!argvJson.empty()) {
-        argvJson += ",";
-      }
-      argvJson += jsonEscape(redact::redactText(raw, secretEnv_));
-    }
-    canonOut = canonicalPath(tpid, dirfd, path);
-    argvJsonOut = argvJson;
-    return true;
+    return ::snowglobe::tracer::readExecStrings(tpid, dirfd, pathAddr, argvAddr, secretEnv_,
+                                                canonOut, argvJsonOut, detailOut, truncatedOut);
   };
 
   while (!dead) {

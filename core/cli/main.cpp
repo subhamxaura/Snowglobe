@@ -197,6 +197,13 @@ int cmdRun(const RunOptions& o) {
     std::cerr << "snowglobe run: unknown backend '" + o.tracer + "' (want auto|ptrace|notify)\n";
     return kExUnavailable;
   }
+  if (tracerName == "notify" && o.isolate) {
+    // The isolate middle needs its own listener hand-over first
+    // (ADR-0009 follow-ups): fail before creating anything, loudly.
+    std::cerr << "snowglobe run: --backend=notify with --isolate is not yet supported "
+                 "(use --backend=ptrace)\n";
+    return kExUnavailable;
+  }
 
   fs::path runDir;
   if (!o.out.empty()) {

@@ -11,6 +11,8 @@ import {
   hostKey,
   isProbeRequest,
   isWriteOpen,
+  outcomeLabel,
+  resultKnown,
 } from "../lib/model";
 import type { LinksDoc } from "../lib/model";
 import type { TraceEvent } from "../lib/types";
@@ -166,5 +168,30 @@ describe("links.json sidecar (TurnIndex source)", () => {
     const idx = new TurnIndex(synth, { version: 99, turns: [] });
     expect(idx.source).toBe("heuristic");
     expect(idx.getTurnForEvent(13)?.id).toBe(0);
+  });
+});
+
+describe("notify-backend outcome state (result_known)", () => {
+  it("unknown renders as unknown, never as ok", () => {
+    // ptrace shapes: ok present or absent-on-success.
+    expect(resultKnown(E({ ev: "fs.unlink", path: "/a", ok: true }))).toBe(true);
+    expect(resultKnown(E({ ev: "fs.unlink", path: "/a", ok: false }))).toBe(true);
+    expect(resultKnown(E({ ev: "fs.mkdir", path: "/a" }))).toBe(true);
+    expect(outcomeLabel(E({ ev: "fs.unlink", path: "/a", ok: true }))).toBe("ok");
+    expect(outcomeLabel(E({ ev: "fs.unlink", path: "/a", ok: false }))).toBe("FAILED");
+    // fs.mkdir carries no outcome in either backend: no label.
+    expect(outcomeLabel(E({ ev: "fs.mkdir", path: "/a" }))).toBeNull();
+    // notify shapes: result_known:false wins over any ok value.
+    expect(resultKnown(E({ ev: "fs.unlink", path: "/a", result_known: false }))).toBe(false);
+    expect(outcomeLabel(E({ ev: "fs.unlink", path: "/a", result_known: false }))).toBe("unknown");
+    expect(
+      outcomeLabel(E({ ev: "net.connect", addr: "1.2.3.4:80", result_known: false })),
+    ).toBe("unknown");
+    expect(
+      outcomeLabel(E({ ev: "net.connect", addr: "1.2.3.4:80", ok: true, result_known: false })),
+    ).toBe("unknown");
+    // non-outcome events have no label.
+    expect(outcomeLabel(E({ ev: "proc.start", pid: 1 }))).toBeNull();
+    expect(outcomeLabel(E({ ev: "run.meta" }))).toBeNull();
   });
 });

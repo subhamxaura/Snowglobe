@@ -2,8 +2,10 @@ add_library(snowglobe_core STATIC
   util/string_util.cpp
   util/sha256.cpp
   trace/jsonl_writer.cpp
+  tracer/common/trace_helpers.cpp
   tracer/ptrace/ptrace_tracer.cpp
   tracer/common/backend.cpp
+  tracer/notify/notify_filter.cpp
   tracer/notify/notify_tracer.cpp
   doctor/doctor.cpp
   redact/redact.cpp

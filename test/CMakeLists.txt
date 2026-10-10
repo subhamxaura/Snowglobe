@@ -18,6 +18,7 @@ add_executable(snowglobe_tests
   unit/test_link.cpp
   unit/test_link_fixtures.cpp
   unit/test_isolate.cpp
+  unit/test_notify.cpp
   unit/test_myers.cpp
   unit/test_baseline.cpp
 )
@@ -69,6 +70,34 @@ if(Python3_FOUND)
     )
   endforeach()
 
+  # Phase 4 Block 2: notify-backend parity (ADR-0009). goldens-notify pins
+  # the notify event stream per scenario (expected-notify.jsonl:
+  # shape-equivalent kinds/paths, result unknowns pinned); parity_*
+  # checks the ptrace<->notify relation (subsequence + shape rules incl.
+  # the exec_failed->exec mapping). Both skip with a reason where the
+  # kernel lacks SECCOMP_RET_USER_NOTIF.
+  foreach(scn IN ITEMS fork_storm threads exec_chain deep_dirs unix_sockets failing_exec
+      tcp_loopback)
+    add_test(
+      NAME golden_notify_${scn}
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/golden.py
+              $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/fixtures/scenarios/${scn}
+              ${CMAKE_SOURCE_DIR} $<TARGET_FILE_DIR:sg_threads> --backend=notify
+    )
+    add_test(
+      NAME parity_${scn}
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/parity/check_parity.py
+              $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/fixtures/scenarios/${scn}
+              ${CMAKE_SOURCE_DIR} $<TARGET_FILE_DIR:sg_threads>
+    )
+    set_tests_properties(parity_${scn} PROPERTIES TIMEOUT 300)
+  endforeach()
+
+  # Phase 4 Block 2: kill tests under notify. (a) proves supervisor
+  # SIGKILL never strands a fifo-blocked tracee; (d) proves a
+  # trapped-syscall storm leaves no wedged children (unanswered
+  # notifications die with their tracees via EXITKILL).
+
   # Automated kill tests: supervisor SIGKILL, root SIGKILL, supervisor SIGTERM.
   foreach(kill IN ITEMS a b c)
     add_test(
@@ -77,6 +106,14 @@ if(Python3_FOUND)
               $<TARGET_FILE:snowglobe> ${CMAKE_SOURCE_DIR} ${kill}
     )
     set_tests_properties(kill_${kill} PROPERTIES TIMEOUT 120)
+  endforeach()
+  foreach(nkill IN ITEMS a b c d)
+    add_test(
+      NAME notify_kill_${nkill}
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/notify/notify_kill.py
+              $<TARGET_FILE:snowglobe> ${CMAKE_SOURCE_DIR} ${nkill}
+    )
+    set_tests_properties(notify_kill_${nkill} PROPERTIES TIMEOUT 120)
   endforeach()
 
   # Phase 1B Block 2: mock LLM + toy-agent proxy integration (stdlib only).
@@ -118,6 +155,23 @@ if(Python3_FOUND)
       set_tests_properties(proxy_${tname} PROPERTIES ENVIRONMENT "${_sgenv}")
     endif()
   endforeach()
+
+  # Phase 4 Block 2: proxy integration under notify (toy 3-turn flow +
+  # 8-stream concurrency). Same argv shapes as proxy_toy_agent /
+  # proxy_concurrent; both skip (69) without user-notify.
+  add_test(
+    NAME proxy_notify_toy
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/proxy/proxy_notify_toy.py
+            $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/mockllm
+            ${CMAKE_SOURCE_DIR}/examples/toy-agent
+  )
+  set_tests_properties(proxy_notify_toy PROPERTIES TIMEOUT 180)
+  add_test(
+    NAME proxy_notify_concurrent
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/proxy/proxy_notify_concurrent.py
+            $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/mockllm
+  )
+  set_tests_properties(proxy_notify_concurrent PROPERTIES TIMEOUT 180)
 
   # Phase 1C Block 1: view server API (stdlib only, fixture copied to temp).
   add_test(

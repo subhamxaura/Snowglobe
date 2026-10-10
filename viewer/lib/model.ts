@@ -176,6 +176,38 @@ export function isDeleteEvent(e: TraceEvent): boolean {
   return e.ev === "fs.unlink" || e.ev === "fs.rmdir";
 }
 
+// ---- notify-backend outcome state (ADR-0009) ----
+
+// The seccomp-notify backend observes syscall entry only, so outcome
+// events carry result_known:false instead of ok/errno. This helper is
+// the single rule the views use: unknown renders as an explicit
+// "unknown" badge, NEVER as ok (a missing outcome is not success).
+export function resultKnown(e: TraceEvent): boolean {
+  return e["result_known"] !== false;
+}
+
+// Human outcome label for an outcome-class event: "ok" | "FAILED" |
+// "unknown". Non-outcome events return null.
+export function outcomeLabel(e: TraceEvent): string | null {
+  switch (e.ev) {
+    case "fs.open":
+    case "fs.unlink":
+    case "fs.rmdir":
+    case "fs.rename":
+    case "fs.symlink":
+    case "fs.chmod":
+    case "net.connect":
+    case "net.sendto":
+    case "net.bind":
+    case "net.disconnect":
+    case "proc.exec":
+      if (!resultKnown(e)) return "unknown";
+      return e["ok"] === false ? "FAILED" : "ok";
+    default:
+      return null;
+  }
+}
+
 // ---- turns ----
 
 export interface Turn {
