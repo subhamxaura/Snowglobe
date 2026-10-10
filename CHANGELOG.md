@@ -60,6 +60,22 @@ Format: Keep a Changelog. Versioning: SemVer (schema v0 until v0.1.0).
   ioctls) + `:1080-1165` (main loop) + `notify_filter.cpp` (all) —
   pending, not blocking.
 
+### Fixed (Phase 4 close-out — CI red→green, all with pasted evidence)
+
+- 22.04 `golden_notify_*` failed on setup-python `LD_LIBRARY_PATH`
+  loader probes (11+ failing glibc-hwcaps opens per exec that ptrace
+  filters but notify records): `golden.py` + `check_parity.py` now
+  scrub `LD_LIBRARY_PATH/LD_PRELOAD/LD_AUDIT/LD_DEBUG` for both
+  backends (ptrace streams unaffected — only failing probes vanish).
+  Mechanism proven locally (+17 fakelib attempts under pollution).
+- 22.04-tsan `proxy_notify_concurrent` hit the known httplib-regex
+  third-party race (same frames as the documented `proxy_concurrent`
+  finding): folded both notify proxy tests into the existing
+  `SG_PROXY_TESTS` loop so the `tsan.supp` suppressions attach.
+- `bench/backend_compare.sh` committed without +x (drvfs drops the
+  bit): set via `git update-index --chmod=+x`.
+- CI green on the tag tree (9/9): run 38028552894; tag v0.1.0-alpha.7.
+
 ### Added (Phase 4 Block 1 — ADR-0009 + notify skeleton; Phase 3 PRE-ITEM fixes)
 
 - ADR-0009 (seccomp user-notification backend): `run
