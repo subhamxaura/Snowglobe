@@ -24,6 +24,7 @@
 
 #include <httplib.h>
 
+#include "../replay/replay_store.hpp"
 #include "../tracer/common/itracer.hpp"
 #include "blocking_queue.hpp"
 #include "model_scan.hpp"
@@ -37,6 +38,12 @@ struct ProxyOptions {
   tracer::ITracer::EventSink sink; // MUST be thread-safe (CLI mutex-guards it)
   long connectTimeoutS = 30;
   long idleTimeoutS = 120; // idle between bytes; no total cap (streams run minutes)
+  // Replay mode (ADR-0010): serve llm/* blobs from replayRunDir instead of
+  // upstream. Upstream is never contacted (no API key needed). realtime
+  // honors recorded inter-chunk gaps; default is fast.
+  bool replay = false;
+  std::string replayRunDir;
+  bool replayRealtime = false;
 };
 
 class LlmProxy {
@@ -67,6 +74,19 @@ public:
   }
   long errors() const {
     return errors_.load();
+  }
+  // Replay mode only: matched serves vs loud 502 misses.
+  long replayServed() const {
+    return replayStore_ ? replayStore_->served() : 0;
+  }
+  long replayUnrecorded() const {
+    return replayStore_ ? replayStore_->unrecorded() : 0;
+  }
+  bool inReplay() const {
+    return opts_.replay;
+  }
+  size_t replayRecorded() const {
+    return replayStore_ ? replayStore_->size() : 0;
   }
   const std::string& error() const {
     return error_;
@@ -114,13 +134,18 @@ private:
   void handleBody(const httplib::Request& req, httplib::Response& res,
                   const httplib::ContentReader& reader);
   void handlePlain(const httplib::Request& req, httplib::Response& res);
+  // Replay-mode serve: match the request against the recorded run and
+  // stream the recorded body back chunk-by-chunk (or 502 on MISS).
+  void handleReplay(const httplib::Request& req, httplib::Response& res, const std::string& body,
+                    const std::string& provider, long id, const std::string& num,
+                    uint64_t tStartWall, uint64_t tStartMono, pid_t tid);
   void emitRequestEvent(long id, const std::string& provider, const std::string& method,
                         const std::string& path, const JsonTop& jt, uint64_t bytes, uint64_t tsUs,
                         pid_t tid);
   void emitResponseEvent(long id, int status, uint64_t bytes, bool hasTtfb, uint64_t ttfbMs,
                          uint64_t totalMs, uint64_t chunks, bool truncated,
                          const std::string& reqRel, const std::string& resRel,
-                         const std::string& idxRel, uint64_t tsUs, pid_t tid);
+                         const std::string& idxRel, uint64_t tsUs, pid_t tid, long replayOf = -1);
   // t_ms since proxy start (≈ run start; see handleBody note).
   uint64_t tMs() const;
   // Close a flight's .tmp blobs and remove them. Used exactly where no
@@ -133,6 +158,10 @@ private:
 
   ProxyOptions opts_;
   httplib::Server svr_;
+  // Replay mode only: loaded at start(), read-only afterwards, match() is
+  // internally mutex-guarded (safe from handler threads).
+  std::unique_ptr<replay::ReplayStore> replayStore_;
+  bool replayRealtime_ = false;
   std::thread serveThread_;
   std::thread stopThread_;
   std::mutex stopMu_;

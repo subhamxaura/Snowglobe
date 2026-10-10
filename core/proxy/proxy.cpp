@@ -141,7 +141,8 @@ void LlmProxy::emitRequestEvent(long id, const std::string& provider, const std:
 void LlmProxy::emitResponseEvent(long id, int status, uint64_t bytes, bool hasTtfb, uint64_t ttfbMs,
                                  uint64_t totalMs, uint64_t chunks, bool truncated,
                                  const std::string& reqRel, const std::string& resRel,
-                                 const std::string& idxRel, uint64_t tsUs, pid_t tid) {
+                                 const std::string& idxRel, uint64_t tsUs, pid_t tid,
+                                 long replayOf) {
   using util::jsonEscape;
   if (!opts_.sink) {
     return;
@@ -150,6 +151,12 @@ void LlmProxy::emitResponseEvent(long id, int status, uint64_t bytes, bool hasTt
   if (status < 200 || status >= 300) {
     errors_.fetch_add(1);
   }
+  std::string extra;
+  if (replayOf >= 0) {
+    // Join key for the replay compare: which recorded turn served this
+    // request (additive, schema stays 0; live runs never carry it).
+    extra = ",\"replay_of\":" + std::to_string(replayOf);
+  }
   opts_.sink("{\"ts_us\":" + std::to_string(tsUs) + ",\"t_ms\":" + std::to_string(tMs()) +
              ",\"pid\":" + std::to_string(::getpid()) + ",\"tid\":" + std::to_string(tid) +
              ",\"ev\":\"llm.response\",\"id\":" + std::to_string(id) +
@@ -157,7 +164,7 @@ void LlmProxy::emitResponseEvent(long id, int status, uint64_t bytes, bool hasTt
              ",\"ttfb_ms\":" + (hasTtfb ? std::to_string(ttfbMs) : "null") + ",\"total_ms\":" +
              std::to_string(totalMs) + ",\"chunk_count\":" + std::to_string(chunks) +
              ",\"truncated\":" + (truncated ? "true" : "false") + ",\"req\":" + jsonEscape(reqRel) +
-             ",\"res\":" + jsonEscape(resRel) + ",\"idx\":" + jsonEscape(idxRel) + "}");
+             ",\"res\":" + jsonEscape(resRel) + ",\"idx\":" + jsonEscape(idxRel) + extra + "}");
 }
 
 LlmProxy::Route LlmProxy::resolve(const std::string& target) const {
@@ -225,6 +232,16 @@ LlmProxy::Route LlmProxy::resolve(const std::string& target) const {
 
 int LlmProxy::start() {
   tEpochMonoMs_ = nowMonoMs();
+  if (opts_.replay) {
+    replayStore_ = std::make_unique<replay::ReplayStore>();
+    std::string loadErr;
+    if (!replayStore_->load(opts_.replayRunDir, loadErr)) {
+      error_ = "replay load: " + loadErr;
+      replayStore_.reset();
+      return -1;
+    }
+    replayRealtime_ = opts_.replayRealtime;
+  }
   svr_.set_read_timeout(130, 0);
   svr_.set_write_timeout(130, 0);
   svr_.set_keep_alive_timeout(5);
@@ -382,6 +399,13 @@ void LlmProxy::handleBody(const httplib::Request& req, httplib::Response& res,
 
   const JsonTop jt = scanJsonTop(body);
   emitRequestEvent(id, provider, req.method, req.path, jt, body.size(), tStartWall, tid);
+
+  if (opts_.replay) {
+    // Replay mode: the envelope + request event above are the new run's
+    // own record; serving comes from the recorded past, never upstream.
+    handleReplay(req, res, body, provider, id, num, tStartWall, tStartMono, tid);
+    return;
+  }
 
   if (!rt.ok) {
     // Unknown route: recorded like any response (debugging agents that hit
@@ -632,6 +656,117 @@ void LlmProxy::handleBody(const httplib::Request& req, httplib::Response& res,
                       // mid-chunked-body (curl exit 18). No-op on dead sockets.
         return false; // end of stream
       });
+}
+
+void LlmProxy::handleReplay(const httplib::Request& req, httplib::Response& res,
+                            const std::string& body, const std::string& provider, long id,
+                            const std::string& num, uint64_t tStartWall, uint64_t tStartMono,
+                            pid_t tid) {
+  const std::string llmDir = opts_.runDir + "/llm";
+  const std::string reqRel = "llm/" + num + ".req.json";
+
+  replay::ReplayMatch m = replayStore_->match(provider, req.method, req.path, body);
+  if (!m.hit) {
+    // Loud MISS (ADR-0010): logged by the store, 502 to the client, never
+    // an invented response. Recorded like any response so the new run's
+    // turn count still reflects what the agent saw.
+    const std::string errBody = "{\"error\":\"snowglobe replay: unrecorded call\"}";
+    {
+      std::ofstream f(llmDir + "/" + num + ".res.json", std::ios::trunc | std::ios::binary);
+      f << errBody;
+    }
+    { std::ofstream f(llmDir + "/" + num + ".res.idx", std::ios::trunc); }
+    emitResponseEvent(id, 502, errBody.size(), false, 0, nowMonoMs() - tStartMono, 0, false, reqRel,
+                      "llm/" + num + ".res.json", "llm/" + num + ".res.idx", nowUs(), tid);
+    res.status = 502;
+    res.set_content(errBody, "application/json");
+    return;
+  }
+
+  const replay::RecordedTurn& turn = replayStore_->turn(m.slot);
+  std::string contentType = "application/octet-stream";
+  if (turn.resExt == ".sse") {
+    contentType = "text/event-stream";
+  } else if (turn.resExt == ".json") {
+    contentType = "application/json";
+  }
+  const std::string resRel = "llm/" + num + ".res" + turn.resExt;
+  const std::string idxRel = "llm/" + num + ".res.idx";
+  const std::string resPath = llmDir + "/" + num + ".res";
+  const std::string idxPath = llmDir + "/" + num + ".res.idx";
+  const bool realtime = replayRealtime_;
+  // Chunks + gaps copied out: the provider lambda runs on the pool thread
+  // after this handler returns, and must not touch the store (match()
+  // may concurrently consume other turns on other threads).
+  const std::vector<std::string> chunks = turn.chunks;
+  const std::vector<uint64_t> gaps = turn.gapsUs;
+  const int status = turn.status;
+  const long recordedId = turn.id;
+
+  res.status = status;
+  // Explicit capture list (never [=]: the RecordedTurn holds the full
+  // response body and must not be copied per request).
+  const std::string resExt = turn.resExt;
+  res.set_chunked_content_provider(contentType, [this, resPath, idxPath, chunks, gaps, status,
+                                                 recordedId, resExt, id, reqRel, resRel, idxRel,
+                                                 tStartWall, tStartMono, realtime,
+                                                 tid](size_t, httplib::DataSink& sink) {
+    std::ofstream resFile(resPath + ".tmp", std::ios::trunc | std::ios::binary);
+    std::ofstream idxFile(idxPath + ".tmp", std::ios::trunc);
+    uint64_t bytes = 0, served = 0;
+    uint64_t ttfbWall = 0;
+    bool haveTtfb = false, trunc = false;
+    for (size_t k = 0; k < chunks.size(); ++k) {
+      if (shuttingDown_.load()) {
+        trunc = true;
+        break;
+      }
+      const std::string& c = chunks[k];
+      if (c.empty()) {
+        continue; // empty bodies serve zero chunks (live parity:
+                  // chunk_count 0, empty idx, ttfb null)
+      }
+      if (realtime && k > 0 && k - 1 < gaps.size()) {
+        // Honor the recorded inter-chunk gap in <=1s slices so
+        // shutdown stays prompt (a thinking-gap recording sleeps
+        // minutes here — that is the point of --realtime).
+        uint64_t left = gaps[k - 1];
+        while (left > 0 && !shuttingDown_.load()) {
+          const uint64_t step = left > 1000000ULL ? 1000000ULL : left;
+          usleep(static_cast<useconds_t>(step));
+          left -= step;
+        }
+        if (shuttingDown_.load()) {
+          trunc = true;
+          break;
+        }
+      }
+      if (!haveTtfb) {
+        haveTtfb = true;
+        ttfbWall = nowUs();
+      }
+      char line[96] = {};
+      std::snprintf(line, sizeof(line), "{\"off\":%llu,\"ts_us\":%llu}", (unsigned long long)bytes,
+                    (unsigned long long)nowUs());
+      idxFile << line << "\n";
+      resFile.write(c.data(), static_cast<std::streamsize>(c.size()));
+      bytes += c.size();
+      ++served;
+      if (!sink.write(c.data(), c.size())) {
+        trunc = true; // client gone mid-stream; keep the prefix
+        break;
+      }
+    }
+    resFile.close();
+    idxFile.close();
+    ::rename((resPath + ".tmp").c_str(), (resPath + resExt).c_str());
+    ::rename((idxPath + ".tmp").c_str(), idxPath.c_str());
+    emitResponseEvent(id, status, bytes, haveTtfb,
+                      haveTtfb ? (ttfbWall - tStartWall + 500) / 1000 : 0, nowMonoMs() - tStartMono,
+                      served, trunc, reqRel, resRel, idxRel, nowUs(), tid, recordedId);
+    sink.done();
+    return false;
+  });
 }
 
 } // namespace snowglobe::proxy
