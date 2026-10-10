@@ -13,6 +13,10 @@ add_library(snowglobe_core STATIC
   view/view.cpp
   link/linker.cpp
   link/link_cli.cpp
+  replay/replay_match.cpp
+  replay/replay_store.cpp
+  replay/replay_compare.cpp
+  replay/cli.cpp
   isolate/isolate.cpp
   isolate/seccomp.cpp
   isolate/landlock.cpp

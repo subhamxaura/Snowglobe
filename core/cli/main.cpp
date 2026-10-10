@@ -32,6 +32,7 @@
 #include "../link/cli.hpp"
 #include "../proxy/proxy.hpp"
 #include "../redact/redact.hpp"
+#include "../replay/cli.hpp"
 #include "../trace/jsonl_writer.hpp"
 #include "../tracer/common/itracer.hpp"
 #include "../tracer/ptrace/ptrace_tracer.hpp"
@@ -69,7 +70,11 @@ void usage(std::ostream& os) {
      << "  snowglobe diff <run> [--stat] [--patch=FILE]\n"
      << "  snowglobe apply <run> [--dry-run] [--yes]\n"
      << "  snowglobe compare <runA> <runB> [--stat] [--json]\n"
-     << "  snowglobe replay|share <run> ... (not yet implemented)\n";
+     << "  snowglobe replay-proxy <run> [--realtime]\n"
+     << "  snowglobe replay <run> [--out=DIR] [--realtime] [--ignore=FIELD]...\n"
+     << "                   [--backend=auto|ptrace|notify] [-a|--all-opens] [--json]\n"
+     << "                   [-- <command override>...]\n"
+     << "  snowglobe share <run> ... (not yet implemented)\n";
 }
 
 std::string rfc3339Utc(std::time_t t) {
@@ -181,6 +186,11 @@ struct RunOptions {
   std::string isolatePidsMax;         // --pids-max (isolate only)
   std::vector<std::string> upstreams; // raw PROVIDER=URL strings
   std::vector<std::string> cmd;
+  // Replay (ADR-0010): re-execute against recorded responses. replayFrom is
+  // the canonical abs path of the original run; empty means a live run.
+  std::string replayFrom;
+  bool replayRealtime = false;           // --realtime: honor recorded chunk gaps
+  std::vector<std::string> replayIgnore; // --ignore FIELD (repeatable)
 };
 
 int cmdRun(const RunOptions& o) {
@@ -203,6 +213,14 @@ int cmdRun(const RunOptions& o) {
     std::cerr << "snowglobe run: --backend=notify with --isolate is not yet supported "
                  "(use --backend=ptrace)\n";
     return kExUnavailable;
+  }
+  const bool isReplay = !o.replayFrom.empty();
+  if (isReplay && o.isolate) {
+    // Re-execution runs unisolated (ADR-0010); isolate originals still
+    // compare on event-observable behavior.
+    std::cerr
+        << "snowglobe replay: --isolate is not supported for replay (replays run unisolated)\n";
+    return kExUsage;
   }
 
   fs::path runDir;
@@ -437,6 +455,9 @@ int cmdRun(const RunOptions& o) {
   // Baseline pointer (ADR-0008, additive): isolate runs snapshot the
   // project before the agent runs; non-isolate manifests stay byte-identical.
   const std::string baselineFrag = o.isolate ? ",\"baseline\":\"baseline.json\"" : "";
+  // Replay link (ADR-0010, additive): the new run points at its original.
+  // Live-run manifests stay byte-identical.
+  const std::string replayFrag = isReplay ? ",\"replay_of\":" + jsonEscape(o.replayFrom) : "";
   auto writeManifest = [&](const std::string& finished, uint64_t eventCount,
                            const std::string& lastHash) {
     std::ofstream m(manifestPath, std::ios::trunc);
@@ -445,7 +466,7 @@ int cmdRun(const RunOptions& o) {
       << ",\"started\":" << jsonEscape(started) << ",\"finished\":" << finished << ",\"cmd\":["
       << cmdJson << "],\"cwd\":" << jsonEscape(cwd) << ",\"project\":" << jsonEscape(project)
       << ",\"kernel\":" << jsonEscape(kernelStr()) << ",\"tracer\":" << jsonEscape(tracerName)
-      << ",\"isolate\":" << isolateJson << baselineFrag
+      << ",\"isolate\":" << isolateJson << baselineFrag << replayFrag
       << ",\"env_fingerprint\":" << jsonEscape(envFingerprint())
       << ",\"event_count\":" << eventCount << ",\"last_hash\":" << jsonEscape(lastHash)
       << ",\"file_hashes\":{}}";
@@ -585,6 +606,11 @@ int cmdRun(const RunOptions& o) {
     popts.runDir = runDir.string();
     popts.upstream = upstreamMap;
     popts.sink = sink;
+    // Replay (ADR-0010): the proxy serves the original run's llm/* blobs;
+    // upstream is never contacted (replay needs no API key).
+    popts.replay = isReplay;
+    popts.replayRunDir = o.replayFrom;
+    popts.replayRealtime = o.replayRealtime;
     proxy = std::make_unique<snowglobe::proxy::LlmProxy>(std::move(popts));
     proxyPort = proxy->start();
     if (proxyPort <= 0) {
@@ -692,10 +718,13 @@ int cmdRun(const RunOptions& o) {
   // Drain in-flight LLM streams (<= 10 s) before finalising: their events
   // belong in this trace's counts.
   long turns = 0, errors = 0;
+  long replayServed = 0, replayUnrecorded = 0;
   if (proxy) {
     proxy->stop(10);
     turns = proxy->turns();
     errors = proxy->errors();
+    replayServed = proxy->replayServed();
+    replayUnrecorded = proxy->replayUnrecorded();
   }
   if (code < 0) {
     if (code == -kExUnavailable) {
@@ -714,6 +743,20 @@ int cmdRun(const RunOptions& o) {
   const std::string finished = runTimestamp();
   writeManifest(jsonEscape(finished), writer.count(), writer.lastHash());
 
+  if (isReplay) {
+    // The agent exit code is compared, never propagated (ADR-0010): a
+    // replayed failure identical to the original is clean (exit 0).
+    std::cerr << "run: " << runDir.string() << "\n";
+    std::cerr << "exit: " << code << " | events: " << writer.count() << " | " << turns
+              << " LLM turn" << (turns == 1 ? "" : "s");
+    if (errors > 0) {
+      std::cerr << " (" << errors << " error" << (errors == 1 ? "" : "s") << ")";
+    }
+    std::cerr << "\n";
+    std::cerr << "offline: " << replayServed << " responses served, " << replayUnrecorded
+              << " unrecorded\n";
+    return snowglobe::replay::finishReplay(o.replayFrom, runDir.string(), o.replayIgnore, o.json);
+  }
   if (o.json) {
     std::cout << "{\"run\":" << jsonEscape(runDir.string()) << ",\"exit_code\":" << code
               << ",\"events\":" << writer.count() << ",\"turns\":" << turns
@@ -934,8 +977,103 @@ int main(int argc, char** argv) {
   if (sub == "compare") {
     return snowglobe::diff::cmdCompare(args);
   }
-  if (sub == "replay" || sub == "share") {
-    std::cerr << "snowglobe " << sub << ": not yet implemented (Phase 2+)\n";
+  if (sub == "replay-proxy") {
+    return snowglobe::replay::cmdReplayProxy(args);
+  }
+  if (sub == "replay") {
+    // replay <run> [--out=DIR] [--realtime] [--ignore=FIELD]...
+    //          [--backend=...] [-a|--all-opens] [--json] [-- <override>...]
+    if (args.size() < 2 || args[1].rfind("--", 0) == 0) {
+      std::cerr << "usage: snowglobe replay <run> [--out=DIR] [--realtime] [--ignore=FIELD]...\n"
+                   "                          [--backend=auto|ptrace|notify] [-a|--all-opens] "
+                   "[--json] [-- <command override>...]\n";
+      return kExUsage;
+    }
+    RunOptions o;
+    std::string origArg = args[1];
+    std::size_t i = 2;
+    for (; i < args.size(); ++i) {
+      const std::string& a = args[i];
+      if (a == "--") {
+        ++i;
+        break;
+      }
+      if (a == "--realtime") {
+        o.replayRealtime = true;
+      } else if (a == "-a" || a == "--all-opens") {
+        o.allOpens = true;
+      } else if (a == "--json") {
+        o.json = true;
+      } else if (a.rfind("--ignore=", 0) == 0) {
+        o.replayIgnore.push_back(a.substr(9));
+      } else if (a == "--ignore") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe replay: --ignore needs FIELD\n";
+          return kExUsage;
+        }
+        o.replayIgnore.push_back(args[++i]);
+      } else if (a.rfind("--out=", 0) == 0) {
+        o.out = a.substr(6);
+      } else if (a == "--out") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe replay: --out needs DIR\n";
+          return kExUsage;
+        }
+        o.out = args[++i];
+      } else if (a.rfind("--tracer=", 0) == 0) {
+        o.tracer = a.substr(9);
+      } else if (a.rfind("--backend=", 0) == 0) {
+        o.tracer = a.substr(10);
+      } else if (a == "--tracer" || a == "--backend") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe replay: " << a << " needs a value\n";
+          return kExUsage;
+        }
+        o.tracer = args[++i];
+      } else if (a == "--isolate" || a.rfind("--upstream", 0) == 0 || a == "--no-llm-proxy" ||
+                 a.rfind("--project", 0) == 0 || a.rfind("--fs-rw", 0) == 0 ||
+                 a.rfind("--allow-env", 0) == 0 || a.rfind("--allow-path", 0) == 0 ||
+                 a.rfind("--baseline-exclude", 0) == 0 || a.rfind("--memory-max", 0) == 0 ||
+                 a.rfind("--pids-max", 0) == 0 || a.rfind("--policy", 0) == 0 || a == "--fast" ||
+                 a.rfind("--freeze-time", 0) == 0 || a == "--capture-stdio") {
+        // Live-run or future-policy flags: loud usage error, never silent.
+        // (--policy/--fast/--freeze-time are future work, see ADR-0010.)
+        std::cerr << "snowglobe replay: unsupported flag '" << a << "' (see usage)\n";
+        return kExUsage;
+      } else if (a.rfind("--", 0) == 0) {
+        std::cerr << "snowglobe replay: unexpected argument '" << a << "'\n";
+        return kExUsage;
+      } else {
+        std::cerr << "snowglobe replay: unexpected argument '" << a
+                  << "' (did you mean -- <command override>?)\n";
+        return kExUsage;
+      }
+    }
+    for (; i < args.size(); ++i) {
+      o.cmd.push_back(args[i]);
+    }
+    // Canonical original path (manifest link + store load share it).
+    std::error_code ec;
+    const fs::path origCanon = fs::canonical(fs::path(origArg), ec);
+    if (ec) {
+      std::cerr << "snowglobe replay: no such run '" << origArg << "'\n";
+      return kExUsage;
+    }
+    const std::string origDir = origCanon.string();
+    std::string why;
+    if (!snowglobe::replay::checkReplayable(origDir, why)) {
+      std::cerr << "snowglobe replay: " << why << "\n";
+      return kExUnavailable; // 69: replay impossible
+    }
+    if (o.cmd.empty() && !snowglobe::replay::loadOrigCmd(origDir, o.cmd, why)) {
+      std::cerr << "snowglobe replay: " << why << "\n";
+      return kExUsage;
+    }
+    o.replayFrom = origDir;
+    return cmdRun(o);
+  }
+  if (sub == "share") {
+    std::cerr << "snowglobe share: not yet implemented (Phase 2+)\n";
     return kExUnavailable;
   }
   std::cerr << "unknown subcommand '" << sub << "'\n";

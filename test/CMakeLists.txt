@@ -21,6 +21,7 @@ add_executable(snowglobe_tests
   unit/test_notify.cpp
   unit/test_myers.cpp
   unit/test_baseline.cpp
+  unit/test_replay.cpp
 )
 target_link_libraries(snowglobe_tests PRIVATE snowglobe_core Catch2::Catch2WithMain)
 target_include_directories(snowglobe_tests PRIVATE ${CMAKE_SOURCE_DIR}/core)
@@ -156,6 +157,26 @@ if(Python3_FOUND)
     if(_sgenv)
       set_tests_properties(proxy_${tname} PROPERTIES ENVIRONMENT "${_sgenv}")
     endif()
+  endforeach()
+
+  # Phase 5: deterministic replay (ADR-0010). Each test records a live
+  # run against the mock, then replays it offline (no LLM upstream, keys
+  # scrubbed) and asserts the verdict + replay-report.json. Uniform argv
+  # (tests that need no toy agent ignore the third argument).
+  set(SG_REPLAY_TESTS
+    replay_clean:300 replay_toolchange:300 replay_extrawrite:300
+    replay_unrecorded:300 replay_error:300 replay_concurrent:300)
+  foreach(pair IN ITEMS ${SG_REPLAY_TESTS})
+    string(REPLACE ":" ";" parts "${pair}")
+    list(GET parts 0 tname)
+    list(GET parts 1 ttimeout)
+    add_test(
+      NAME ${tname}
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/replay/${tname}.py
+              $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/mockllm
+              ${CMAKE_SOURCE_DIR}/examples/toy-agent
+    )
+    set_tests_properties(${tname} PROPERTIES TIMEOUT ${ttimeout})
   endforeach()
 
   # Phase 1C Block 1: view server API (stdlib only, fixture copied to temp).
