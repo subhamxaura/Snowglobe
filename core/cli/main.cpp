@@ -33,6 +33,7 @@
 #include "../proxy/proxy.hpp"
 #include "../redact/redact.hpp"
 #include "../replay/cli.hpp"
+#include "../share/cli.hpp"
 #include "../trace/jsonl_writer.hpp"
 #include "../tracer/common/itracer.hpp"
 #include "../tracer/ptrace/ptrace_tracer.hpp"
@@ -74,7 +75,8 @@ void usage(std::ostream& os) {
      << "  snowglobe replay <run> [--out=DIR] [--realtime] [--ignore=FIELD]...\n"
      << "                   [--backend=auto|ptrace|notify] [-a|--all-opens] [--json]\n"
      << "                   [-- <command override>...]\n"
-     << "  snowglobe share <run> ... (not yet implemented)\n";
+     << "  snowglobe share <run> [--out=FILE] [--force] [--with-overlay]\n"
+     << "  snowglobe verify <run-or-bundle> [--extract-to DIR]\n";
 }
 
 std::string rfc3339Utc(std::time_t t) {
@@ -1073,8 +1075,10 @@ int main(int argc, char** argv) {
     return cmdRun(o);
   }
   if (sub == "share") {
-    std::cerr << "snowglobe share: not yet implemented (Phase 2+)\n";
-    return kExUnavailable;
+    return snowglobe::share::cmdShare(args);
+  }
+  if (sub == "verify") {
+    return snowglobe::share::cmdVerify(args);
   }
   std::cerr << "unknown subcommand '" << sub << "'\n";
   usage(std::cerr);

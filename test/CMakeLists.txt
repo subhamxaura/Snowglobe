@@ -22,6 +22,7 @@ add_executable(snowglobe_tests
   unit/test_myers.cpp
   unit/test_baseline.cpp
   unit/test_replay.cpp
+  unit/test_share.cpp
 )
 target_link_libraries(snowglobe_tests PRIVATE snowglobe_core Catch2::Catch2WithMain)
 target_include_directories(snowglobe_tests PRIVATE ${CMAKE_SOURCE_DIR}/core)
@@ -183,6 +184,27 @@ if(Python3_FOUND)
     # regex use) — the record phase of replay_concurrent trips it exactly
     # like proxy_concurrent did. Same suppression file as the proxy tests
     # (see test/tsan.supp); the snowglobe children inherit it.
+    if(CMAKE_CXX_FLAGS MATCHES "sanitize=thread")
+      set_tests_properties(${tname} PROPERTIES ENVIRONMENT
+        "TSAN_OPTIONS=suppressions=${CMAKE_CURRENT_SOURCE_DIR}/tsan.supp")
+    endif()
+  endforeach()
+
+  # Phase 6 Block 1: share/verify bundles (ADR-0011). Happy path
+  # (pack, determinism, verify, view, overlay) + refusal paths (plant,
+  # force, corruption). Uniform argv with the proxy/replay suites.
+  set(SG_SHARE_TESTS share_bundle:300 share_refuse:300)
+  foreach(pair IN ITEMS ${SG_SHARE_TESTS})
+    string(REPLACE ":" ";" parts "${pair}")
+    list(GET parts 0 tname)
+    list(GET parts 1 ttimeout)
+    add_test(
+      NAME ${tname}
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/share/${tname}.py
+              $<TARGET_FILE:snowglobe> ${CMAKE_CURRENT_SOURCE_DIR}/mockllm
+              ${CMAKE_SOURCE_DIR}/examples/toy-agent
+    )
+    set_tests_properties(${tname} PROPERTIES TIMEOUT ${ttimeout})
     if(CMAKE_CXX_FLAGS MATCHES "sanitize=thread")
       set_tests_properties(${tname} PROPERTIES ENVIRONMENT
         "TSAN_OPTIONS=suppressions=${CMAKE_CURRENT_SOURCE_DIR}/tsan.supp")

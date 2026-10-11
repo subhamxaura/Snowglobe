@@ -13,6 +13,10 @@ add_library(snowglobe_core STATIC
   view/view.cpp
   link/linker.cpp
   link/link_cli.cpp
+  share/tar.cpp
+  share/verify.cpp
+  share/bundle.cpp
+  share/cli.cpp
   replay/replay_match.cpp
   replay/replay_store.cpp
   replay/replay_compare.cpp
@@ -39,6 +43,9 @@ if(SNOWGLOBE_WITH_SSL)
 else()
   target_link_libraries(snowglobe_core PUBLIC httplib::httplib)
 endif()
+# zstd for share bundles (ADR-0011). libzstd_static propagates to all
+# consumers of the core archive (the binary and the tests).
+target_link_libraries(snowglobe_core PUBLIC libzstd_static)
 
 add_executable(snowglobe cli/main.cpp)
 target_link_libraries(snowglobe PRIVATE snowglobe_core)

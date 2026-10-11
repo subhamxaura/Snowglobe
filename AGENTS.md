@@ -52,12 +52,12 @@ The full plan is in `docs/PLAN.md`. When this file and PLAN.md disagree, this fi
    It makes **no network calls**; it works offline; it must open a 50 MB trace without freezing
    (virtualised lists, streaming parse).
 8. **Replay = fresh sandbox + proxy in replay mode.** Canonical request hashing (provider, model,
-   messages, tools; strip IDs/timestamps/`user`), matching by (sequence position, hash); divergence
-   policies `fail` (CI default, exit 3) | `fuzzy` | `live`. Side effects re-execute inside the sandbox.
+   messages, tools; strip IDs/timestamps/`user`),    matching by (sequence position, hash); verdicts 0/65/69/70 (ADR-0010).
+   Side effects re-execute inside the sandbox.
 9. **Secrets never enter traces.** Redact `authorization`, `x-api-key`, `api-key`, `cookie`,
    `set-cookie`, `proxy-authorization` (case-insensitive) in stored requests/responses and logs.
-   Environment fingerprint = sorted variable *names* only, hashed. `share` requires an explicit flag and
-   prints what will be uploaded.
+   Environment fingerprint = sorted variable *names* only, hashed. `share` refuses on secret
+   findings unless `--force`, and lists what it packs (ADR-0011).
 10. **Licensing.** Apache-2.0 for everything except `cloud/` (commercial). Never put paid-only logic in
     the core; never make the core phone home (opt-in, off-by-default install ping only, documented).
 11. **Right tool per layer.** C/C++ where it touches the kernel or the hot path; TypeScript for the
@@ -79,7 +79,8 @@ snowglobe replay  <run> [--out=DIR] [--realtime] [--ignore=FIELD]...
                   [--backend=auto|ptrace|notify] [-a|--all-opens] [--json]
                   [-- <command override>]
 snowglobe compare <runA> <runB> [--json]
-snowglobe share   <run> [--public|--team] [--yes]
+snowglobe share   <run> [--out=FILE.sgrx] [--force] [--with-overlay]
+snowglobe verify  <run-or-bundle> [--extract-to DIR]
 snowglobe ls | rm <run> | doctor | version
 ```
 

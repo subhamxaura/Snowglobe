@@ -51,6 +51,12 @@ it; and replays runs deterministically in CI.
   `replay-report.json`. Exits 0 clean (same failure counts as clean) /
   65 diverged-or-unrecorded / 69 replay impossible / 70 internal.
   Honest wall: non-LLM traffic is not stubbed (docs/limitations.md).
+- `snowglobe share <run> [--out=FILE.sgrx] [--force] [--with-overlay]` —
+  tamper-evident tar+zstd bundle (overlay upper excluded unless flagged).
+  Secret audit + chain verify gate packing; findings refuse with exit 65
+  unless `--force`.
+- `snowglobe verify <run-or-bundle> [--extract-to DIR]` — hash-chain walk
+  + manifest consistency + blob presence. Exits 0 clean / 65 FAILED.
 - `snowglobe view <run> [--port=7777] [--open]` — embedded offline viewer
   (Next.js static export, no network calls) on localhost: timeline,
   turns (OpenAI/Anthropic parsing + cost), processes, files, network,

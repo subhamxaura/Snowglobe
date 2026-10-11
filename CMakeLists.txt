@@ -61,6 +61,26 @@ set(HTTPLIB_INSTALL OFF)
 set(HTTPLIB_COMPILE OFF)
 FetchContent_MakeAvailable(httplib)
 
+# zstd for share bundles (AGENTS.md §1.2 allowed dep, ADR-0011). Pinned
+# source build, lib only: hermetic on every leg including the aarch64
+# cross (no apt, no sudo anywhere). Single-threaded one-shot use keeps
+# output byte-deterministic; ZSTD_MULTITHREAD_SUPPORT stays off.
+FetchContent_Declare(
+  zstd
+  GIT_REPOSITORY https://github.com/facebook/zstd.git
+  GIT_TAG v1.5.7
+  GIT_SHALLOW TRUE
+  SOURCE_SUBDIR build/cmake
+  SYSTEM
+)
+set(ZSTD_BUILD_PROGRAMS OFF CACHE INTERNAL "")
+set(ZSTD_BUILD_TESTS OFF CACHE INTERNAL "")
+set(ZSTD_BUILD_CONTRIB OFF CACHE INTERNAL "")
+set(ZSTD_BUILD_STATIC ON CACHE INTERNAL "")
+set(ZSTD_BUILD_SHARED OFF CACHE INTERNAL "")
+set(ZSTD_MULTITHREAD_SUPPORT OFF CACHE INTERNAL "")
+FetchContent_MakeAvailable(zstd)
+
 # Viewer (Phase 1C, ADR-0005): Next.js static export built with the
 # project's Node, then gzip-packed into the binary by
 # cmake/embed_viewer.py (stdlib only) via cmake/embed_viewer.cmake.
