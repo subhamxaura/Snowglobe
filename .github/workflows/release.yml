@@ -1,0 +1,90 @@
+# Release: tag push `v*` builds the portable x86_64 glibc artifact on
+# Ubuntu 22.04 (oldest glibc baseline, 2.35), runs the FULL suite under
+# the release preset to gate the artifact, and attaches the binary plus
+# sha256 plus an SBOM-lite file list to a GitHub Release via `gh`
+# (no third-party release actions). The musl static job is a
+# time-boxed stretch (Block 2): continue-on-error, exactly one CI
+# iteration — if it fights, the glibc artifact still ships and STATUS
+# records the gap as a 1.0 item.
+name: release
+on:
+  push:
+    tags:
+      - "v*"
+permissions:
+  contents: write
+jobs:
+  glibc:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake g++ python3
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: viewer/package-lock.json
+      - name: Configure (release)
+        run: cmake --preset release
+      - name: Build (release)
+        run: cmake --build --preset release
+      - name: Test (release, full suite gates the artifact)
+        run: ctest --preset release --output-on-failure
+      - name: Stage assets
+        run: |
+          ./build/release/core/snowglobe version
+          mkdir -p dist
+          cp ./build/release/core/snowglobe dist/snowglobe-linux-x86_64
+          {
+            echo "snowglobe ${GITHUB_REF_NAME} (${GITHUB_SHA})"
+            echo "schema: 0"
+            echo "toolchain: $(g++ --version | head -1) / $(cmake --version | head -1)"
+            echo "deps (pinned): cpp-httplib v0.20.1, Catch2 v3.4.0, zstd v1.5.7,"
+            echo "  OpenSSL (system), viewer (see viewer/package-lock.json)"
+            echo "assets:"
+            (cd dist && sha256sum snowglobe-linux-x86_64)
+          } > dist/sbom-lite.txt
+          (cd dist && sha256sum snowglobe-linux-x86_64 sbom-lite.txt > sha256sums.txt)
+          cat dist/sbom-lite.txt
+      - name: Publish GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" \
+            --generate-notes dist/snowglobe-linux-x86_64 dist/sha256sums.txt \
+            dist/sbom-lite.txt
+  musl:
+    # Stretch, time-boxed to one CI iteration: a fully static musl binary
+    # (static OpenSSL). Non-blocking: failure never fails the release.
+    needs: glibc
+    runs-on: ubuntu-22.04
+    # alpine/git carries git for checkout (plain alpine would fail the
+    # checkout step before apk could run); the rest installs below.
+    container: alpine/git:v2.54.0
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install static toolchain
+        run: |
+          apk add --no-cache build-base cmake ninja python3 nodejs npm git \
+            linux-headers openssl-dev openssl-libs-static github-cli
+      - name: Configure (release, static)
+        run: cmake --preset release -DSNOWGLOBE_STATIC=ON
+      - name: Build (release, static)
+        run: cmake --build --preset release
+      - name: Smoke (version + true-run under the static binary)
+        run: |
+          ./build/release/core/snowglobe version
+          ./build/release/core/snowglobe run -- /bin/true
+      - name: Upload musl asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p dist-musl
+          cp ./build/release/core/snowglobe dist-musl/snowglobe-linux-x86_64-musl-static
+          (cd dist-musl && sha256sum snowglobe-linux-x86_64-musl-static > sha256sums-musl.txt)
+          gh release upload "${GITHUB_REF_NAME}" dist-musl/* --clobber

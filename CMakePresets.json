@@ -68,6 +68,11 @@
       "output": { "outputOnFailure": true }
     },
     {
+      "name": "release",
+      "configurePreset": "release",
+      "output": { "outputOnFailure": true }
+    },
+    {
       "name": "asan-ubsan",
       "configurePreset": "asan-ubsan",
       "output": { "outputOnFailure": true }
