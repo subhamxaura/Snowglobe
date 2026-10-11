@@ -10,10 +10,18 @@
 namespace snowglobe::diff {
 
 // Default baseline excludes (relative to the project root): repo metadata,
-// our own run output (lives under .snowglobe/runs by default), and the
-// dependency dir whose churn is noise, not agent behavior.
+// our own run output (lives under .snowglobe/runs by default), dependency
+// dirs, and build-output dirs whose churn is noise, not agent behavior.
+// Matched as exact paths or directory prefixes ("a/b" never excludes
+// "a/bc"); extendable per-run with --baseline-exclude (additive —
+// defaults cannot be disabled, and the effective list is recorded in
+// baseline.json so review reproduces the classification exactly).
+// (Issue #5: build/dist/target/.cache/.next/__pycache__ joined the list;
+// hashing build outputs dominated every --isolate run.)
 inline const std::vector<std::string>& defaultBaselineExcludes() {
-  static const std::vector<std::string> k = {".git", ".snowglobe", "node_modules"};
+  static const std::vector<std::string> k = {".git",   ".snowglobe", "node_modules",
+                                             "build",  "dist",       "target",
+                                             ".cache", ".next",      "__pycache__"};
   return k;
 }
 

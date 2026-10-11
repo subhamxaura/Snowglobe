@@ -1,6 +1,7 @@
 // Unit tests: baseline walk/write/strict-read + exclude rules.
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -9,6 +10,7 @@
 #include <vector>
 
 #include "diff/baseline.hpp"
+#include "util/sha256.hpp"
 
 namespace {
 
@@ -62,6 +64,10 @@ TEST_CASE("baseline round-trips a mixed tree", "[diff]") {
   putFile(root + "/node_modules/dep.js", "y");
   putDir(root + "/.snowglobe");
   putFile(root + "/.snowglobe/r", "z");
+  for (const char* d : {"build", "dist", "target", ".cache", ".next", "__pycache__"}) {
+    putDir(root + "/" + d);
+    putFile(root + "/" + d + "/out.bin", "skipme-by-default");
+  }
   putDir(root + "/skipme");
   putFile(root + "/skipme/f.txt", "w");
 
@@ -81,6 +87,10 @@ TEST_CASE("baseline round-trips a mixed tree", "[diff]") {
   CHECK(bl.files.count(".git/objects") == 0);
   CHECK(bl.files.count("node_modules/dep.js") == 0);
   CHECK(bl.files.count(".snowglobe/r") == 0);
+  for (const char* d : {"build", "dist", "target", ".cache", ".next", "__pycache__"}) {
+    CHECK(bl.files.count(std::string(d) + "/out.bin") == 0);
+    CHECK(std::find(bl.excludes.begin(), bl.excludes.end(), d) != bl.excludes.end());
+  }
   CHECK(bl.files.count("skipme/f.txt") == 0);
   CHECK(bl.files.count("baseline.json") == 0); // own output excluded, even inside the tree
 
@@ -92,6 +102,29 @@ TEST_CASE("baseline round-trips a mixed tree", "[diff]") {
   CHECK(back.files.at("empty.txt").size == 0);
   CHECK(back.files.at("empty.txt").shaHex ==
         "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+}
+
+TEST_CASE("baseline parallel hashing is deterministic", "[diff]") {
+  using namespace snowglobe::diff;
+  const std::string root = mkTree();
+  for (int d = 0; d < 8; ++d) {
+    const std::string sub = root + "/pkg" + std::to_string(d);
+    putDir(sub);
+    for (int f = 0; f < 40; ++f) {
+      putFile(sub + "/f" + std::to_string(f) + ".txt",
+              "payload-" + std::to_string(d) + "-" + std::to_string(f) + "\n");
+    }
+  }
+  Baseline a, b;
+  std::string error;
+  // Out paths are siblings of the tree (never inside it), so no
+  // self-exclusion entry perturbs the comparison.
+  REQUIRE(writeBaseline(root, root + ".a.json", {}, a, error));
+  REQUIRE(writeBaseline(root, root + ".b.json", {}, b, error));
+  CHECK(a.files.size() == 320);
+  CHECK(a.files == b.files);
+  CHECK(a.files.at("pkg3/f7.txt").shaHex ==
+        snowglobe::util::sha256Hex(std::string("payload-3-7\n")));
 }
 
 TEST_CASE("baseline reader rejects corruption loudly", "[diff]") {

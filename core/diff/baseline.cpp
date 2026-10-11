@@ -2,12 +2,16 @@
 #include "baseline.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <cerrno>
+#include <chrono>
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
+#include <mutex>
 #include <string>
 #include <sys/stat.h>
+#include <thread>
 #include <unistd.h>
 #include <vector>
 
@@ -48,11 +52,21 @@ bool readWholeFile(const std::string& path, std::vector<uint8_t>& bytes, std::st
   return true;
 }
 
-// Recursive walk with lstat (symlinks never followed, so no escape and no
-// cycles). rel uses '/' and is "" for the root itself (never an entry).
-// Children are visited in sorted byte order (deterministic baseline).
-bool walkDir(const std::string& abs, const std::string& rel,
-             const std::vector<std::string>& excludes, Baseline& out, std::string& error) {
+// Phase 1: metadata-only recursive walk with lstat (symlinks never
+// followed, so no escape and no cycles). Regular files are collected for
+// phase 2; symlinks are recorded inline (readlink is cheap); anything else
+// counts as skippedSpecial. Children are visited in sorted byte order so
+// the collected list is deterministic. rel uses '/' and is "" for the
+// root itself (never an entry).
+struct PendingFile {
+  std::string rel;
+  std::string abs;
+  int64_t mtime = 0; // st_mtime, forensics only (never a diff/apply key)
+};
+
+bool collectDir(const std::string& abs, const std::string& rel,
+                const std::vector<std::string>& excludes, Baseline& out,
+                std::vector<PendingFile>& pending, std::string& error) {
   DIR* d = ::opendir(abs.c_str());
   if (d == nullptr) {
     error = "opendir " + abs + ": " + errnoText(errno);
@@ -102,18 +116,13 @@ bool walkDir(const std::string& abs, const std::string& rel,
       e.mtime = static_cast<int64_t>(st.st_mtime);
       out.files[childRel] = e;
     } else if (S_ISREG(st.st_mode)) {
-      std::vector<uint8_t> bytes;
-      if (!readWholeFile(childAbs, bytes, error)) {
-        return false;
-      }
-      BaselineEntry e;
-      e.isLink = false;
-      e.shaHex = snowglobe::util::sha256Hex(bytes);
-      e.size = static_cast<uint64_t>(bytes.size());
-      e.mtime = static_cast<int64_t>(st.st_mtime);
-      out.files[childRel] = e;
+      PendingFile p;
+      p.rel = childRel;
+      p.abs = childAbs;
+      p.mtime = static_cast<int64_t>(st.st_mtime);
+      pending.push_back(std::move(p));
     } else if (S_ISDIR(st.st_mode)) {
-      if (!walkDir(childAbs, childRel, excludes, out, error)) {
+      if (!collectDir(childAbs, childRel, excludes, out, pending, error)) {
         return false;
       }
     } else {
@@ -125,6 +134,100 @@ bool walkDir(const std::string& abs, const std::string& rel,
 
 bool writeAll(FILE* f, const std::string& s) {
   return s.empty() || ::fwrite(s.data(), 1, s.size(), f) == s.size();
+}
+
+// Phase 2: hash the collected regular files over a thread pool (issue #5).
+// Same portable SHA-256 as before (no dep change, baseline semantics stay
+// sha256); sharding is by atomic work-stealing index, so output is
+// independent of scheduling and the merged map is deterministic. Any
+// unreadable file aborts loudly (false + error, never a silent hole).
+// Walks slower than 2 s print a progress line on stderr (the caller in
+// main.cpp prints the final files/ms note either way).
+bool hashPending(const std::vector<PendingFile>& pending,
+                 const std::chrono::steady_clock::time_point& t0, Baseline& out,
+                 std::string& error) {
+  struct Hashed {
+    std::string shaHex;
+    uint64_t size = 0;
+  };
+  std::vector<Hashed> results(pending.size());
+  if (pending.empty()) {
+    return true;
+  }
+  unsigned hc = std::thread::hardware_concurrency();
+  if (hc == 0) {
+    hc = 4;
+  }
+  size_t nThreads = std::min<size_t>(hc, pending.size());
+  std::atomic<size_t> next{0};
+  std::atomic<size_t> done{0};
+  std::atomic<bool> failed{false};
+  std::mutex errMu;
+  std::string firstError;
+  std::vector<std::thread> workers;
+  workers.reserve(nThreads);
+  for (size_t t = 0; t < nThreads; ++t) {
+    workers.emplace_back([&]() {
+      std::vector<uint8_t> bytes; // per-thread scratch (one file at a time)
+      for (;;) {
+        if (failed.load(std::memory_order_relaxed)) {
+          return;
+        }
+        const size_t i = next.fetch_add(1, std::memory_order_relaxed);
+        if (i >= pending.size()) {
+          return;
+        }
+        std::string localErr;
+        if (!readWholeFile(pending[i].abs, bytes, localErr)) {
+          std::lock_guard<std::mutex> lk(errMu);
+          if (firstError.empty()) {
+            firstError = localErr;
+          }
+          failed.store(true, std::memory_order_relaxed);
+          return;
+        }
+        results[i].shaHex = snowglobe::util::sha256Hex(bytes);
+        results[i].size = static_cast<uint64_t>(bytes.size());
+        done.fetch_add(1, std::memory_order_relaxed);
+      }
+    });
+  }
+  // Progress watch while the pool works: silent under 2 s, then a line
+  // per second on stderr until the pool drains.
+  auto lastPrint = t0;
+  for (;;) {
+    if (done.load(std::memory_order_relaxed) >= pending.size() ||
+        failed.load(std::memory_order_relaxed)) {
+      break;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    const auto now = std::chrono::steady_clock::now();
+    if (now - t0 > std::chrono::seconds(2) && now - lastPrint >= std::chrono::seconds(1)) {
+      lastPrint = now;
+      std::fprintf(stderr, "note: baseline hashing %zu/%zu files...\n", done.load(),
+                   pending.size());
+    }
+  }
+  for (auto& w : workers) {
+    w.join();
+  }
+  if (!firstError.empty()) {
+    error = firstError;
+    return false;
+  }
+  if (failed.load()) {
+    error = "hash pool aborted";
+    return false;
+  }
+  for (size_t i = 0; i < pending.size(); ++i) {
+    BaselineEntry e;
+    e.isLink = false;
+    e.shaHex = results[i].shaHex;
+    e.size = results[i].size;
+    e.mtime = pending[i].mtime;
+    out.files[pending[i].rel] = e;
+  }
+  return true;
 }
 
 } // namespace
@@ -149,6 +252,7 @@ bool writeBaseline(const std::string& projectAbs, const std::string& outPath,
                    std::string& error) {
   out = Baseline();
   out.project = projectAbs;
+  const auto t0 = std::chrono::steady_clock::now();
   std::vector<std::string> excludes = defaultBaselineExcludes();
   excludes.insert(excludes.end(), extraExcludes.begin(), extraExcludes.end());
   // Never hash our own output when it lands inside the walked tree.
@@ -156,7 +260,12 @@ bool writeBaseline(const std::string& projectAbs, const std::string& outPath,
       outPath.size() > projectAbs.size() && outPath[projectAbs.size()] == '/') {
     excludes.push_back(outPath.substr(projectAbs.size() + 1));
   }
-  if (!walkDir(projectAbs, "", excludes, out, error)) {
+  std::vector<PendingFile> pending;
+  if (!collectDir(projectAbs, "", excludes, out, pending, error)) {
+    error = "baseline: " + error;
+    return false;
+  }
+  if (!hashPending(pending, t0, out, error)) {
     error = "baseline: " + error;
     return false;
   }
