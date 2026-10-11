@@ -2,7 +2,36 @@
 
 ## [Unreleased]
 
-### Added (Phase 6 Block 1 — share/verify local bundles, ADR-0011)
+### Added (Phase 6 Block 2 — release pipeline + README truth)
+
+- `.github/workflows/release.yml`: tag push `v*` builds the portable
+  x86_64 glibc artifact on Ubuntu 22.04, runs the FULL release-preset
+  suite as the artifact gate, and publishes the binary + sha256sums +
+  SBOM-lite (version, toolchain, pinned deps, asset hashes) to a GitHub
+  Release via `gh` (no third-party release actions). Proved end to end
+  on throwaway tag `v0.0.0-block2-probe` (downloaded asset verified:
+  sha OK, version runs, record+verify smoke green; release + tag
+  deleted afterwards). Added the missing `release` test preset the gate
+  needs (132/132 green locally first).
+- Musl static stretch, time-boxed to one CI iteration as specified:
+  fought and lost — the alpine job fails building OUR code (musl
+  `strerror_r` returns int vs glibc's char*; narrowing `-Werror` on
+  seccomp constants in notify_tracer). Glibc artifact shipped anyway.
+  Recorded in STATUS as a 1.0 item (small portability patch + one more
+  iteration, not this block).
+- README rewrite: hero → what/why (Langfuse tagline) → verified
+  60-second quickstart (every command ran for real) → screenshots →
+  backends/isolate/replay/share sections with honest-limitations links
+  → CI badge row → full command table → build/trace/roadmap/license.
+  Audits pasted: 14 subcommands + 21 flags all exist in `--help`
+  output; "secure sandbox" appears exactly once repo-wide (the AGENTS.md
+  constitution line; README has zero); zero future-tense hits
+  (will/shall/plan to/TODO/coming soon/soon).
+- `CONTRIBUTING.md` (build/test/commit rules, constitution pointers)
+  and `docs/demo.md` (exact 60 s GIF sequence: isolate record → view →
+  diff → `--realtime` replay, mock kept up for `http_get`; heredoc
+  scenario + record + diff verified verbatim, replay path proven by the
+  replay suite).
 
 - `snowglobe share <run> [--out=FILE.sgrx] [--force] [--with-overlay]`:
   tar+zstd bundle (default `<run>.sgrx`) of manifest, events.jsonl,
