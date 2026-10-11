@@ -2,7 +2,43 @@
 
 ## [Unreleased]
 
-### Added (Phase 5 — deterministic replay at the LLM layer, ADR-0010)
+### Added (Phase 6 Block 1 — share/verify local bundles, ADR-0011)
+
+- `snowglobe share <run> [--out=FILE.sgrx] [--force] [--with-overlay]`:
+  tar+zstd bundle (default `<run>.sgrx`) of manifest, events.jsonl,
+  llm/, links.json, replay-report.json, baseline.json, fs/summary.json
+  (each if present; first two required) — overlay/upper/ only with the
+  flag. ustar hand-rolled with normalized metadata, zstd level 3
+  single-threaded one-shot (FetchContent pinned v1.5.7 — hermetic incl.
+  cross, no apt/sudo); same run twice shares byte-identical (pinned).
+  Gates before pack: secret audit (`redact::auditSecrets`, shape-only
+  sibling of `redactText` with identical floors) over every bundled
+  file, then the chain/manifest/blob verifier; findings refuse with
+  exit 65 listing file:line, nothing written; `--force` overrides audit
+  only, with a loud warning.
+- `snowglobe verify <run-or-bundle> [--extract-to DIR]`: hash-chain walk
+  (tail-anchored parse, no JSON lib) + manifest consistency +
+  blob presence; bundles extract to temp first. Exits 0/65 (+69/70).
+  Verify is integrity-only: a `--force`d plant verifies fine, by design.
+- `redactText` refactored onto a shared shape table (`matchShapeAt`);
+  existing units pin byte-identical behavior, new audit units mirror
+  every shape + survival case. Test-found fixes during Block 1: chain
+  prev-key length miscount (genesis `"0"` failed), tar prefix-split
+  search direction, chunked-audit boundary miss on floored shapes
+  (reworked to lookahead windows — overlap-carry can't cover length
+  floors), overlay iterator error check, non-empty extract-dest guard.
+- Tests: tar roundtrip/determinism/rejection + chain tamper units +
+  collect/audit/pack units (incl. 2 MiB boundary + fifo refuse +
+  fixture audit-clean pin on toy + error shapes) + `share_bundle`
+  (pack, determinism, verify, view-e2e on extracted tree, overlay
+  in/out) + `share_refuse` (plant 65 + force + corrupt 65 + force-stays-65).
+- Contract: AGENTS.md §2 share line replaced (local bundle), verify
+  line added, stale replay-policy fragment + share-upload fragment
+  corrected; README gains share/verify (implemented, audited).
+- Second-model review ranges for Block 3 D1 (audit-before-pack is the
+  target): `core/share/bundle.cpp` (collect/audit/pack/extract),
+  `core/share/verify.cpp` (chain walk), `core/share/tar.cpp`,
+  `core/redact/redact.cpp:matchShapeAt` + `auditSecrets`.
 
 - `snowglobe replay-proxy <run> [--realtime]`: stub server that serves
   the run's recorded `llm/*` blobs instead of upstream (upstream never
