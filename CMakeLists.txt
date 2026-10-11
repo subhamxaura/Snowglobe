@@ -79,7 +79,19 @@ set(ZSTD_BUILD_CONTRIB OFF CACHE INTERNAL "")
 set(ZSTD_BUILD_STATIC ON CACHE INTERNAL "")
 set(ZSTD_BUILD_SHARED OFF CACHE INTERNAL "")
 set(ZSTD_MULTITHREAD_SUPPORT OFF CACHE INTERNAL "")
+# No legacy decoders: we only read bundles we wrote (never legacy
+# frames), and lib/legacy trips -Werror=maybe-uninitialized on some
+# toolchains (observed: aarch64 cross GCC). Smaller build as a bonus.
+set(ZSTD_LEGACY_SUPPORT OFF CACHE INTERNAL "")
 FetchContent_MakeAvailable(zstd)
+if(TARGET libzstd_static)
+  # Third-party code builds under our global -Wall -Wextra -Wpedantic
+  # -Werror (needed: the dep compiles in-tree). -Wno-error keeps its
+  # warnings visible in logs without failing the build; our own targets
+  # stay -Werror-clean. (httplib gets the same treatment via SYSTEM +
+  # HTTPLIB_COMPILE=OFF; zstd has no compile-off switch.)
+  target_compile_options(libzstd_static PRIVATE -Wno-error)
+endif()
 
 # Viewer (Phase 1C, ADR-0005): Next.js static export built with the
 # project's Node, then gzip-packed into the binary by
