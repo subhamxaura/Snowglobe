@@ -35,4 +35,28 @@ std::vector<std::pair<std::string, std::string>> sensitiveEnv(char* const* envp)
 std::string redactText(const std::string& text,
                        const std::vector<std::pair<std::string, std::string>>& env);
 
+// One shape match: the full consumed span plus the secret sub-span the
+// audit reports (e.g. the token after "Bearer ", not the scheme word).
+struct ShapeHit {
+  size_t begin = 0; // consumed span [begin, end)
+  size_t end = 0;
+  size_t secretBegin = 0; // secret span [secretBegin, secretEnd)
+  size_t secretEnd = 0;
+  std::string replacement; // what redactText emits for [begin, end)
+  const char* kind = "";   // bearer|basic|url-auth|sk|sk-ant|github|
+                           // akia|slack|query-param
+};
+
+// Audit findings: shape-only (no env values — share-time env differs
+// from record-time env, so values are unmatchable there by design).
+struct SecretFinding {
+  size_t begin = 0; // secret span, as in ShapeHit
+  size_t end = 0;
+  std::string kind;
+};
+
+// Scan text with the same shape table as redactText and return every
+// match. What redactText would replace, auditSecrets reports.
+std::vector<SecretFinding> auditSecrets(const std::string& text);
+
 } // namespace snowglobe::redact

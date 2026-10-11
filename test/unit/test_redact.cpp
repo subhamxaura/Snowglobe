@@ -102,3 +102,52 @@ TEST_CASE("non-matches survive", "[redact]") {
   CHECK(r("password is required") == "password is required");
   CHECK(r("task-schedule --daily") == "task-schedule --daily");
 }
+
+namespace {
+std::string spanOf(const std::string& s, const snowglobe::redact::SecretFinding& f) {
+  return s.substr(f.begin, f.end - f.begin);
+}
+} // namespace
+
+TEST_CASE("auditSecrets mirrors redactText shapes", "[redact]") {
+  using snowglobe::redact::auditSecrets;
+  // Every shape redactText replaces, auditSecrets reports (same floors).
+  auto one = [](const std::string& s) {
+    const auto v = auditSecrets(s);
+    REQUIRE(v.size() == 1);
+    return v[0];
+  };
+  CHECK(one("Authorization: Bearer sk-test-1234567890").kind == "bearer");
+  CHECK(spanOf("Authorization: Bearer sk-test-1234567890",
+               one("Authorization: Bearer sk-test-1234567890")) == "sk-test-1234567890");
+  CHECK(one("Proxy auth Basic dXNlcjpwYXNzd29yZA==").kind == "basic");
+  CHECK(one("https://user:s3cret@host/x").kind == "url-auth");
+  CHECK(spanOf("https://user:s3cret@host/x", one("https://user:s3cret@host/x")) == "s3cret");
+  CHECK(one("https://user@host/x").kind == "url-auth");
+  CHECK(one("key=sk-ant-api03-abcdefghij1234567890").kind == "sk-ant");
+  CHECK(one("token sk-abcdefghijklmnopqrstuvwxyz1234567890 end").kind == "sk");
+  CHECK(one("ghp_abcdefghijklmnopqrstuvwxyz1234567890").kind == "github");
+  CHECK(one("key AKIAIOSFODNN7EXAMPLE end").kind == "akia");
+  CHECK(one("xoxb-12345-67890-abcdefghij").kind == "slack");
+  CHECK(one("https://h/p?key=SECRET123&x=1").kind == "query-param");
+  CHECK(spanOf("https://h/p?key=SECRET123&x=1", one("https://h/p?key=SECRET123&x=1")) ==
+        "SECRET123");
+  // Multiple matches all report, in order.
+  {
+    const std::string s = "a sk-abcdefghijklmnopqrstuvwxyz1234567890 b Bearer ABCDEFGH c";
+    const auto v = auditSecrets(s);
+    REQUIRE(v.size() == 2);
+    CHECK(v[0].kind == "sk");
+    CHECK(v[1].kind == "bearer");
+    CHECK(v[0].end <= v[1].begin);
+  }
+  // Everything redactText spares, auditSecrets spares (floors identical).
+  for (const char* s :
+       {"the bearer of bad news", "Bearer", "the sk-foo flag", "AKIAIOSFODNN7EXAMPLEX",
+        "xoxz-12345-67890-abcdefghij", "https://h/p?key=&x=1", "https://h/p?monkey=banana",
+        "mail bob@example.com today", "connect host:8080 now",
+        "id 123e4567-e89b-42d3-a456-426614174000 done",
+        "commit da39a3ee5e6b4b0d3255bfef95601890afd80709 ok", "run the test suite now"}) {
+    CHECK(auditSecrets(s).empty());
+  }
+}
