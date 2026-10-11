@@ -238,15 +238,17 @@ process tree itself, and hostile code still belongs in a microVM.
   paths (`created?`/`modified?`/`deleted?`/`renamed?`) with an explicit
   content-absent line — kinds are last-event guesses, never hunks.
 - **Exclude-list heuristics.** Default excludes (`.git/`, `.snowglobe/`,
-  `node_modules/`, plus `--baseline-exclude`) hide those subtrees from
+  `node_modules/`, `build/`, `dist/`, `target/`, `.cache/`, `.next/`,
+  `__pycache__/`, plus `--baseline-exclude`) hide those subtrees from
   baseline, diff, and apply alike; agent behavior there is invisible by
   policy. `.git` is the exception in one direction only: always walked
-  for review (tamper must be visible), never written by `apply`. Build
-  outputs (`build/`, `target/`, `dist/`) are NOT excluded by default —
-  baseline cost is linear in bytes hashed (this repo: 68.6s unfiltered at
-  15,865 files incl. 1.6 GB `build/`, 17.1s with
-  `--baseline-exclude=build`; debug binary, single-threaded portable
-  SHA-256), so exclude them explicitly on big repos.
+  for review (tamper must be visible), never written by `apply`. Walks
+  hash in parallel (portable SHA-256 over a thread pool) with a progress
+  line on stderr past 2 s; baseline cost is linear in bytes hashed (this
+  repo: 68.6s unfiltered at 15,865 files incl. 1.6 GB `build/`, 17.1s
+  with `--baseline-exclude=build`, both single-threaded debug — now
+  9,734 files in 5.8s default-config, and a fresh clone walks 330 files
+  in 0.2s).
 - **Untracked metadata.** Empty directories, mode-only changes, mtimes,
   and ownership are not changes (`diff` skips them; `apply` does not
   restore mtimes). `apply` preserves the upper file's mode bits.
@@ -288,7 +290,10 @@ before trusting a green replay:
   so in the report).
 - **Replay validates observable behavior, not bit-identity.** The
   compare is order-insensitive multisets (fs paths, exec argv sets, net
-  endpoints) plus LLM turn parity. A request-order swap of two turns
+  endpoints) plus LLM turn parity. The compare drops process ids
+  (pid/tid first-appearance labels shift across sandbox modes and swap
+  under thread scheduling) and scopes proc to exec/health — a pid
+  difference alone is never a divergence. A request-order swap of two turns
   with *distinct* bodies is flagged via serve order; a swap of two
   turns with *identical* canonical bodies is interchangeable by
   construction and passes. Volatile request content (timestamps, nonces)

@@ -57,9 +57,13 @@ Shape (all keys fixed order, compact):
 `<run>/baseline.json`: `{"version":1,"project":"<abs>","excludes":[…],
 "files":{"rel":{"type":"file","sha256":…,"size":N,"mtime":T} |
 {"type":"link","target":…,"mtime":T}},"skipped_special":N}` (keys sorted;
-default excludes `.git/`, `.snowglobe/`, `node_modules/` plus
-`--baseline-exclude`; fifos/sockets/devices counted, never recorded;
-unreadable files abort the run). Manifest points at it
+default excludes `.git/`, `.snowglobe/`, `node_modules/`, `build/`,
+`dist/`, `target/`, `.cache/`, `.next/`, `__pycache__/` plus
+`--baseline-exclude` (additive; the effective list is stored in
+`"excludes"`); fifos/sockets/devices counted, never recorded;
+unreadable files abort the run). Files hash in parallel over a thread
+pool (same portable SHA-256); walks slower than 2 s print a progress
+line on stderr. Manifest points at it
 (`"baseline":"baseline.json"`, isolate runs only; schema stays 0).
 `mtime` is forensic; diff/apply key on sha256 (files) and targets (links).
 

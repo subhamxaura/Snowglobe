@@ -2,6 +2,58 @@
 
 ## [Unreleased]
 
+### Added (Phase 7 Block A — baseline perf, closes issue #5)
+
+- Default baseline excludes gain `build/`, `dist/`, `target/`, `.cache/`,
+  `.next/`, `__pycache__/` (with the existing `.git/`, `.snowglobe/`,
+  `node_modules/`; `--baseline-exclude` stays additive and the effective
+  list is recorded in `baseline.json`). Measured on this repo (debug
+  binary, WSL): before 68.6s unfiltered (15,865 files incl. 1.6 GB
+  `build/`) / 17.1s with manual `--baseline-exclude=build` (both
+  single-threaded); after 9,734 files in 5.8s default-config (wall 5.9s),
+  fresh clone 330 files in 0.2s (wall 0.3s, first event well under the
+  10s quickstart budget).
+- Baseline hashing is parallel (thread pool over collected entries,
+  atomic work-stealing; same portable SHA-256, no dep change, output
+  byte-deterministic across schedules — pinned by a 320-file
+  double-walk unit). Walks slower than 2 s print
+  `note: baseline hashing N/M files...` per second on stderr. Units:
+  new-default exclusion pins + determinism test; `diff_apply` golden
+  unaffected (custom `--baseline-exclude=vendor` still honored).
+
+### Added (Phase 7 Block B — Timeline lanes, closes issue #3)
+
+- Timeline tab groups events into turn lanes: one color-coded lane per
+  turn (`T1…Tn`, numbering matches the Turns tab) plus a grey pre-turn
+  lane for unattributed events (reasons shown, nothing dropped).
+  Membership and basis badges are single-sourced on `TurnIndex` —
+  `links.json` exact (`window`/`lineage`/`argv-match`) when present,
+  span heuristic (`[heuristic]`) otherwise — with the
+  `linkage: sidecar|heuristic` label on the Timeline tab too and the
+  basis on hover (title) plus inline. Lane filter buttons narrow the
+  still-virtualised list (50 MB perf test stays <3s).
+- Playwright: sidecar run asserts lane buttons + basis chips + lane
+  filter narrowing; heuristic run asserts the fallback label +
+  `[heuristic]` badges; offline assert holds. Screenshots refreshed
+  (`turns-toy-agent`, `turns-error-401`) plus new
+  `timeline-lanes-error` and `files-error` on the real error fixture;
+  README keeps the hero art and embeds all four shots. The
+  pid-free-compare sentence (Block 2 leftover) now exists in
+  limitations.md: compare drops pid/tid, proc scoped to exec/health.
+
+### Changed (Phase 7 Block C — release hygiene)
+
+- `release.yml`: tags containing `-rc` publish as GitHub prereleases
+  (`--prerelease`); plain `v*` stay full releases. Conditional proven
+  locally (`v0.1.0-rc.1` → `--prerelease`, `v0.1.0`/`v0.0.0-block2-probe`
+  → full) and by the `v0.1.0-rc.1` tag itself publishing prerelease.
+- Gates for the rc: `ctest` debug 135/135 + asan-ubsan 135/135 (zero
+  findings), vitest 34/34, `tsc` clean, format gate clean, Playwright
+  4/4 (lanes + offline + perf), audits — README flags all present in
+  `--help`, "secure sandbox" only in AGENTS.md (normative) + one
+  CHANGELOG audit note quoting it (README/docs zero, never a claim),
+  zero future-tense hits in README.
+
 ### Added (Phase 6 Block 3 — --proc=host + close-out)
 
 - `--proc=host` (ADR-0012, closes issue #4): opt-in read-only rbind of

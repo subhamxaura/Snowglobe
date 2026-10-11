@@ -2,10 +2,11 @@
 # Ubuntu 22.04 (oldest glibc baseline, 2.35), runs the FULL suite under
 # the release preset to gate the artifact, and attaches the binary plus
 # sha256 plus an SBOM-lite file list to a GitHub Release via `gh`
-# (no third-party release actions). The musl static job is a
-# time-boxed stretch (Block 2): continue-on-error, exactly one CI
-# iteration — if it fights, the glibc artifact still ships and STATUS
-# records the gap as a 1.0 item.
+# (no third-party release actions). Tags containing `-rc` publish as
+# prereleases (`--prerelease`); plain `v*` stay full releases. The musl
+# static job is a time-boxed stretch (Block 2): continue-on-error,
+# exactly one CI iteration — if it fights, the glibc artifact still
+# ships and STATUS records the gap as a 1.0 item.
 name: release
 on:
   push:
@@ -54,8 +55,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Tags containing "-rc" ship as GitHub prereleases; plain v*
+          # stay full releases (Phase 7 Block C).
+          if [[ "${GITHUB_REF_NAME}" == *"-rc"* ]]; then PRE="--prerelease"; else PRE=""; fi
           gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" \
-            --generate-notes dist/snowglobe-linux-x86_64 dist/sha256sums.txt \
+            --generate-notes $PRE dist/snowglobe-linux-x86_64 dist/sha256sums.txt \
             dist/sbom-lite.txt
   musl:
     # Stretch, time-boxed to one CI iteration: a fully static musl binary
