@@ -2,7 +2,38 @@
 
 ## [Unreleased]
 
-### Added (Phase 6 Block 2 — release pipeline + README truth)
+### Added (Phase 6 Block 3 — --proc=host + close-out)
+
+- `--proc=host` (ADR-0012, closes issue #4): opt-in read-only rbind of
+  host `/proc` over the sandbox `/proc` (existing `bindRo` path, no new
+  capability), replacing the default empty tmpfs only with the flag.
+  Recorded in `run.meta` (`"proc":"host"`) and the manifest isolate
+  block (`"proc":"host"|"empty"`); every use prints the tradeoff
+  warning; `doctor --isolate` gains an informational `proc-mode` row.
+  Proof: real Claude Code 2.1.284 with an invalid key — default still
+  SIGABRTs at Bun startup (rc=134, 0 LLM turns, behavior unchanged),
+  `--proc=host` runs to the model 401 (rc=1, 923 events, HEAD-probe 502
+  + POST 401, exit 1 — the committed error fixture's shape), zero key
+  bytes in either run dir. Threat-model row + limitations updated (the
+  old crash doc stays accurate for the default path).
+- D1 on `core/share/` + release workflow (builder==reviewer): 0 High,
+  1 Medium fixed (crafted-bundle symlink-traversal file-write escape on
+  extract — parent-prefix guard + unit pin), rest clean incl. the
+  workflow (no findings). Ranges: `core/share/bundle.cpp`,
+  `core/share/verify.cpp`, `core/share/tar.cpp`, `core/share/cli.cpp`,
+  `core/redact/redact.cpp:matchShapeAt` + `auditSecrets`,
+  `.github/workflows/release.yml`.
+- Replay P1–P3 closures (deferred from Block 0): method in the request
+  hash gating both match levels; `served_exact`/`served_fallback`
+  report counters with a forced-fallback test (timestamped prompt → 0+3,
+  turns named, exit 65); consume-both-entries unit; volatile→fallback→
+  swap doc lines. Second-model (match/store) review closed: external
+  model read both files in full, P1–P3 were its findings, all fixed
+  with tests — no further review owed there.
+- Compare fix found verifying the demo flow: pid/tid first-appearance
+  labels shift across sandbox modes (and swap under thread scheduling),
+  so the compare drops process ids and scopes proc to exec/health —
+  isolate 3-turn records now replay fully clean (5/5 identical).
 
 - `.github/workflows/release.yml`: tag push `v*` builds the portable
   x86_64 glibc artifact on Ubuntu 22.04, runs the FULL release-preset
