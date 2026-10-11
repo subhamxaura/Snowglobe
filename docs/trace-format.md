@@ -208,13 +208,19 @@ the recorded values for forensics).
   "reason":"no-recorded-match"}` per MISS (the original run is never
   otherwise modified by replay).
 - Volatility excluded from the compare (documented, never silent):
-  `seq/ts_us/t_ms/t_us/prev_hash/hash/fd/backend`, pid→Pn/tid→Tn,
-  ports→PORT, `/tmp/tmp.*`→`$TMP` (incl. mkdtemp `_` suffixes),
-  `127.0.0.1:N`/`[::1]:N`→PORT, python-version folds (the
-  `test/normalize.py` rules), request keys
+  `seq/ts_us/t_ms/t_us/prev_hash/hash/fd/backend`, pid/tid/ppid dropped
+  outright (first-appearance labels shift across sandbox modes and can
+  swap under thread scheduling — behavior sets key on ops+paths, not
+  process identity), ports→PORT, `/tmp/tmp.*`→`$TMP` (incl. mkdtemp `_`
+  suffixes), `127.0.0.1:N`/`[::1]:N`→PORT, python-version folds (the
+  `test/normalize.py` rules, minus its pid map), request keys
   `id/tool_call_id/tool_use_id/created/timestamp/ts/user/request_id/
   session_id`, and timing fields `ttfb_ms/total_ms` + the join key
-  `replay_of`. `--ignore FIELD` strips extra event fields.
+  `replay_of`. `proc` covers `proc.exec`/`proc.exec_failed` argv sets
+  plus `trace.*` tracer-health events (lifecycle start/exit excluded:
+  isolate setup processes have no plain-replay counterpart). `run.meta`
+  and `llm.request` events never enter a category multiset. `--ignore FIELD` strips extra event
+  fields.
 
 ## Filtering (default; `-a`/`--all-opens` disables)
 

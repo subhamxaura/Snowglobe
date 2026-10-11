@@ -54,9 +54,12 @@ and replaces the Phase-3 sketch codes (0/3/4) with 0/65/69/70.
   tests assert sha256 equality.
 - **Volatile normalization** (request hashing AND event compare) ports
   `test/normalize.py`: strip `seq/ts_us/t_ms/t_us/prev_hash/hash/fd/
-  backend`, pid→Pn / tid→Tn by first appearance, numeric ports→PORT,
+  backend`, numeric ports→PORT,
   `/tmp/tmp.*`→`$TMP`, `127.0.0.1:N`/`[::1]:N`→PORT, python-version
-  path components. JSON bodies additionally drop volatile *keys*
+  path components. Process ids are dropped outright in the compare
+  (first-appearance Pn/Tn labels shift across sandbox modes and swap
+  under thread scheduling; behavior sets key on ops+paths). JSON bodies
+  additionally drop volatile *keys*
   recursively (`id`, `tool_call_id`, `tool_use_id`, `created`,
   `timestamp`, `ts`, `user`, `request_id`, `session_id`) and scrub the
   same string patterns. Timing fields (`ttfb_ms`, `total_ms`) and the
@@ -79,9 +82,10 @@ and replaces the Phase-3 sketch codes (0/3/4) with 0/65/69/70.
   through the serve mapping + turn-count match + monotonic serve order;
   any 502 served → `unrecorded`. `fs`: order-insensitive multiset of
   normalized fs events (content changes at the same path are invisible
-  without both uppers — stated in limitations). `proc`: normalized
-  `proc.exec`(+`exec_failed`) argv multiset. `net`: normalized endpoint
-  multisets. `exit`: exit-code equality.
+  without both uppers — stated in limitations). `proc`:
+  `proc.exec`/`proc.exec_failed` argv sets plus `trace.*` health (start/
+  exit excluded: setup lifecycle has no cross-mode counterpart). `net`:
+  normalized endpoint multisets. `exit`: exit-code equality.
 - **Exit codes:** 0 = clean (all identical, incl. same-failure), 65 =
   diverged-or-unrecorded, 69 = replay impossible (no `llm/` blobs /
   no `llm.request` pairs in the original), 70 = internal error.

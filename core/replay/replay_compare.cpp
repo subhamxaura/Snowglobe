@@ -17,50 +17,20 @@ constexpr size_t kEvidenceCap = 20;
 
 // normalize.py STRIP plus replay-volatiles: replay_of is the join key
 // (like prev_hash), ttfb_ms/total_ms are timing (differ on every faithful
-// re-execution — volatile-by-construction, see ADR-0010).
+// re-execution — volatile-by-construction, see ADR-0010). pid/tid/ppid
+// are DROPPED, not mapped: first-appearance labels shift across sandbox
+// modes (isolate setup processes take the early labels) and can swap
+// under thread scheduling — behavior sets key on ops+paths, and process
+// identity is linker's job, not the compare's.
 const std::set<std::string>& baseStrip() {
-  static const std::set<std::string> s = {"seq",       "ts_us",   "t_ms",    "t_us",
-                                          "prev_hash", "hash",    "fd",      "backend",
-                                          "replay_of", "ttfb_ms", "total_ms"};
+  static const std::set<std::string> s = {"seq",      "ts_us", "t_ms",    "t_us",      "prev_hash",
+                                          "hash",     "fd",    "backend", "replay_of", "ttfb_ms",
+                                          "total_ms", "pid",   "tid",     "ppid"};
   return s;
 }
 
 struct Normalizer {
   std::set<std::string> strip = baseStrip();
-  std::map<long long, std::string> pidMap;
-  std::map<long long, std::string> tidMap;
-
-  std::string pidOf(long long v) {
-    auto it = pidMap.find(v);
-    if (it == pidMap.end()) {
-      const std::string name = "P" + std::to_string(pidMap.size() + 1);
-      pidMap[v] = name;
-      return name;
-    }
-    return it->second;
-  }
-  std::string tidOf(long long v) {
-    auto it = tidMap.find(v);
-    if (it == tidMap.end()) {
-      const std::string name = "T" + std::to_string(tidMap.size() + 1);
-      tidMap[v] = name;
-      return name;
-    }
-    return it->second;
-  }
-
-  static bool asLong(const JsonValue& v, long long& out) {
-    if (v.type != JsonValue::Type::Number) {
-      return false;
-    }
-    try {
-      size_t pos = 0;
-      out = std::stoll(v.number, &pos);
-      return pos == v.number.size();
-    } catch (...) {
-      return false;
-    }
-  }
 
   JsonValue fix(const JsonValue& v, const std::string& key) {
     if (v.type == JsonValue::Type::Object) {
@@ -81,25 +51,6 @@ struct Normalizer {
         r.items.push_back(fix(it, ""));
       }
       return r;
-    }
-    if ((key == "pid" || key == "ppid") && v.type == JsonValue::Type::Number) {
-      // ppid maps through the same namespace as pid (normalize.py rule).
-      long long n = 0;
-      if (asLong(v, n)) {
-        JsonValue r;
-        r.type = JsonValue::Type::String;
-        r.str = pidOf(n);
-        return r;
-      }
-    }
-    if (key == "tid" && v.type == JsonValue::Type::Number) {
-      long long n = 0;
-      if (asLong(v, n)) {
-        JsonValue r;
-        r.type = JsonValue::Type::String;
-        r.str = tidOf(n);
-        return r;
-      }
     }
     if (key == "port" && v.type == JsonValue::Type::Number) {
       JsonValue r;
@@ -157,9 +108,11 @@ bool isFs(const std::string& ev) {
   return ev.compare(0, 3, "fs.") == 0;
 }
 bool isProc(const std::string& ev) {
-  // proc.exec argv sets (+exec_failed); start/exit carry no argv and are
-  // scheduling-shaped — the exit CODE is compared separately.
-  return ev == "proc.exec" || ev == "proc.exec_failed";
+  // proc.exec argv sets (+exec_failed) plus tracer-health events.
+  // Lifecycle (start/exit) is excluded: isolate setup processes have no
+  // counterpart in a plain replay, and pids are stripped anyway — the
+  // agent exit CODE is compared separately.
+  return ev == "proc.exec" || ev == "proc.exec_failed" || ev.compare(0, 6, "trace.") == 0;
 }
 bool isNet(const std::string& ev) {
   return ev == "net.connect" || ev == "net.sendto" || ev == "net.bind" || ev == "net.disconnect" ||
@@ -403,7 +356,7 @@ bool compareReplay(const std::string& origDir, const std::string& newDir,
     }
   }
   diffSets(oFs, nFs, "fs", out.fs);
-  diffSets(oProc, nProc, "proc.exec", out.proc);
+  diffSets(oProc, nProc, "proc", out.proc);
   diffSets(oNet, nNet, "net", out.net);
 
   // LLM layer: turn counts, serve mapping (replay_of), per-turn request
