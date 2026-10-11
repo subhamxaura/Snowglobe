@@ -186,6 +186,7 @@ struct RunOptions {
       isolateBaselineExclude;         // --baseline-exclude REL (repeatable, isolate only)
   std::string isolateMemMax;          // --memory-max (isolate only)
   std::string isolatePidsMax;         // --pids-max (isolate only)
+  bool isolateProcHost = false;       // --proc=host (isolate only, ADR-0012)
   std::vector<std::string> upstreams; // raw PROVIDER=URL strings
   std::vector<std::string> cmd;
   // Replay (ADR-0010): re-execute against recorded responses. replayFrom is
@@ -247,9 +248,9 @@ int cmdRun(const RunOptions& o) {
   // flags without --isolate are usage errors (loud, never silently idle).
   if (!o.isolate && (!o.isolateFsRw.empty() || !o.isolateAllowEnv.empty() ||
                      !o.isolateAllowPath.empty() || !o.isolateBaselineExclude.empty() ||
-                     !o.isolateMemMax.empty() || !o.isolatePidsMax.empty())) {
+                     !o.isolateMemMax.empty() || !o.isolatePidsMax.empty() || o.isolateProcHost)) {
     std::cerr << "snowglobe run: --fs-rw/--allow-env/--allow-path/--baseline-exclude/"
-                 "--memory-max/--pids-max need --isolate\n";
+                 "--memory-max/--pids-max/--proc need --isolate\n";
     return kExUsage;
   }
   snowglobe::isolate::OverlayDirs isoDirs;
@@ -452,7 +453,8 @@ int cmdRun(const RunOptions& o) {
     allowArr += "]";
     isolateJson = "{\"on\":true,\"features\":[\"userns\",\"mount\",\"pid\",\"overlay\"],"
                   "\"upper\":\"overlay/upper\",\"masks\":" +
-                  masksArr + ",\"allow_path\":" + allowArr + "}";
+                  masksArr + ",\"allow_path\":" + allowArr + ",\"proc\":\"" +
+                  (o.isolateProcHost ? "host" : "empty") + "\"}";
   }
   // Baseline pointer (ADR-0008, additive): isolate runs snapshot the
   // project before the agent runs; non-isolate manifests stay byte-identical.
@@ -525,6 +527,7 @@ int cmdRun(const RunOptions& o) {
     }
     cfg.allowEnv = o.isolateAllowEnv;
     cfg.allowPath = isoAllowAbs;
+    cfg.procHost = o.isolateProcHost; // --proc=host rbind (ADR-0012)
     cfg.pidsMax = isoPidsMax;
     cfg.nofileMax = 1024;
     cfg.memBytes = isoMemBytes;
@@ -707,6 +710,12 @@ int cmdRun(const RunOptions& o) {
     topts.isolate = true;
     topts.isolateChild = isoChild;
     topts.isolateMasks = isoMasks;
+    topts.isolateProcHost = o.isolateProcHost; // run.meta "proc":"host" (ADR-0012)
+  }
+  if (o.isolate && o.isolateProcHost) {
+    // Warning on every use (ADR-0012): host pids stay visible inside.
+    std::cerr << "warning: --proc=host rbinds host /proc read-only into the isolate: "
+                 "the sandbox sees host pids (see docs/limitations.md)\n";
   }
 
   if (o.captureStdio) {
@@ -918,6 +927,24 @@ int main(int argc, char** argv) {
           return kExUsage;
         }
         o.isolatePidsMax = args[++i];
+      } else if (a.rfind("--proc=", 0) == 0) {
+        // --proc=host only (ADR-0012, issue #4): any other value is a
+        // usage error, never a silent default.
+        if (a.substr(7) != "host") {
+          std::cerr << "snowglobe run: --proc only accepts host, got '" << a << "'\n";
+          return kExUsage;
+        }
+        o.isolateProcHost = true;
+      } else if (a == "--proc") {
+        if (i + 1 >= args.size()) {
+          std::cerr << "snowglobe run: --proc needs a value (host)\n";
+          return kExUsage;
+        }
+        if (args[++i] != "host") {
+          std::cerr << "snowglobe run: --proc only accepts host\n";
+          return kExUsage;
+        }
+        o.isolateProcHost = true;
       } else if (a == "--json") {
         o.json = true;
       } else if (a == "--no-llm-proxy") {

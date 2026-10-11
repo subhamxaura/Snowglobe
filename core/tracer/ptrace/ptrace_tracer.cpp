@@ -261,7 +261,9 @@ int PtraceTracer::run(const std::vector<std::string>& argv, const TraceOptions& 
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
            ",\"ev\":\"run.meta\",\"pid\":" + std::to_string(child) + ",\"tid\":" +
            std::to_string(child) + ",\"cmd\":[" + cmdJson + "],\"cwd\":" + jsonEscape(cwdStr) +
-           (opts.isolate ? ",\"isolate\":true" + masksJson : "") + ",\"backend\":\"ptrace\"}");
+           (opts.isolate ? ",\"isolate\":true" + masksJson : "") +
+           ((opts.isolate && opts.isolateProcHost) ? ",\"proc\":\"host\"" : "") +
+           ",\"backend\":\"ptrace\"}");
     emitEv("{\"ts_us\":" + std::to_string(nowUs()) + ",\"t_ms\":" + std::to_string(nowTms()) +
            ",\"ev\":\"proc.start\",\"pid\":" + std::to_string(child) + ",\"tid\":" +
            std::to_string(child) + ",\"ppid\":" + std::to_string(::getpid()) + ",\"root\":true}");

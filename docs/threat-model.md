@@ -20,7 +20,9 @@ Accident containment plus complete observation, all unprivileged
 
 - The agent runs in user+mount+pid namespaces with the project dir on
   overlayfs (writes land in `<run>/overlay/upper`, the host tree stays
-  clean), host `/` read-only, `/tmp` tmpfs, empty-tmpfs `/proc`.
+  clean), host `/` read-only, `/tmp` tmpfs, empty-tmpfs `/proc` by
+  default (`--proc=host` rbinds host `/proc` read-only instead, and the
+  sandbox then sees host pids — ADR-0012, opt-in only).
 - Secret paths (`~/.ssh`, `~/.aws`, `~/.gnupg`) and secret-named env
   vars are masked/stripped by default (`--allow-path` / `--allow-env`
   re-admit explicitly, recorded in the manifest).
@@ -61,7 +63,7 @@ Accident containment plus complete observation, all unprivileged
 | Agent reads `~/.ssh` / secrets env by mistake | Yes (masked) | tmpfs masks + env stripping; `--allow-path` is explicit |
 | Agent forks/threads normally | Yes (allowed) | clone without namespace flags passes the filter |
 | Agent creates namespaces, mounts, reboots, loads modules | Refused loudly | seccomp EPERM / KILL + Landlock; traced |
-| Agent needs `/proc/self` (Bun/Node) | Degraded (known) | empty-tmpfs `/proc`; issue #4; opt-in host rbind under discussion only |
+| Agent needs `/proc/self` (Bun/Node) | Degraded by default, rbind opt-in | empty-tmpfs `/proc` by default (issue #4); `--proc=host` rbinds host `/proc` read-only at the cost of host-pid visibility (ADR-0012) |
 | Malicious agent or kernel exploit | **No** | microVM required |
 | Network exfiltration / SSRF | Observed, not blocked | `net.*` events; `--net` confinement is future work |
 | Resource exhaustion as attack | Best-effort only | cgroup/prlimit hygiene |

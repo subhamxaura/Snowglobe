@@ -82,6 +82,11 @@ struct ChildConfig {
   std::vector<FsRwMount> fsRw;
   std::vector<std::string> allowEnv;  // re-admitted secret names (exact)
   std::vector<std::string> allowPath; // --allow-path exemptions (absolute, exact or parent)
+  // --proc=host (ADR-0012, issue #4): rbind host /proc read-only over the
+  // sandbox /proc instead of the default empty tmpfs. Opt-in ONLY: the
+  // sandbox then sees host pids (with cmdlines/environ). Default false
+  // keeps host pids invisible (previous behavior, byte-identical).
+  bool procHost = false;
   std::vector<std::string> cmd;
   // prlimit fallback (applied in the agent child just before exec, never
   // in middle/init — an address limit would kill instrumented observers;

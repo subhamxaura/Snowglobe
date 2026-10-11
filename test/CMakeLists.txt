@@ -245,6 +245,17 @@ if(Python3_FOUND)
   )
   set_tests_properties(isolate_toy PROPERTIES TIMEOUT 300)
 
+  # Issue #4 / ADR-0012: --proc=host rbinds host /proc read-only.
+  # Mechanism (maps readable, host pids visible) vs default (empty
+  # tmpfs), records in run.meta + manifest, warning, doctor row, and
+  # loud misuse errors. Skips loudly without userns+overlay, like the
+  # other isolate tests.
+  add_test(
+    NAME isolate_proc
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/isolate/isolate_proc.py
+            $<TARGET_FILE:snowglobe>
+  )
+  set_tests_properties(isolate_proc PROPERTIES TIMEOUT 180)
   # Phase 3: diff/apply/compare over the overlay upper (ADR-0008). The
   # golden drives a scripted --isolate run (create/modify/delete/rename,
   # unicode, symlink, empty + large files) and pins diff --stat/--patch,

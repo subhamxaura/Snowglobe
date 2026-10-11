@@ -36,6 +36,9 @@ struct TraceOptions {
   // --isolate secret masks for run.meta (absolute masked paths, already
   // minus --allow-path exemptions). Empty when not isolating.
   std::vector<std::string> isolateMasks;
+  // --isolate --proc=host (ADR-0012): recorded in run.meta as
+  // "proc":"host" (absent otherwise). Isolate-only.
+  bool isolateProcHost = false;
 };
 
 class ITracer {

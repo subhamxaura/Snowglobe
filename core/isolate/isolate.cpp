@@ -966,11 +966,16 @@ void enterChild(const ChildConfig& cfg) {
       fail("mkdir " + p);
     }
   }
-  // /proc is an EMPTY tmpfs here, not a fresh procfs: this kernel denies
-  // new proc/sysfs instances inside a userns (EPERM, tmpfs mounts work).
-  // Host pids stay invisible (test d passes vacuously); agents that need
-  // /proc introspection degrade — recorded in ADR-0007 + limitations.
-  if (::mount("tmpfs", (merged + "/proc").c_str(), "tmpfs", 0, "size=64m,mode=0555") != 0) {
+  // /proc: empty tmpfs by default (fresh procfs is EPERM in a userns —
+  // host pids stay invisible, /proc/self readers abort; ADR-0007,
+  // limitations). With --proc=host (ADR-0012, issue #4) rbind host /proc
+  // read-only instead: runtimes start, but the sandbox sees host pids.
+  // Same bindRo path as /sys below (no new capability required).
+  if (cfg.procHost) {
+    if (!bindRo("/proc", merged + "/proc", walkErr)) {
+      failMsg("rbind host /proc (" + walkErr + ")");
+    }
+  } else if (::mount("tmpfs", (merged + "/proc").c_str(), "tmpfs", 0, "size=64m,mode=0555") != 0) {
     fail("mount tmpfs proc");
   }
   if (!bindRo("/sys", merged + "/sys", walkErr)) {

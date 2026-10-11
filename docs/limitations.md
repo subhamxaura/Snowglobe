@@ -204,6 +204,21 @@ at startup**: Claude Code (Bun v1.4.3) dies SIGABRT after its
 Phase-2 real-runtime gate is blocked on this, not on EROFS). Python
 agents run fine. The gate re-runs when kernels allow fresh procfs.
 
+## --proc=host: the sandbox sees host pids (opt-in only, ADR-0012)
+
+`run --isolate --proc=host` replaces the empty tmpfs with a read-only
+rbind of host `/proc` (same bind path as `/sys`; no new capability
+needed). Runtimes start — Bun gets its `/proc/self/maps` — but the
+trade is explicit and printed on every use: the sandbox sees host pids,
+with cmdlines and environ readable by the sandbox user through
+`/proc/<pid>/`. Host pid invisibility is a containment property of the
+default dry-run; `--proc=host` opts out of it for trusted-agent
+debugging. `run.meta` carries `"proc":"host"` and the manifest isolate
+block carries `"proc":"host"|"empty"` so the choice is auditable; any
+other `--proc` value (or `--proc` without `--isolate`) is a usage
+error. This is not a fresh procfs: pid namespaces still isolate the
+process tree itself, and hostile code still belongs in a microVM.
+
 ## diff/apply/compare limits (Phase 3)
 
 - **Agent `rmdir` of an emptied merged dir can fail EIO.** Observed on

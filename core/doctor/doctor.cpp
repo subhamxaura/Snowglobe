@@ -780,6 +780,13 @@ std::vector<IsolateRow> checkIsolate() {
     bool procfs = false;
     out.push_back({"pidns", true, probePidns(procfs, d, pd), d});
     out.push_back({"procfs", false, procfs, pd});
+    // --proc=host mode (ADR-0012, issue #4): informational, no probe —
+    // the rbind reuses the same bind path as /sys, so no new capability
+    // is required. The tradeoff it exists to name: default empty-tmpfs
+    // hides host pids; --proc=host shows them (read-only).
+    out.push_back({"proc-mode", false, true,
+                   "default empty-tmpfs (host pids hidden); --proc=host rbinds host /proc "
+                   "read-only: sandbox sees host pids"});
   }
   {
     std::string d;
@@ -799,6 +806,7 @@ std::vector<IsolateRow> checkIsolate() {
   out.push_back({"mount+overlay", true, false, "requires Linux"});
   out.push_back({"pidns", true, false, "requires Linux"});
   out.push_back({"procfs", false, false, "requires Linux"});
+  out.push_back({"proc-mode", false, false, "requires Linux"});
   out.push_back({"seccomp", true, false, "requires Linux"});
   out.push_back({"landlock", true, false, "requires Linux"});
   out.push_back({"cgroup-deleg", false, false, "requires Linux"});
