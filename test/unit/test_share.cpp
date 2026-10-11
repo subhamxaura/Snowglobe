@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <vector>
 
+#include <zstd.h>
+
 #include "share/bundle.hpp"
 #include "share/tar.hpp"
 #include "share/verify.hpp"
@@ -349,8 +351,8 @@ TEST_CASE("share pack unpack roundtrip is deterministic", "[share]") {
   fs::remove_all(r.dir + ".b.sgrx");
 }
 
-TEST_CASE("share fixtures audit clean", "[share]") {
-  // Real recorded shapes (100 KB repeated system prompts included) must
+TEST_CASE("share fixtures audit clean",
+          "[share]") { // Real recorded shapes (100 KB repeated system prompts included) must
   // not trip the audit: pins no-false-positives where it matters.
   const std::string fix = SNOWGLOBE_FIXTURES_DIR;
   for (const char* fx : {"toy-agent-3turn", "claude-code-1-error"}) {
@@ -367,4 +369,44 @@ TEST_CASE("share fixtures audit clean", "[share]") {
     REQUIRE(snowglobe::share::auditEntries(root, arcs, hits, err));
     CHECK(hits.empty());
   }
+}
+
+namespace {
+void writeBundle(const std::string& path, const std::string& tarBytes) {
+  const size_t bound = ZSTD_compressBound(tarBytes.size());
+  std::string out(bound, '\0');
+  const size_t done = ZSTD_compress(out.data(), bound, tarBytes.data(), tarBytes.size(), 3);
+  REQUIRE(!ZSTD_isError(done));
+  out.resize(done);
+  writeFile(path, out);
+}
+} // namespace
+
+TEST_CASE("share extract refuses symlink traversal", "[share]") {
+  // D1 (Medium): a crafted bundle with symlink `a` plus file `a/b`
+  // would write outside dest when create_directories follows the link.
+  const std::string dir = tmpDir("traverse");
+  TarEntry link, child, solo;
+  link.name = "a";
+  link.isSymlink = true;
+  link.linkTarget = "/tmp/sg-share-should-not-exist";
+  child.name = "a/b";
+  child.data = "escape";
+  solo.name = "ok.txt";
+  solo.data = "fine";
+  std::string tarBytes, err;
+  REQUIRE(snowglobe::share::tarWrite({link, child}, tarBytes, err));
+  writeBundle(dir + "/evil.sgrx", tarBytes);
+  std::string xerr;
+  CHECK(!snowglobe::share::extractBundle(dir + "/evil.sgrx", dir + "/x", xerr));
+  CHECK(xerr.find("traverses") != std::string::npos);
+  CHECK(!fs::exists(dir + "/x/a"));
+  // Benign control: lone symlink extracts fine.
+  REQUIRE(snowglobe::share::tarWrite({link, solo}, tarBytes, err));
+  writeBundle(dir + "/ok.sgrx", tarBytes);
+  REQUIRE(snowglobe::share::extractBundle(dir + "/ok.sgrx", dir + "/y", xerr));
+  CHECK(fs::is_symlink(dir + "/y/a"));
+  CHECK(!fs::exists("/tmp/sg-share-should-not-exist"));
+  fs::remove_all(dir);
+  fs::remove_all("/tmp/sg-share-should-not-exist");
 }

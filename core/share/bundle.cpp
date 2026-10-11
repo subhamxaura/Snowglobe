@@ -6,6 +6,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <set>
 #include <sstream>
 
 #include <zstd.h>
@@ -426,18 +427,27 @@ bool extractBundle(const std::string& bundlePath, const std::string& destDir, st
     err = "cannot resolve " + destDir;
     return false;
   }
+  // Names this extraction created as symlinks: no later entry may
+  // traverse through one (a crafted bundle with `a` -> /elsewhere plus
+  // `a/b` would otherwise write outside dest when create_directories
+  // follows the link — refused loudly instead).
+  std::set<std::string> linkDirs;
   for (const TarEntry& e : entries) {
-    // Belt and braces: tarRead already rejects escapes, but extraction
-    // re-checks against the live destination (TOCTOU-grade paranoia is
-    // cheap here).
+    // tarRead already rejects absolute/.. names; extraction re-checks
+    // element-wise against the live destination root (lexical — never
+    // resolving symlinks mid-walk).
     if (e.name.empty() || e.name[0] == '/') {
       err = "tar: refusing absolute name '" + e.name + "'";
       return false;
     }
+    for (size_t slash = e.name.find('/'); slash != std::string::npos;
+         slash = e.name.find('/', slash + 1)) {
+      if (linkDirs.count(e.name.substr(0, slash)) != 0u) {
+        err = "tar: entry traverses an extracted symlink '" + e.name + "'";
+        return false;
+      }
+    }
     const fs::path target = dest / e.name;
-    // Belt and braces: tarRead already rejects escapes, but extraction
-    // re-checks element-wise against the live destination root (lexical
-    // — never resolving symlinks mid-walk).
     {
       auto ri = dest.begin();
       auto ti = target.begin();
@@ -472,6 +482,7 @@ bool extractBundle(const std::string& bundlePath, const std::string& destDir, st
         err = "cannot link " + target.string();
         return false;
       }
+      linkDirs.insert(e.name);
       continue;
     }
     // Regular files land 0600 (private by default — traces are
