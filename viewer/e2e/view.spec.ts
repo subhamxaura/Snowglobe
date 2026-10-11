@@ -33,8 +33,22 @@ test("toy-agent fixture: 3 turns, linked file write, offline", async ({
     await expect(page.getByTestId("linked-1")).toContainText("[window]");
     await expect(page.getByTestId("turn-text-2")).toContainText("done");
     await maybeScreenshot(page, "turns-toy-agent.png");
-    // Other views render on the same data.
+    // Timeline lanes (issue #3): same turn truth as the Turns tab —
+    // sidecar exact + basis badges, grey pre-turn lane, all virtualised.
     await page.getByRole("tab", { name: "timeline" }).click();
+    await expect(page.getByTestId("timeline-count")).toContainText("125 / 125 events");
+    await expect(page.getByTestId("timeline-link-source")).toContainText("sidecar");
+    await expect(page.getByTestId("lane-pre")).toBeVisible();
+    await expect(page.getByTestId("lane-1")).toBeVisible();
+    // Lane filter narrows to the turn: every rendered row then carries a
+    // basis badge (sidecar window/lineage/argv-match here, never blank).
+    await page.getByTestId("lane-1").click();
+    await expect(page.getByTestId("timeline-count")).not.toContainText("125 / 125 events");
+    expect(await page.locator('[data-testid^="basis-"]').count()).toBeGreaterThan(0);
+    expect(await page.locator('[data-testid="lane-chip-1"]').count()).toBeGreaterThan(0);
+    await expect(page.locator('[data-testid="lane-chip-pre"]')).toHaveCount(0);
+    // Back to all lanes: the grey pre-turn lane renders its reason chips.
+    await page.getByTestId("lane-all").click();
     await expect(page.getByTestId("timeline-count")).toContainText("125 / 125 events");
     await page.getByRole("tab", { name: "files" }).click();
     await expect(page.getByTestId("files")).toContainText("note.txt");

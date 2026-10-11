@@ -52,6 +52,8 @@ The full LLM round-trip (mock model → file write → offline replay) is
 
 ![Toy-agent turns in the viewer](docs/screenshots/turns-toy-agent.png)
 ![Error turns in the viewer](docs/screenshots/turns-error-401.png)
+![Timeline lanes by turn in the viewer](docs/screenshots/timeline-lanes-error.png)
+![Files touched in the viewer](docs/screenshots/files-error.png)
 
 ## Backends: ptrace and seccomp-notify
 

@@ -54,6 +54,20 @@ test("claude-code-1-error: error turns render status, envelope, raw body", async
     await expect(page.getByTestId("timeline-count")).toContainText(
       "735 / 735 events",
     );
+    // Timeline lanes without links.json: the span heuristic applies and
+    // says so (badge rules identical to the Turns tab).
+    await expect(page.getByTestId("timeline-link-source")).toContainText("heuristic");
+    await expect(page.getByTestId("lane-pre")).toBeVisible();
+    await expect(page.getByTestId("lane-1")).toBeVisible();
+    // Heuristic territory: turn-lane rows carry the [heuristic] basis.
+    await page.getByTestId("lane-1").click();
+    expect(await page.locator('[data-testid^="basis-"]').count()).toBeGreaterThan(0);
+    await expect(page.locator('[data-testid="lane-chip-1"]').first()).toBeVisible();
+    await page.getByTestId("lane-all").click();
+    await maybeScreenshot(page, "timeline-lanes-error.png");
+    await page.getByRole("tab", { name: "files" }).click();
+    await expect(page.getByTestId("files")).toBeVisible();
+    await maybeScreenshot(page, "files-error.png");
     expect(external).toEqual([]);
   } finally {
     await srv.stop();

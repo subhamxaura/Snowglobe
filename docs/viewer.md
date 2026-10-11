@@ -25,7 +25,16 @@ viewer does today and how it is built, tested, and extended.
 `viewer/pages/index.tsx` hosts the tabs, all backed by virtualised lists
 (`components/VList.tsx`) so a 50 MB trace opens in < 3 s:
 
-- **Timeline** — all events in seq order.
+- **Timeline** — all events in seq order, grouped into turn lanes: one
+  color-coded lane per turn (`T1…Tn`, matching the Turns tab numbering)
+  plus a grey pre-turn lane for unattributed events (with reasons, never
+  dropped). Lane membership and basis badges come from the same
+  `TurnIndex` the Turns tab uses — `links.json` exact (`window` /
+  `lineage` / `argv-match`) when the run has one, the span heuristic
+  (`[heuristic]`) otherwise — and the header reads
+  `linkage: sidecar|heuristic` on this tab too. Lane filter buttons
+  (`all lanes`, `pre-turn (N)`, `T1 (N)`…) narrow the virtualised list;
+  the basis shows on hover (title) and inline as a badge.
 - **Turns** — one section per LLM turn (request → response): folded text,
   tool calls with arguments, usage/cost when known, timing (ttfb/total,
   chunk count), truncation and error flags. Turns come from
@@ -106,16 +115,21 @@ viewer does today and how it is built, tested, and extended.
   events, 11 401 turns, probe excluded, every real envelope parsed).
 - **Playwright** (`viewer/e2e/`, chromium): real `snowglobe view` against
   the committed fixtures — `view.spec.ts` (toy-agent success flow: tab
-  rendering, turn linkage), `error.spec.ts` (error recording: status +
-  envelope banner, raw-body toggle, no blank screen, probe not a turn),
-  and the perf test (50 MB trace < 3 s). `run-e2e.sh` skips with a
+  rendering, turn linkage, Timeline lanes with sidecar badges + lane
+  filter), `error.spec.ts` (error recording: status +
+  envelope banner, raw-body toggle, no blank screen, probe not a turn,
+  Timeline lanes with the labelled heuristic fallback),
+  and the perf test (50 MB trace < 3 s, lanes included). `run-e2e.sh` skips with a
   printed reason when node, browsers, or the binary are absent (never
   fails silently).
-- **Screenshots**: `docs/screenshots/turns-toy-agent.png` (success flow)
-  and `docs/screenshots/turns-error-401.png` (real 401 error turn with
-  the raw envelope open) are captured by the e2e runs; set
+- **Screenshots**: `docs/screenshots/turns-toy-agent.png` (success flow),
+  `docs/screenshots/turns-error-401.png` (real 401 error turn with
+  the raw envelope open), `docs/screenshots/timeline-lanes-error.png`
+  (Timeline lanes on the real error fixture) and
+  `docs/screenshots/files-error.png` (Files on the same fixture) are
+  captured by the e2e runs; set
   `SG_SCREENSHOT_DIR=<path>` when running Playwright to refresh them
-  (CI never writes into the repo). Both refresh when issue #2's
+  (CI never writes into the repo). Turns shots refresh when issue #2's
   success-path recording lands.
 - Both run inside CTest as `viewer_unit` / `viewer_e2e`; the e2e leg runs
   for real in the CI `viewer` job and skip-prints elsewhere.
