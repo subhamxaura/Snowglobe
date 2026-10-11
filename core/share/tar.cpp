@@ -21,9 +21,20 @@ constexpr size_t kLinkOff = 157, kLinkLen = 100;
 constexpr size_t kMagicOff = 257;
 constexpr size_t kPrefixOff = 345, kPrefixLen = 155;
 
-void putOctal(char* dst, size_t len, uint64_t v) {
-  // len includes the trailing NUL: "%0*llo" into len-1 + NUL.
-  std::snprintf(dst, len, "%0*llo", static_cast<int>(len - 1), static_cast<unsigned long long>(v));
+void putOctal(char* dst, size_t len, uint64_t v, bool& ok) {
+  // len includes the trailing NUL. Manual digits (no snprintf): the
+  // -Wformat-truncation MAY-warning fires on the printf form under -O3
+  // cross compilers, and a manual loop turns silent truncation into a
+  // loud overflow refusal instead (a >8 GiB file must fail, never wrap).
+  ok = true;
+  for (size_t k = len - 1; k-- > 0;) {
+    dst[k] = static_cast<char>('0' + (v & 7));
+    v >>= 3;
+  }
+  dst[len - 1] = '\0';
+  if (v != 0) {
+    ok = false;
+  }
 }
 
 bool getOctal(const char* src, size_t len, uint64_t& v) {
@@ -130,11 +141,16 @@ bool tarWrite(const std::vector<TarEntry>& entries, std::string& out, std::strin
     std::memcpy(h + kNameOff, base.data(), base.size());
     // Normalized metadata (ADR-0011): fixed mtime/uid/gid/names. File
     // modes preserved (informative); dirs always 0755.
-    putOctal(h + kModeOff, kModeLen, e.isDir ? 0755 : (e.mode & 07777));
-    putOctal(h + kUidOff, kUidLen, 0);
-    putOctal(h + kGidOff, kGidLen, 0);
-    putOctal(h + kSizeOff, kSizeLen, e.isDir ? 0 : e.data.size());
-    putOctal(h + kMtimeOff, kMtimeLen, 0);
+    bool okNum = true;
+    putOctal(h + kModeOff, kModeLen, e.isDir ? 0755 : (e.mode & 07777), okNum);
+    putOctal(h + kUidOff, kUidLen, 0, okNum);
+    putOctal(h + kGidOff, kGidLen, 0, okNum);
+    putOctal(h + kSizeOff, kSizeLen, e.isDir ? 0 : e.data.size(), okNum);
+    putOctal(h + kMtimeOff, kMtimeLen, 0, okNum);
+    if (!okNum) {
+      err = "tar: numeric overflow for '" + e.name + "'";
+      return false;
+    }
     h[kTypeOff] = e.isDir ? '5' : (e.isSymlink ? '2' : '0');
     if (e.isSymlink) {
       std::memcpy(h + kLinkOff, e.linkTarget.data(), e.linkTarget.size());
@@ -152,9 +168,14 @@ bool tarWrite(const std::vector<TarEntry>& entries, std::string& out, std::strin
     for (char c : h) {
       sum += static_cast<unsigned char>(c);
     }
-    putOctal(h + kChksumOff, kChksumLen - 1, sum);
+    bool okSum = true;
+    putOctal(h + kChksumOff, kChksumLen - 1, sum, okSum);
     h[kChksumOff + 6] = '\0';
     h[kChksumOff + 7] = ' ';
+    if (!okSum) {
+      err = "tar: checksum overflow (unreachable)";
+      return false;
+    }
     out.append(h, kBlock);
     if (!e.isDir && !e.isSymlink && !e.data.empty()) {
       out.append(e.data);
